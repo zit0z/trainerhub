@@ -5,6 +5,7 @@ class ModernStyle:
     """Centralized dark theme for TrainerHub desktop app."""
     BG = "#050507"
     BG_CARD = "#111118"
+    BG_ELEVATED = "#1a1a24"
     BG_INPUT = "#0a0a10"
     BORDER = "#232333"
     BORDER_ACTIVE = "#3b3b55"
