@@ -17,7 +17,7 @@ a = Analysis(
     excludes=[
         'matplotlib', 'scipy', 'numpy', 'pandas', 'tkinter.test',
         'unittest', 'distutils', 'xml', 'xmlrpc', 'html', 'mailbox',
-        'calendar', 'colorsys', 'chunk', 'cryptography', 'pydoc', 'pydoc_data',
+        'colorsys', 'chunk', 'cryptography', 'pydoc', 'pydoc_data',
         'lib2to3', 'pkg_resources', 'setuptools', 'Cython', 'pytz', 'boto3'
     ],
     win_no_prefer_redirects=False,
