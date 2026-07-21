@@ -507,7 +507,7 @@ class CheatEngine:
         return {'success': False, 'message': 'Kein gültiges Pattern. Nutze den 2-Werte-Scan.'}
 
     def _stardew_memory(self, title):
-        # Stardew values are 4-byte ints. Without patterns we need manual scan.
+        title = title.lower()
         if 'geld' in title or 'money' in title:
             return {'success': False, 'message': 'Nutze den 2-Werte-Scan oder SMAPI/Savegame für Geld.'}
         if 'energie' in title or 'stamina' in title:
@@ -527,6 +527,11 @@ class CheatEngine:
         elif 'stamina' in title or 'energie' in title:
             self.smapi.set_value('stamina', 999)
         else:
+            # Generic SMAPI command if command field exists
+            cmd = trainer.get('command', '') or trainer.get('effect', '')
+            if cmd:
+                self.smapi.send_command(cmd)
+                return {'success': True, 'message': f"SMAPI-Kommando: {cmd}"}
             return {'success': False, 'message': 'Unbekannter SMAPI-Cheat.'}
         return {'success': True, 'message': f"{trainer.get('title')} via SMAPI aktiviert."}
 
@@ -537,9 +542,23 @@ class CheatEngine:
         pname = self.process_name or (game.get('process_name') if game else '')
         if not pname:
             return {'success': False, 'message': 'Kein Prozess bekannt.'}
-        # For Stardew, open console with chat key 'T'
-        open_key = 'T' if 'stardew' in self._game_name(game) else None
-        ok, msg = self.injector.run(pname, cmd, open_console_key=open_key)
+        # For Stardew official commands, fallback to savegame if no SMAPI and command is /money /health /stamina /backpack
+        gname = self._game_name(game)
+        title = trainer.get('title', '').lower()
+        if 'stardew' in gname and not self.smapi.is_running():
+            if any(k in title for k in ['money', 'geld']):
+                ok, path = self.savegame.edit_stardew_money(999999)
+                return {'success': ok, 'message': f'Geld im Savegame auf 999.999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
+            if any(k in title for k in ['health', 'leben']):
+                ok, path = self.savegame.edit_stardew_field('health', 999)
+                return {'success': ok, 'message': f'Leben im Savegame auf 999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
+            if any(k in title for k in ['stamina', 'energie', 'ausdauer']):
+                ok, path = self.savegame.edit_stardew_field('stamina', 999)
+                return {'success': ok, 'message': f'Energie im Savegame auf 999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
+            if 'backpack' in title:
+                ok, path = self.savegame.edit_stardew_field('maxItems', 36)
+                return {'success': ok, 'message': f'Rucksack im Savegame auf 36 Slots gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
+        ok, msg = self.injector.run(pname, cmd, open_console_key='T')
         return {'success': ok, 'message': msg}
 
     def _activate_console(self, trainer, game):
@@ -551,24 +570,29 @@ class CheatEngine:
             if self.smapi.send_command(cmd):
                 return {'success': True, 'message': f"SMAPI-Kommando ausgeführt: {cmd}"}
         # Fallback keyboard injection
-        pname = self.process_name or (game.get('process_name') if game else '')
-        open_key = 'T' if 'stardew' in self._game_name(game) else None
-        ok, msg = self.injector.run(pname, cmd, open_console_key=open_key)
-        return {'success': ok, 'message': msg}
+        return self._activate_command(trainer, game)
 
     def _activate_savegame(self, trainer, game):
         gname = self._game_name(game)
+        effect = trainer.get('effect', '') or trainer.get('command', '') or trainer.get('title', '')
         if 'stardew' in gname:
-            effect = trainer.get('effect', '') or trainer.get('command', '')
-            if 'money' in effect.lower() or 'geld' in effect.lower():
+            if any(k in effect.lower() for k in ['money', 'geld']):
                 ok, path = self.savegame.edit_stardew_money(999999)
-                return {'success': ok, 'message': f'Geld auf 999.999 gesetzt. Speicherstand: {path}' if ok else 'Savegame nicht gefunden.'}
-            # Generic field edit
+                return {'success': ok, 'message': f'Geld auf 999.999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
+            if any(k in effect.lower() for k in ['health', 'leben']):
+                ok, path = self.savegame.edit_stardew_field('health', 999)
+                return {'success': ok, 'message': f'Leben auf 999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
+            if any(k in effect.lower() for k in ['stamina', 'energie', 'ausdauer']):
+                ok, path = self.savegame.edit_stardew_field('stamina', 999)
+                return {'success': ok, 'message': f'Energie auf 999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
+            if 'backpack' in effect.lower():
+                ok, path = self.savegame.edit_stardew_field('maxItems', 36)
+                return {'success': ok, 'message': f'Rucksack auf 36 Slots gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
             m = re.search(r'(?:set|edit)\s+([a-zA-Z_]+)\s*=\s*(\d+)', effect, re.I)
             if m:
                 ok, path = self.savegame.edit_stardew_field(m.group(1), m.group(2))
-                return {'success': ok, 'message': f'Feld {m.group(1)} gesetzt. Speicherstand: {path}' if ok else 'Savegame nicht gefunden.'}
-            return {'success': True, 'message': 'Savegame-Cheat aktiv. Bitte Spiel neu starten.'}
+                return {'success': ok, 'message': f'Feld {m.group(1)} gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
+            return {'success': True, 'message': 'Savegame-Cheat vorbereitet. Bitte Spiel neu starten.'}
         return {'success': False, 'message': 'Savegame-Editor für dieses Spiel nicht verfügbar.'}
 
     def _activate_config(self, trainer, game):

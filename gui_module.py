@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.2'
+APP_VERSION = '0.6.3'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -483,6 +483,20 @@ class TrainerHubApp:
         self.detail_content = tk.Frame(self.content, bg=ModernStyle.BG)
         self.detail_content.pack(fill='both', expand=True)
 
+        # Wrap detail_content in a scrollable canvas for trainers/cheats
+        self.detail_canvas = tk.Canvas(self.detail_content, bg=ModernStyle.BG, highlightthickness=0)
+        self.detail_scrollbar = ttk.Scrollbar(self.detail_content, orient='vertical', command=self.detail_canvas.yview)
+        self.detail_scrollable_frame = tk.Frame(self.detail_canvas, bg=ModernStyle.BG)
+        self.detail_scrollable_frame.bind('<Configure>',
+                                           lambda e: self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all')))
+        self.detail_canvas.create_window((0, 0), window=self.detail_scrollable_frame, anchor='nw', width=self.detail_content.winfo_width()-20)
+        self.detail_canvas.configure(yscrollcommand=self.detail_scrollbar.set)
+        self.detail_canvas.pack(side='left', fill='both', expand=True)
+        self.detail_scrollbar.pack(side='right', fill='y')
+        self.detail_content.bind('<Configure>', self._on_detail_resize)
+        # Mouse wheel scroll
+        self.detail_canvas.bind_all('<MouseWheel>', lambda e: self.detail_canvas.yview_scroll(int(-1*(e.delta/120)), 'units'))
+
         self.detail_state = 'trainers'
         self._show_trainers_tab()
 
@@ -505,6 +519,8 @@ class TrainerHubApp:
     def _switch_tab(self, name):
         for btn in [self.tab_trainers, self.tab_cheats, self.tab_info]:
             btn.config(bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
+        # Reset scroll
+        self.detail_canvas.yview_moveto(0)
         if name == 'Trainer':
             self.tab_trainers.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT)
             self.detail_state = 'trainers'
@@ -518,38 +534,39 @@ class TrainerHubApp:
             self.detail_state = 'info'
             self._show_info_tab()
 
-    def _show_trainers_tab(self):
-        for w in self.detail_content.winfo_children():
+    def _clear_scrollable(self):
+        for w in self.detail_scrollable_frame.winfo_children():
             w.destroy()
-        self.trainer_loading = tk.Label(self.detail_content, text="Lade Trainer...", font=('Segoe UI', 13),
+
+    def _show_trainers_tab(self):
+        self._clear_scrollable()
+        self.trainer_loading = tk.Label(self.detail_scrollable_frame, text="Lade Trainer...", font=('Segoe UI', 13),
                                         bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
         self.trainer_loading.pack(pady=60)
         if self.trainers:
             self._render_trainers()
 
     def _show_cheats_tab(self):
-        for w in self.detail_content.winfo_children():
-            w.destroy()
+        self._clear_scrollable()
         if not self.trainers_data:
-            tk.Label(self.detail_content, text="Lade Cheats...", font=('Segoe UI', 13),
+            tk.Label(self.detail_scrollable_frame, text="Lade Cheats...", font=('Segoe UI', 13),
                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
             return
         cheats = []
         for t in self.trainers_data.get('trainers', []):
             cheats.extend(t.get('game_cheats', []))
         if not cheats:
-            tk.Label(self.detail_content, text="Keine offiziellen Cheats verfügbar", font=('Segoe UI', 13),
+            tk.Label(self.detail_scrollable_frame, text="Keine offiziellen Cheats verfügbar", font=('Segoe UI', 13),
                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
             return
         for c in cheats:
-            self._cheat_card(self.detail_content, c)
+            self._cheat_card(self.detail_scrollable_frame, c)
 
     def _show_info_tab(self):
-        for w in self.detail_content.winfo_children():
-            w.destroy()
+        self._clear_scrollable()
         g = self.current_game or {}
         info = f"Spiel: {g.get('name', '-')}\nProzess: {g.get('process_name', '-')}\nGenre: {g.get('genre', '-')}\nSlug: {g.get('slug', '-')}"
-        tk.Label(self.detail_content, text=info, font=('Segoe UI', 11), justify='left',
+        tk.Label(self.detail_scrollable_frame, text=info, font=('Segoe UI', 11), justify='left',
                  bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(anchor='nw', pady=20)
 
     def load_trainers(self, slug):
@@ -566,27 +583,26 @@ class TrainerHubApp:
     def _render_trainers(self):
         if hasattr(self, 'trainer_loading') and self.trainer_loading.winfo_exists():
             self.trainer_loading.destroy()
-        for w in self.detail_content.winfo_children():
-            w.destroy()
+        self._clear_scrollable()
 
         data = self.trainers_data or {}
         if not data.get('success'):
-            tk.Label(self.detail_content, text=f"Fehler: {data.get('error', 'Unbekannter Fehler')}",
+            tk.Label(self.detail_scrollable_frame, text=f"Fehler: {data.get('error', 'Unbekannter Fehler')}",
                      font=('Segoe UI', 13), bg=ModernStyle.BG, fg=ModernStyle.DANGER).pack(pady=60)
             return
 
         self.trainers = data.get('trainers', [])
         sub = data.get('subscription', 'free')
-        tk.Label(self.detail_content, text=f"Abonnement: {sub.upper()}", font=('Segoe UI', 10, 'bold'),
+        tk.Label(self.detail_scrollable_frame, text=f"Abonnement: {sub.upper()}", font=('Segoe UI', 10, 'bold'),
                  bg=ModernStyle.BG, fg=ModernStyle.ACCENT if sub == 'premium' else ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(0, 15))
 
         if not self.trainers:
-            tk.Label(self.detail_content, text="Keine Trainer verfügbar", font=('Segoe UI', 13),
+            tk.Label(self.detail_scrollable_frame, text="Keine Trainer verfügbar", font=('Segoe UI', 13),
                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
             return
 
         for trainer in self.trainers:
-            self._trainer_card(self.detail_content, trainer)
+            self._trainer_card(self.detail_scrollable_frame, trainer)
 
     def _trainer_card(self, parent, trainer):
         card = tk.Frame(parent, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
