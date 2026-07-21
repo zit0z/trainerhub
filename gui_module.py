@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.4.0'
+APP_VERSION = '0.4.1'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -98,6 +98,8 @@ class TrainerHubApp:
         self.log_lines = []
         self.bridge_client = None
         self.user_info = {}
+        self.hotkey_manager = None
+        self.theme_manager = None
         
         self.build_ui()
         if self.api_key:
@@ -105,6 +107,7 @@ class TrainerHubApp:
         else:
             self.show_login()
         
+        self.apply_theme(self.config.get('theme', 'dark'))
         self.start_background_tasks()
 
     # ----------------------------- UI BUILD -----------------------------
@@ -117,7 +120,7 @@ class TrainerHubApp:
         self.brand = tk.Label(self.header, text="TrainerHub", font=('Segoe UI', 20, 'bold'),
                               bg=ModernStyle.BG, fg=ModernStyle.TEXT)
         self.brand.pack(side='left')
-        self._apply_gradient(self.brand)
+        self.brand.config(fg=ModernStyle.ACCENT)
         
         self.status_frame = tk.Frame(self.header, bg=ModernStyle.BG)
         self.status_frame.pack(side='right')
@@ -128,6 +131,9 @@ class TrainerHubApp:
         self.connection_badge = StatusBadge(self.status_frame, "● Offline", ModernStyle.DANGER)
         self.connection_badge.pack(side='left', padx=(0,12))
         
+        tk.Button(self.status_frame, text="⚙ Einstellungen", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                  relief='flat', font=('Segoe UI', 10), padx=15, pady=5,
+                  command=self.show_settings).pack(side='left', padx=(0,8))
         tk.Button(self.status_frame, text="Account", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
                   relief='flat', font=('Segoe UI', 10), padx=15, pady=5,
                   command=self.show_account).pack(side='left', padx=(0,8))
@@ -220,6 +226,7 @@ class TrainerHubApp:
             self.connection_badge = StatusBadge(self.status_frame, "● Online", ModernStyle.SUCCESS)
             self.connection_badge.pack(side='left', padx=(0,12), after=self.premium_badge)
             self.show_dashboard()
+            self.init_hotkeys()
         else:
             self.api_key = None
             self.show_login()
@@ -367,7 +374,7 @@ class TrainerHubApp:
 
     # ----------------------------- API -----------------------------
     def api_call(self, endpoint, method='GET', data=None):
-        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.0'}
+        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.1'}
         if self.api_key:
             headers['Authorization'] = f'Bearer {self.api_key}'
         url = f'{self.api_base}/{endpoint}'
@@ -622,6 +629,7 @@ class TrainerHubApp:
     # ----------------------------- TRAINER ACTIONS -----------------------------
     def activate_generic(self, trainer):
         self.log(f"{trainer.get('name')} aktiviert (generisch).", 'info')
+        self.log_activation(trainer.get('name', 'generic'), success=True)
 
     def show_trainer_info(self, trainer):
         win = tk.Toplevel(self.root)
@@ -663,7 +671,7 @@ class TrainerHubApp:
     def show_account(self):
         win = tk.Toplevel(self.root)
         win.title("Account")
-        win.geometry("450x400")
+        win.geometry("450x480")
         win.configure(bg=ModernStyle.BG)
         card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
         card.pack(fill='both', expand=True, padx=20, pady=20)
@@ -677,18 +685,114 @@ class TrainerHubApp:
                  fg=ModernStyle.GOLD if self.is_premium() else ModernStyle.TEXT_MUTED,
                  font=('Segoe UI', 12, 'bold')).pack(anchor='w', pady=(15,5))
         
-        if self.user_info:
-            for k, v in self.user_info.items():
-                if k in ('success', 'message'):
-                    continue
-                tk.Label(inner, text=f"{k}: {v}", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
-                         font=('Segoe UI', 10)).pack(anchor='w', pady=2)
+        # Load stats
+        stats = self.api_call('trainer-logs.php?action=stats')
+        if stats.get('success'):
+            tk.Label(inner, text=f"Gesamte Aktivierungen: {stats.get('total_activations', 0)}",
+                     bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=2)
+            tk.Label(inner, text=f"Erfolgreich: {stats.get('successful', 0)}",
+                     bg=ModernStyle.BG_CARD, fg=ModernStyle.SUCCESS, font=('Segoe UI', 10)).pack(anchor='w', pady=2)
+            tk.Label(inner, text=f"Fehlgeschlagen: {stats.get('failed', 0)}",
+                     bg=ModernStyle.BG_CARD, fg=ModernStyle.DANGER, font=('Segoe UI', 10)).pack(anchor='w', pady=2)
+        
+        # Leaderboard position
+        lb = self.api_call('premium.php?action=leaderboard')
+        if lb.get('success') and self.user_info.get('email'):
+            me = next((x for x in lb.get('leaderboard', []) if x.get('email') == self.user_info.get('email')), None)
+            if me:
+                tk.Label(inner, text=f"Reputation: {me.get('reputation', 0)}",
+                         bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=(15,2))
+                tk.Label(inner, text=f"Approved Patterns: {me.get('approved_patterns', 0)}",
+                         bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=2)
         
         tk.Label(inner, text=f"API-Key:\n{self.api_key or 'Nicht eingeloggt'}", bg=ModernStyle.BG_CARD,
                  fg=ModernStyle.TEXT_MUTED, font=('Consolas', 9), wraplength=380).pack(anchor='w', pady=(15,0))
         
         tk.Button(inner, text="Schließen", bg=ModernStyle.ACCENT, fg='#fff', relief='flat',
                   font=('Segoe UI', 10, 'bold'), padx=20, pady=6, command=win.destroy).pack(anchor='e', pady=(20,0))
+
+    def show_settings(self):
+        win = tk.Toplevel(self.root)
+        win.title("Einstellungen")
+        win.geometry("520x540")
+        win.configure(bg=ModernStyle.BG)
+        card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
+        card.pack(fill='both', expand=True, padx=20, pady=20)
+        inner = card.inner
+        inner.configure(padx=25, pady=25)
+        
+        tk.Label(inner, text="⚙ Einstellungen", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 18, 'bold')).pack(anchor='w')
+        
+        # API Base
+        tk.Label(inner, text="API Base URL:", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                 font=('Segoe UI', 10)).pack(anchor='w', pady=(20,5))
+        api_entry = tk.Entry(inner, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        api_entry.insert(0, self.api_base)
+        api_entry.pack(fill='x', ipady=5)
+        
+        # Theme
+        tk.Label(inner, text="Theme:", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                 font=('Segoe UI', 10)).pack(anchor='w', pady=(20,5))
+        from features import ThemeManager
+        theme_var = tk.StringVar(value=self.config.get('theme', 'dark'))
+        theme_combo = ttk.Combobox(inner, values=['dark', 'midnight', 'neon'], textvariable=theme_var, state='readonly')
+        theme_combo.pack(fill='x', ipady=3)
+        
+        # Global hotkeys
+        tk.Label(inner, text="Globale Hotkeys:", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                 font=('Segoe UI', 10)).pack(anchor='w', pady=(20,5))
+        hotkey_var = tk.BooleanVar(value=self.config.get('global_hotkeys', False))
+        tk.Checkbutton(inner, text="Hotkeys aktivieren (nur Windows)", variable=hotkey_var,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG_INPUT,
+                       activebackground=ModernStyle.BG_CARD, activeforeground=ModernStyle.TEXT).pack(anchor='w')
+        
+        # Auto update
+        tk.Label(inner, text="Updates:", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                 font=('Segoe UI', 10)).pack(anchor='w', pady=(20,5))
+        update_var = tk.BooleanVar(value=self.config.get('auto_update_check', True))
+        tk.Checkbutton(inner, text="Beim Start auf Updates prüfen", variable=update_var,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG_INPUT,
+                       activebackground=ModernStyle.BG_CARD, activeforeground=ModernStyle.TEXT).pack(anchor='w')
+        
+        # Game Launcher section
+        tk.Label(inner, text="Spiel-Launcher:", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                 font=('Segoe UI', 10)).pack(anchor='w', pady=(20,5))
+        launcher_frame = tk.Frame(inner, bg=ModernStyle.BG_CARD)
+        launcher_frame.pack(fill='x', pady=(5,0))
+        launch_label = tk.Label(launcher_frame, text="Spiel auswählen und starten", bg=ModernStyle.BG_CARD,
+                                fg=ModernStyle.TEXT, font=('Segoe UI', 10))
+        launch_label.pack(side='left')
+        
+        def launch_current_game():
+            from features import GameLauncher
+            game = next((g for g in self.games if g.get('slug') == self.current_game), None)
+            if not game:
+                messagebox.showwarning("Kein Spiel", "Bitte ein Spiel auswählen.")
+                return
+            exe = game.get('process_name', '')
+            launcher = GameLauncher(self.log)
+            path = launcher.find_game_exe(exe)
+            if path:
+                launcher.launch(path)
+                launch_label.config(text=f"Gestartet: {exe}", fg=ModernStyle.SUCCESS)
+            else:
+                launch_label.config(text=f"{exe} nicht gefunden", fg=ModernStyle.DANGER)
+        
+        AnimatedButton(launcher_frame, text="Spiel starten", command=launch_current_game,
+                       width=120, height=30, bg=ModernStyle.SUCCESS).pack(side='right')
+        
+        def save():
+            self.api_base = api_entry.get().strip() or API_BASE
+            self.config['api_base'] = self.api_base
+            self.config['theme'] = theme_var.get()
+            self.config['global_hotkeys'] = hotkey_var.get()
+            self.config['auto_update_check'] = update_var.get()
+            save_config(self.config)
+            self.log("Einstellungen gespeichert.", 'success')
+            win.destroy()
+        
+        AnimatedButton(inner, text="Speichern", command=save, width=120, height=36).pack(anchor='e', pady=(25,0))
 
     def show_tutorial(self):
         win = tk.Toplevel(self.root)
@@ -830,8 +934,10 @@ Tastenkürzel:
                     self.log(f"✅ {label} auf {target} gesetzt! ({hex(addr)})", 'success')
                     result_label.config(text=f"✅ Gesetzt: {hex(addr)}", fg=ModernStyle.SUCCESS)
                     self._freeze_address(pm, addr, target, value_type, label)
+                    self.log_activation(label, success=True)
                 else:
                     result_label.config(text="Schreiben fehlgeschlagen", fg=ModernStyle.DANGER)
+                    self.log_activation(label, success=False)
                     pm.close_process()
             elif len(confirmed) > 1:
                 self.log(f"{len(confirmed)} Adressen gefunden. Ändere den Wert erneut für einen 3-Scan.")
@@ -950,6 +1056,7 @@ Tastenkürzel:
                 self.log("SMAPI Bridge verbunden.", 'success')
             else:
                 messagebox.showwarning("SMAPI Bridge", "Verbindung fehlgeschlagen. SMAPI + Mod installiert?")
+                self.log_activation(f"SMAPI {stat}", success=False)
                 return
         init = 999999 if stat == 'money' else 9999
         val = simpledialog.askinteger("SMAPI Wert", f"Neuer Wert für {stat}:", initialvalue=init)
@@ -958,8 +1065,65 @@ Tastenkürzel:
         self.log(f"SMAPI: {stat} -> {val} ({resp})")
         if resp and resp.startswith('ok'):
             messagebox.showinfo("Erfolg", f"{stat} auf {val} gesetzt!")
+            self.log_activation(f"SMAPI {stat}", success=True)
         else:
             messagebox.showerror("Fehler", f"SMAPI Fehler: {resp}")
+            self.log_activation(f"SMAPI {stat}", success=False)
+
+    def open_savegame_editor(self, trainer):
+        if not SDV_SAVE:
+            messagebox.showinfo("Nicht verfügbar", "Savegame-Editor nicht geladen.")
+            return
+        saves = sdv_savegame.list_saves()
+        if not saves:
+            messagebox.showwarning("Keine Saves", "Keine Stardew Valley-Savegames gefunden.")
+            return
+        win = tk.Toplevel(self.root)
+        win.title("Savegame Editor")
+        win.geometry("520x440")
+        win.configure(bg=ModernStyle.BG)
+        card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
+        card.pack(fill='both', expand=True, padx=20, pady=20)
+        inner = card.inner
+        inner.configure(padx=20, pady=20)
+        tk.Label(inner, text="Savegame auswählen", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 14, 'bold')).pack(anchor='w')
+        listbox = tk.Listbox(inner, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, font=('Segoe UI', 10), height=8)
+        listbox.pack(fill='x', pady=(15,10))
+        for save in saves:
+            listbox.insert(tk.END, save['name'])
+        info_text = scrolledtext.ScrolledText(inner, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT,
+                                              font=('Consolas', 9), height=8, relief='flat')
+        info_text.pack(fill='both', expand=True, padx=20, pady=10)
+        
+        def load():
+            idx = listbox.curselection()
+            if not idx: return
+            path = saves[idx[0]]['path']
+            info = sdv_savegame.read_save(path)
+            if info:
+                info_text.delete(1.0, tk.END)
+                info_text.insert(tk.END, json.dumps(info, indent=2))
+                win.current_path = path
+        
+        def set_val():
+            if not hasattr(win, 'current_path'):
+                messagebox.showwarning("Zuerst laden", "Bitte Savegame laden.")
+                return
+            val = simpledialog.askinteger("Neuer Wert", "Wert:", initialvalue=999999)
+            if val is None: return
+            if sdv_savegame.write_save(win.current_path, {'money': val}):
+                self.log(f"Savegame: money auf {val} gesetzt", 'success')
+                self.log_activation("Savegame money", success=True)
+                messagebox.showinfo("Erfolg", f"money auf {val} gesetzt!")
+            else:
+                self.log_activation("Savegame money", success=False)
+                messagebox.showerror("Fehler", "Schreiben fehlgeschlagen.")
+        
+        tk.Button(inner, text="Laden", bg=ModernStyle.ACCENT, fg='#fff', relief='flat',
+                  font=('Segoe UI', 10, 'bold'), command=load).pack(side='left', pady=(10,0))
+        tk.Button(inner, text="Money setzen", bg=ModernStyle.GOLD, fg='#000', relief='flat',
+                  font=('Segoe UI', 10, 'bold'), command=set_val).pack(side='right', pady=(10,0))
 
     def open_pattern_learner(self, trainer):
         if not WINDOWS or not pymem:
@@ -1043,13 +1207,50 @@ Tastenkürzel:
         threading.Thread(target=heartbeat, daemon=True).start()
         
         def update_check():
+            if not self.config.get('auto_update_check', True):
+                return
             try:
-                data = self.api_call('version.php')
-                if data.get('success') and data.get('version') != APP_VERSION:
-                    self.log(f"Update verfügbar: {data.get('version')}", 'warning')
+                from features import UpdateNotifier
+                notifier = UpdateNotifier(APP_VERSION, self.api_base, self.log)
+                new_ver, url = notifier.check()
+                if new_ver:
+                    self.log(f"Update verfügbar: {new_ver} → {url}", 'warning')
             except Exception:
                 pass
         threading.Thread(target=update_check, daemon=True).start()
+
+    def apply_theme(self, theme_name):
+        from features import ThemeManager
+        self.theme_manager = ThemeManager()
+        theme = self.theme_manager.apply(theme_name)
+        # Apply colors to main window
+        self.root.configure(bg=theme['bg'])
+        # Note: full dynamic theme switching with ttk requires rebuilding styles
+        # For now we store and apply on next restart, plus update header
+        if hasattr(self, 'header'):
+            self.header.config(bg=theme['bg'])
+            self.brand.config(bg=theme['bg'])
+            self.status_frame.config(bg=theme['bg'])
+
+    def init_hotkeys(self):
+        if not self.config.get('global_hotkeys', False):
+            return
+        try:
+            from features import HotkeyManager
+            self.hotkey_manager = HotkeyManager(self.log)
+            self.hotkey_manager.register('f9', self.check_process, 'Prozess prüfen')
+            self.hotkey_manager.start()
+            self.log("Globale Hotkeys aktiviert (F9 = Prozess prüfen).")
+        except Exception as e:
+            self.log(f"Hotkey-Init fehlgeschlagen: {e}")
+
+    def log_activation(self, trainer_name, success=True):
+        try:
+            from features import ConfigSync
+            sync = ConfigSync(self.api_base, self.api_key, self.log)
+            sync.log_history(trainer_name, self.current_game or '', success)
+        except Exception as e:
+            self.log(f"Log-Aktivierung fehlgeschlagen: {e}")
 
 
 def check_for_updates_gui():
