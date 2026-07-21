@@ -7,11 +7,19 @@ a = Analysis(
     pathex=['/var/www/trainerhub/desktop-python'],
     binaries=[],
     datas=[],
-    hiddenimports=['ui_components', 'gui_module', 'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32'],
+    hiddenimports=[
+        'ui_components', 'gui_module', 'updater',
+        'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32'
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['matplotlib', 'scipy', 'numpy', 'pandas', 'tkinter.test'],
+    excludes=[
+        'matplotlib', 'scipy', 'numpy', 'pandas', 'tkinter.test',
+        'unittest', 'distutils', 'xml', 'xmlrpc', 'html', 'email', 'mailbox',
+        'calendar', 'colorsys', 'chunk', 'cryptography', 'pydoc', 'pydoc_data',
+        'lib2to3', 'pkg_resources', 'setuptools', 'Cython', 'pytz', 'boto3'
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,

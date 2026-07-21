@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.5.1'
+APP_VERSION = '0.5.2'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -345,20 +345,42 @@ class TrainerHubApp:
         self.check_for_update()
 
     def check_for_update(self):
-        def check():
-            try:
-                url = f"{self.api_base}/version.php"
-                req = urllib.request.Request(url, headers={'User-Agent': f'TrainerHub/{APP_VERSION}'})
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    data = json.loads(resp.read().decode('utf-8'))
-                latest = data.get('version', APP_VERSION)
-                if self._version_greater(latest, APP_VERSION):
-                    self.root.after(0, lambda: self._show_update_dialog(latest, data.get('download_url', ''), data.get('changelog_url', '')))
-                else:
-                    self.log(f"App ist aktuell ({APP_VERSION})", 'info')
-            except Exception as e:
-                self.log(f"Update-Check fehlgeschlagen: {e}", 'warning')
-        threading.Thread(target=check, daemon=True).start()
+        """Run non-blocking update check with progress dialog."""
+        if sys.platform != 'win32':
+            return
+        import updater
+        self.log('Prüfe auf Updates...', 'info')
+
+        dialog = tk.Toplevel(self.root)
+        dialog.title('TrainerHub Update')
+        dialog.configure(bg=ModernStyle.BG)
+        dialog.geometry('420x180')
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        tk.Label(dialog, text='Suche nach Updates...', bg=ModernStyle.BG, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 12, 'bold')).pack(pady=(20,10))
+        progress = ttk.Progressbar(dialog, mode='determinate', length=340)
+        progress.pack(pady=10)
+        status = tk.Label(dialog, text='Verbinde...', bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
+        status.pack()
+
+        def on_progress(p):
+            progress['value'] = p
+            status['text'] = f'Download: {p}%'
+            dialog.update_idletasks()
+
+        def on_finished(success, msg):
+            status['text'] = msg
+            if success:
+                progress['value'] = 100
+                messagebox.showinfo('Update', msg, parent=dialog)
+                dialog.destroy()
+            else:
+                messagebox.showerror('Update', msg, parent=dialog)
+                dialog.destroy()
+
+        updater.check_and_install_update(parent_app=self, progress_callback=on_progress, finished_callback=on_finished)
 
     def _version_greater(self, latest, current):
         try:
