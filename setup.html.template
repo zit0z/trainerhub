@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainerHub — Setup &amp; Download</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b0c10;
+            --bg-card: #14161d;
+            --bg-elevated: #1c1f28;
+            --border: #2a2e3b;
+            --border-highlight: #3b4154;
+            --text: #e8ebf0;
+            --muted: #7d8493;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0,240,255,0.25);
+            --accent-hover: #4df4ff;
+            --danger: #ff3864;
+            --success: #00ff9d;
+            --warning: #ffd166;
+            --premium: #ff3864;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        h1, h2, h3, .brand { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+
+        .navbar {
+            position: fixed;
+            inset: 0 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(11,12,16,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+        }
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .brand i { color: var(--accent); font-size: 1.4rem; }
+        .brand span { color: var(--accent); }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .btn-primary {
+            background: transparent;
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0,240,255,0.1);
+        }
+        .btn-primary:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        .btn-gold {
+            background: var(--bg-elevated);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+        .btn-gold:hover {
+            background: var(--warning);
+            color: var(--bg);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border-highlight);
+        }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        .hero {
+            padding: 9rem 2rem 3rem;
+            text-align: center;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(0,240,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,56,100,0.04) 0%, transparent 40%);
+        }
+        .hero h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .hero h1 span { color: var(--accent); text-shadow: 0 0 30px rgba(0,240,255,0.25); }
+        .hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .card:hover { border-color: var(--border-highlight); }
+        .card h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+        .card h2 i { color: var(--accent); margin-right: 0.5rem; }
+
+        .download-card {
+            text-align: center;
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(0,240,255,0.06);
+        }
+        .version-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 50px;
+            background: rgba(0,240,255,0.12);
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .feature {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .feature:hover { border-color: var(--border-highlight); transform: translateY(-3px); }
+        .feature i { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.75rem; }
+        .feature h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .feature p { color: var(--muted); font-size: 0.9rem; }
+
+        .steps { display: flex; flex-direction: column; gap: 1rem; }
+        .step { display: flex; gap: 1rem; align-items: flex-start; }
+        .step-num {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .step-content h3 { font-size: 1.15rem; margin-bottom: 0.25rem; }
+        .step-content p { color: var(--muted); font-size: 0.95rem; }
+
+        code {
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+
+        .warning {
+            background: rgba(255,56,100,0.08);
+            border: 1px solid rgba(255,56,100,0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            color: #ff9eb5;
+        }
+        .warning i { color: var(--danger); margin-right: 0.5rem; }
+
+        .note {
+            background: rgba(0,240,255,0.05);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 12px;
+            padding: 1rem;
+            color: #a8f0f5;
+            font-size: 0.9rem;
+        }
+        .note i { color: var(--accent); margin-right: 0.5rem; }
+
+        a { color: var(--accent); }
+
+        @media(max-width:600px){
+            .container { padding: 1rem; }
+            .hero h1 { font-size: 2rem; }
+            .navbar { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/trainerhub/" class="brand">
+            <i class="fas fa-gamepad"></i>
+            Trainer<span>Hub</span>
+        </a>
+        <a href="/trainerhub/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Zurück</a>
+    </nav>
+
+    <section class="hero">
+        <h1>TrainerHub für <span>Windows</span> installieren</h1>
+        <p>Desktop-App für 300+ Singleplayer-Spiele. Version 0.5.1 mit Inno Setup-Installer und Auto-Updater.</p>
+    </section>
+
+    <div class="container">
+        <div class="card download-card">
+            <div class="version-badge" id="versionDisplay">Aktuell: v0.5.1</div>
+            <h2><i class="fas fa-cog"></i> Empfohlen: Windows-Installer</h2>
+            <p style="color:var(--muted); margin-bottom:1.5rem;">
+                Professioneller Inno Setup-Installer mit Wizard, Startmenü-Eintrag, Lizenzvereinbarung und automatischem Updater.
+            </p>
+
+            <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <a href="/trainerhub/TrainerHub-Setup.exe" class="btn btn-primary" style="padding:16px 32px; font-size:1.05rem;">
+                    <i class="fas fa-download"></i> TrainerHub-Setup.exe
+                </a>
+                <a href="https://github.com/zit0z/trainerhub/actions/workflows/build-windows.yml" target="_blank" class="btn btn-gold" style="padding:16px 32px; font-size:1rem;">
+                    <i class="fas fa-cogs"></i> GitHub Actions
+                </a>
+            </div>
+            <p style="color:var(--muted); margin-top:1rem; font-size:0.85rem;">
+                Version 0.5.1 · 12 MB · Windows 10/11
+            </p>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-file-archive"></i> Alternative: ZIP-Datei</h2>
+            <p style="color:var(--muted); margin-bottom:1.5rem;">
+                Für Nutzer, die den Installer nicht verwenden möchten. ZIP entpacken und TrainerHub.exe starten.
+            </p>
+            <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <a href="/trainerhub/TrainerHub-windows.zip" class="btn btn-secondary" style="padding:14px 28px;">
+                    <i class="fas fa-download"></i> TrainerHub-windows.zip
+                </a>
+                <a href="/trainerhub/desktop-python.zip" class="btn btn-gold" style="padding:14px 28px;">
+                    <i class="fas fa-file-code"></i> Source-Code (Python)
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-rocket"></i> Highlights in v0.5.1</h2>
+            <div class="grid">
+                <div class="feature">
+                    <i class="fas fa-cog"></i>
+                    <h3>Inno Setup Installer</h3>
+                    <p>Professioneller Wizard mit Startmenü-Eintrag.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-sync"></i>
+                    <h3>Auto-Updater</h3>
+                    <p>Prüft bei jedem Start auf neue Versionen.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-paint-brush"></i>
+                    <h3>Neues Gaming-Design</h3>
+                    <p>Cyan-Akzente, Rajdhani-Typografie.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h3>Dashboard mit Verlauf</h3>
+                    <p>Statistiken, Favoriten, Aktivierungs-Chart.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-search"></i>
+                    <h3>Memory Scanner</h3>
+                    <p>2-Scan-Dialog, Freeze-Manager.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-brain"></i>
+                    <h3>Pattern Learner</h3>
+                    <p>Selbst stabile Memory-Adressen finden.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-list-ol"></i> Installation in 3 Schritten</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h3>Setup herunterladen</h3>
+                        <p>Lade <code>TrainerHub-Setup.exe</code> herunter und führe es aus.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h3>Wizard durchlaufen</h3>
+                        <p>Akzeptiere die Lizenz, wähle den Installationspfad und lasse den Startmenü-Eintrag erstellen.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h3>Einloggen &amp; loslegen</h3>
+                        <p>Starte TrainerHub, logge dich ein und wähle ein Spiel. Die App prüft automatisch auf Updates.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card warning" id="smartscreen">
+            <h3><i class="fas fa-exclamation-triangle"></i> Warum warnt Windows?</h3>
+            <p style="margin-top:0.5rem;">
+                Der Installer ist Freeware und hat kein teures EV-Code-Signing-Zertifikat. SmartScreen erkennt den Herausgeber daher nicht.
+                Klicke auf <strong>„Weitere Informationen“ → „Trotzdem ausführen“</strong>.
+                Der Build läuft transparent auf GitHub Actions mit offiziellem Python + Inno Setup — der Code ist einsehbar.
+                Du kannst die Datei auch auf <a href="https://www.virustotal.com" target="_blank" style="color:var(--accent);">VirusTotal</a> prüfen.
+            </p>
+        </div>
+
+        <div class="card note">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Nur Singleplayer:</strong> TrainerHub ist ausschließlich für Offline- &amp; Solo-Spiele gedacht.
+            Keine Multiplayer-Cheats, keine Anti-Cheat-Umgehung.
+        </div>
+    </div>
+
+    <footer style="padding:2rem; text-align:center; color:var(--muted); border-top:1px solid var(--border);">
+        <p>© 2026 TrainerHub. Für legale Singleplayer-Trainer. Nur für private Nutzung.</p>
+    </footer>
+
+    <script>
+        fetch('/trainerhub/api/version.php')
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById('versionDisplay');
+                if (el && data.success) {
+                    el.textContent = 'Aktuell: ' + data.version;
+                }
+            })
+            .catch(() => {});
+    </script>
+</body>
+</html>
