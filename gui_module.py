@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.5.0'
+APP_VERSION = '0.5.1'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -342,6 +342,56 @@ class TrainerHubApp:
         self.load_trainers()
         self.show_changelog(first_start=True)
         self.start_smapipoll()
+        self.check_for_update()
+
+    def check_for_update(self):
+        def check():
+            try:
+                url = f"{self.api_base}/version.php"
+                req = urllib.request.Request(url, headers={'User-Agent': f'TrainerHub/{APP_VERSION}'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+                latest = data.get('version', APP_VERSION)
+                if self._version_greater(latest, APP_VERSION):
+                    self.root.after(0, lambda: self._show_update_dialog(latest, data.get('download_url', ''), data.get('changelog_url', '')))
+                else:
+                    self.log(f"App ist aktuell ({APP_VERSION})", 'info')
+            except Exception as e:
+                self.log(f"Update-Check fehlgeschlagen: {e}", 'warning')
+        threading.Thread(target=check, daemon=True).start()
+
+    def _version_greater(self, latest, current):
+        try:
+            l = [int(x) for x in latest.split('.')]
+            c = [int(x) for x in current.split('.')]
+            return l > c
+        except Exception:
+            return latest != current
+
+    def _show_update_dialog(self, latest, download_url, changelog_url):
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Update verfügbar")
+        dialog.geometry("500x240")
+        dialog.configure(bg=ModernStyle.BG)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        tk.Label(dialog, text=f"Version {latest} verfügbar", font=('Segoe UI', 18, 'bold'), bg=ModernStyle.BG, fg=ModernStyle.TEXT).pack(pady=(15,5))
+        tk.Label(dialog, text=f"Du hast {APP_VERSION}. Ein neues Update steht bereit.", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack()
+
+        btn_frame = tk.Frame(dialog, bg=ModernStyle.BG)
+        btn_frame.pack(pady=20)
+
+        def open_download():
+            import webbrowser
+            webbrowser.open(download_url or 'https://sayfespace.online/trainerhub/TrainerHub-windows.zip')
+            dialog.destroy()
+
+        def remind_later():
+            dialog.destroy()
+
+        AnimatedButton(btn_frame, text="Download & Installieren", command=open_download, bg=ModernStyle.ACCENT, fg='#000').pack(side='left', padx=10)
+        AnimatedButton(btn_frame, text="Später erinnern", command=remind_later, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(side='left', padx=10)
 
     def _create_stat_card(self, parent, label, value, idx):
         card = RoundedFrame(parent, radius=14, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER, height=80)

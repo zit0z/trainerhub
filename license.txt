@@ -1,0 +1,10 @@
+TrainerHub Lizenzvereinbarung
+
+TrainerHub ist ein Tool für Singleplayer-Spiele. Es dient ausschließlich dazu, das eigene Spielerlebnis in lokalen, nicht-multiplayer Spielen anzupassen.
+
+Mit der Installation und Nutzung stimmst du folgendem zu:
+- Du verwendest TrainerHub nur für Singleplayer-Spiele.
+- Du nutzt keine der Funktionen in Mehrspieler- oder Online-Spielen mit Anti-Cheat.
+- Du bist selbst verantwortlich für die Einhaltung der AGB der jeweiligen Spiele.
+
+TrainerHub ist Freeware. Die Software wird "wie sie ist" bereitgestellt, ohne Garantien.

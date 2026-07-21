@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Build Windows EXE + Inno Setup Installer
 
 on:
   push:
@@ -37,9 +37,35 @@ jobs:
       run: |
         Compress-Archive -Path dist\TrainerHub\* -DestinationPath TrainerHub-windows.zip
 
-    - name: Upload artifact
+    - name: Install Inno Setup
+      run: |
+        choco install innosetup -y
+
+    - name: Build Installer
+      run: |
+        & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" TrainerHub.iss
+        Get-ChildItem TrainerHub-Setup.exe
+        $size = [math]::Round((Get-Item TrainerHub-Setup.exe).Length / 1MB, 2)
+        Write-Host "Setup size: $size MB"
+
+    - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
         name: TrainerHub-windows
         path: TrainerHub-windows.zip
         retention-days: 90
+
+    - name: Upload Installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrainerHub-Setup
+        path: TrainerHub-Setup.exe
+        retention-days: 90
+
+    - name: Update server version file
+      if: github.ref == 'refs/heads/main'
+      shell: powershell
+      run: |
+        $ver = Get-Content -Path version.txt -TotalCount 1 -ErrorAction SilentlyContinue
+        if (-not $ver) { $ver = "0.5.1" }
+        Write-Host "Built version: $ver"
