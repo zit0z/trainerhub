@@ -18,6 +18,14 @@ function init() {
     if (token) {
         showApp();
     }
+    window.addEventListener('hashchange', handleHash);
+}
+
+function handleHash() {
+    const hash = window.location.hash.replace('#', '') || 'dashboard';
+    if (['dashboard','users','trainers','patterns','leaderboard','system'].includes(hash)) {
+        switchView(hash, false);
+    }
 }
 
 function doLogin() {
@@ -46,7 +54,8 @@ function doLogin() {
 function showApp() {
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('adminLayout').style.display = 'grid';
-    loadStats();
+    const hash = window.location.hash.replace('#', '') || 'dashboard';
+    switchView(hash, false);
 }
 
 function logout() {
@@ -72,12 +81,22 @@ function apiCall(endpoint, method='GET', body=null) {
         .catch(e => ({ success: false, error: e.message }));
 }
 
-function switchView(view) {
+function switchView(view, updateHash=true) {
+    const targetView = document.getElementById(`view-${view}`);
+    if (!targetView) {
+        console.error('View not found:', view);
+        return;
+    }
+
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    document.getElementById(`view-${view}`).classList.remove('hidden');
+    targetView.classList.remove('hidden');
+
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelector(`.nav-item[data-view="${view}"]`).classList.add('active');
+    const navItem = document.querySelector(`.nav-item[data-view="${view}"]`);
+    if (navItem) navItem.classList.add('active');
+
     state.currentView = view;
+    if (updateHash) window.location.hash = view;
 
     if (view === 'dashboard') loadStats();
     if (view === 'users') loadUsers();
@@ -157,7 +176,7 @@ function renderUsers() {
     }
 
     tbody.innerHTML = filtered.map(u => {
-        const statusClass = u.subscription_status === 'premium' ? 'badge-premium' : 'badge-free';
+        const statusClass = u.subscription_status === 'premium' || u.subscription_status === 'active' ? 'badge-premium' : 'badge-free';
         const exp = u.subscription_expires_at ? new Date(u.subscription_expires_at * 1000).toLocaleDateString('de-DE') : '—';
         return `
             <tr>
@@ -257,7 +276,7 @@ function renderTrainers() {
             <td>${t.id}</td>
             <td>${escapeHtml(t.name)}</td>
             <td>${escapeHtml(t.game_name || '-')}</td>
-            <td>${t.type || 'memory'}</td>
+            <td>${t.cheat_type || t.type || 'memory'}</td>
             <td>${t.is_active ? '<span style="color:var(--success);">●</span> Aktiv' : '<span style="color:var(--danger);">●</span> Inaktiv'}</td>
             <td>
                 <button class="btn btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="editTrainer(${t.id})"><i class="fas fa-edit"></i> Edit</button>
@@ -283,7 +302,7 @@ function editTrainer(id) {
     document.getElementById('editTrainerId').value = t.id;
     document.getElementById('editTrainerName').value = t.name;
     document.getElementById('editTrainerGameId').value = t.game_id;
-    document.getElementById('editTrainerType').value = t.type || 'memory';
+    document.getElementById('editTrainerType').value = t.cheat_type || t.type || 'memory';
     document.getElementById('editTrainerDescription').value = t.description || '';
     document.getElementById('trainerModal').classList.add('active');
 }
@@ -343,9 +362,9 @@ function renderPatterns() {
             <td>${escapeHtml(p.name)}</td>
             <td>${escapeHtml(p.author_name || '-')}</td>
             <td>${p.votes || 0}</td>
-            <td>${p.approved ? '<span style="color:var(--success);">✓</span>' : '<span style="color:var(--warning);">Ausstehend</span>'}</td>
+            <td>${p.status === 'approved' ? '<span style="color:var(--success);">✓</span>' : '<span style="color:var(--warning);">Ausstehend</span>'}</td>
             <td>
-                <button class="btn btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="approvePattern(${p.id})">${p.approved ? 'Zurücksetzen' : 'Freischalten'}</button>
+                <button class="btn btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="approvePattern(${p.id})">${p.status === 'approved' ? 'Zurücksetzen' : 'Freischalten'}</button>
             </td>
         </tr>
     `).join('');
@@ -402,7 +421,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Initialize if token exists
+// Auto-login if token exists
 if (localStorage.getItem('trainerhub_admin_token')) {
     showApp();
 }

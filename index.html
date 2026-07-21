@@ -112,12 +112,14 @@
             text-transform: uppercase;
             font-size: 0.9rem;
             letter-spacing: 0.03em;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
         }
         .nav-item:hover { background: var(--bg-elevated); color: var(--text); }
         .nav-item.active { background: rgba(0,240,255,0.12); color: var(--accent); border: 1px solid rgba(0,240,255,0.2); }
         .nav-item i { width: 20px; text-align: center; }
-        .sidebar-footer { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
-
         .main { padding: 2rem; overflow-y: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
         .header h2 { font-size: 1.9rem; font-weight: 700; }
@@ -337,24 +339,24 @@
             </a>
 
             <nav class="nav">
-                <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+                <button class="nav-item active" data-view="dashboard" type="button" onclick="switchView('dashboard')">
                     <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-                <a class="nav-item" data-view="users" onclick="switchView('users')">
+                </button>
+                <button class="nav-item" data-view="users" type="button" onclick="switchView('users')">
                     <i class="fas fa-users"></i> Benutzer
-                </a>
-                <a class="nav-item" data-view="trainers" onclick="switchView('trainers')">
+                </button>
+                <button class="nav-item" data-view="trainers" type="button" onclick="switchView('trainers')">
                     <i class="fas fa-code"></i> Trainer
-                </a>
-                <a class="nav-item" data-view="patterns" onclick="switchView('patterns')">
+                </button>
+                <button class="nav-item" data-view="patterns" type="button" onclick="switchView('patterns')">
                     <i class="fas fa-project-diagram"></i> Patterns
-                </a>
-                <a class="nav-item" data-view="leaderboard" onclick="switchView('leaderboard')">
+                </button>
+                <button class="nav-item" data-view="leaderboard" type="button" onclick="switchView('leaderboard')">
                     <i class="fas fa-trophy"></i> Leaderboard
-                </a>
-                <a class="nav-item" data-view="system" onclick="switchView('system')">
+                </button>
+                <button class="nav-item" data-view="system" type="button" onclick="switchView('system')">
                     <i class="fas fa-server"></i> System
-                </a>
+                </button>
             </nav>
 
             <div class="sidebar-footer">
