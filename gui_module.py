@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.5.4'
+APP_VERSION = '0.5.5'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -167,10 +167,20 @@ class TrainerHubApp:
 
     def show_login(self):
         self.clear_content()
-        card = RoundedFrame(self.content, radius=20, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
-        card.pack(expand=True)
-        inner = card.inner
-        inner.configure(padx=60, pady=50)
+        # Centering wrapper
+        wrapper = tk.Frame(self.content, bg=ModernStyle.BG)
+        wrapper.place(relx=0.5, rely=0.5, anchor='center')
+        
+        card = tk.Frame(wrapper, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
+                        highlightthickness=1, bd=0)
+        card.pack()
+        
+        inner = tk.Frame(card, bg=ModernStyle.BG_CARD, padx=60, pady=50)
+        inner.pack()
+        
+        # Force minimum width so widgets are visible
+        inner.update_idletasks()
+        card.config(width=max(inner.winfo_reqwidth() + 120, 460))
         
         tk.Label(inner, text="Willkommen zurück", font=('Segoe UI', 24, 'bold'),
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack()
@@ -198,23 +208,35 @@ class TrainerHubApp:
         
         tk.Label(inner, text="Noch kein Account? Registriere dich auf sayfespace.online/trainerhub",
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack(pady=(25,0))
-
+        
+        self.login_user.focus_set()
+        
     def do_login(self):
         user = self.login_user.get().strip()
         pw = self.login_pass.get()
         if not user or not pw:
             self.login_msg.config(text="Bitte Benutzername und Passwort eingeben.")
             return
-        data = self.api_call('auth.php?action=login', 'POST', {'email': user, 'password': pw})
-        if data.get('success'):
-            self.api_key = data['api_key']
-            self.config['api_key'] = self.api_key
-            save_config(self.config)
-            self.validate_key()
-        else:
-            self.login_msg.config(text=data.get('error', 'Login fehlgeschlagen'))
-
-    def validate_key(self):
+        self.login_msg.config(text="Anmelden...", fg=ModernStyle.TEXT_MUTED)
+        self.root.after(100, lambda: self._do_login_async(user, pw))
+        
+    def _do_login_async(self, user, pw):
+        threading.Thread(target=lambda: self._perform_login(user, pw), daemon=True).start()
+        
+    def _perform_login(self, user, pw):
+        try:
+            data = self.api_call('auth.php?action=login', 'POST', {'email': user, 'password': pw})
+            if data.get('success'):
+                self.api_key = data['api_key']
+                self.config['api_key'] = self.api_key
+                save_config(self.config)
+                self.root.after(0, self._on_login_success)
+            else:
+                self.root.after(0, lambda: self.login_msg.config(text=data.get('error', 'Login fehlgeschlagen'), fg=ModernStyle.DANGER))
+        except Exception as e:
+            self.root.after(0, lambda err=str(e): self.login_msg.config(text=f"Netzwerkfehler: {err[:80]}", fg=ModernStyle.DANGER))
+            
+    def _on_login_success(self):
         data = self.api_call('billing.php?action=status')
         if data.get('success'):
             self.user_info = data
@@ -223,6 +245,7 @@ class TrainerHubApp:
             color = ModernStyle.GOLD if self.is_premium() else ModernStyle.TEXT_MUTED
             self.premium_badge = StatusBadge(self.status_frame, status, color)
             self.premium_badge.pack(side='left', padx=(0,12), before=self.connection_badge)
+            self.connection_badge.destroy()
             self.connection_badge = StatusBadge(self.status_frame, "● Online", ModernStyle.SUCCESS)
             self.connection_badge.pack(side='left', padx=(0,12), after=self.premium_badge)
             self.show_dashboard()
@@ -230,7 +253,7 @@ class TrainerHubApp:
         else:
             self.api_key = None
             self.show_login()
-            self.login_msg.config(text="Sitzung abgelaufen. Bitte neu einloggen.")
+            self.login_msg.config(text="Sitzung abgelaufen. Bitte neu einloggen.", fg=ModernStyle.DANGER)
 
     def show_dashboard(self):
         self.clear_content()
