@@ -73,7 +73,8 @@ if ($action === 'list') {
             $gc['locked'] = ($gc['is_premium'] == 1 && !$isPremium);
         }
         
-        // Remove internal IDs for security
+        // Keep trainer_id for activation, remove internal game_id
+        $t['trainer_id'] = (int)$t['id'];
         unset($t['id']);
         unset($t['game_id']);
         foreach ($t['patterns'] as &$p) {
