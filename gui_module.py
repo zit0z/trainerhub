@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.0'
+APP_VERSION = '0.6.1'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -636,16 +636,89 @@ class TrainerHubApp:
             if is_active:
                 res = self.engine.deactivate(trainer)
                 btn.config(text="AUS", bg=ModernStyle.BORDER, fg=ModernStyle.TEXT)
+                self.show_toast(res.get('message', 'Deaktiviert'), ModernStyle.TEXT_MUTED)
             else:
+                ctype = trainer.get('cheat_type', 'memory')
+                if ctype == 'two_scan':
+                    self._open_two_scan_dialog(trainer)
+                    return
                 res = self.engine.activate(trainer, self.current_game)
                 if res.get('success'):
                     btn.config(text="AN", bg=ModernStyle.ACCENT, fg=ModernStyle.BG)
                     self.show_toast(res.get('message', 'Aktiviert'), ModernStyle.ACCENT)
                 else:
-                    self.show_toast(res.get('message', 'Fehler'), ModernStyle.DANGER)
-                    return
+                    # For errors suggesting scan/SMAPI, open config dialog
+                    msg = res.get('message', '')
+                    if '2-Werte-Scan' in msg or 'SMAPI' in msg or 'Prozess' in msg:
+                        self._open_cheat_config(trainer, msg)
+                    else:
+                        self.show_toast(msg, ModernStyle.DANGER)
 
         btn.bind('<Button-1>', lambda e: toggle())
+
+    def _open_two_scan_dialog(self, trainer):
+        d = tk.Toplevel(self.root)
+        d.title(f"2-Werte-Scan: {trainer.get('title', '')}")
+        d.configure(bg=ModernStyle.BG_CARD)
+        d.geometry("400x300")
+        d.transient(self.root)
+        d.grab_set()
+        tk.Label(d, text="Aktueller Wert im Spiel", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(20, 5))
+        e1 = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        e1.pack(fill='x', padx=20, ipady=6)
+        tk.Label(d, text="Neuer Wert nach Änderung", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(15, 5))
+        e2 = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        e2.pack(fill='x', padx=20, ipady=6)
+        tk.Label(d, text="Gewünschter Wert", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(15, 5))
+        e3 = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        e3.pack(fill='x', padx=20, ipady=6)
+        e3.insert(0, '999')
+        def run():
+            try:
+                v1 = int(e1.get())
+                v2 = int(e2.get())
+                v3 = int(e3.get())
+                label = trainer.get('title', 'scan')
+                res = self.engine.two_scan_dialog_values(self.current_game.get('name', ''), label, v1, v2, v3)
+                if res.get('success'):
+                    self.engine.active_cheats[label] = True
+                    self.show_toast(res.get('message'), ModernStyle.ACCENT)
+                    d.destroy()
+                else:
+                    self.show_toast(res.get('message'), ModernStyle.DANGER)
+            except ValueError:
+                self.show_toast("Bitte Zahlen eingeben", ModernStyle.DANGER)
+        AnimatedButton(d, text="Scannen & Setzen", command=run, width=200, height=40).pack(pady=20)
+
+    def _open_cheat_config(self, trainer, error_msg):
+        d = tk.Toplevel(self.root)
+        d.title(trainer.get('title', 'Cheat Config'))
+        d.configure(bg=ModernStyle.BG_CARD)
+        d.geometry("420x260")
+        d.transient(self.root)
+        d.grab_set()
+        tk.Label(d, text=error_msg, bg=ModernStyle.BG_CARD, fg=ModernStyle.DANGER, wraplength=380).pack(pady=(15, 15))
+        tk.Label(d, text="Wert (z.B. 999999)", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack()
+        e_val = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        e_val.pack(fill='x', padx=20, ipady=6)
+        e_val.insert(0, '999999')
+
+        def try_again():
+            val = e_val.get().strip()
+            # Inject value into trainer dict for this run
+            patched = dict(trainer)
+            patched['effect'] = f"set money = {val}"
+            res = self.engine.activate(patched, self.current_game)
+            if res.get('success'):
+                self.engine.active_cheats[trainer.get('title', '')] = True
+                self.show_toast(res.get('message', 'Aktiviert'), ModernStyle.ACCENT)
+                d.destroy()
+            else:
+                self.show_toast(res.get('message', 'Fehler'), ModernStyle.DANGER)
+
+        AnimatedButton(d, text="Mit Wert versuchen", command=try_again, width=200, height=40).pack(pady=20)
+        tk.Label(d, text="Hinweis: Für SMAPI-Cheats muss SMAPI installiert sein.",
+                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack()
 
     def _cheat_card(self, parent, cheat):
         card = tk.Frame(parent, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
