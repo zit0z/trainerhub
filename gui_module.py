@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.4'
+APP_VERSION = '0.6.5'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -480,22 +480,17 @@ class TrainerHubApp:
         self.tab_cheats = self._tab_btn("Offizielle Cheats")
         self.tab_info = self._tab_btn("Info")
 
-        self.detail_content = tk.Frame(self.content, bg=ModernStyle.BG)
-        self.detail_content.pack(fill='both', expand=True)
-
-        # Wrap detail_content in a scrollable canvas for trainers/cheats
-        self.detail_canvas = tk.Canvas(self.detail_content, bg=ModernStyle.BG, highlightthickness=0)
-        self.detail_scrollbar = ttk.Scrollbar(self.detail_content, orient='vertical', command=self.detail_canvas.yview)
+        # Scrollable trainer area using ttk Scrollbar + Canvas
+        self.detail_canvas = tk.Canvas(self.content, bg=ModernStyle.BG, highlightthickness=0)
+        self.detail_scrollbar = ttk.Scrollbar(self.content, orient='vertical', command=self.detail_canvas.yview)
         self.detail_scrollable_frame = tk.Frame(self.detail_canvas, bg=ModernStyle.BG)
-        self.detail_scrollable_frame.bind('<Configure>',
-                                           lambda e: self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all')))
-        self.detail_canvas.create_window((0, 0), window=self.detail_scrollable_frame, anchor='nw', width=self.detail_content.winfo_width()-20)
+        self.detail_canvas.create_window((0, 0), window=self.detail_scrollable_frame, anchor='nw', tags='inner')
         self.detail_canvas.configure(yscrollcommand=self.detail_scrollbar.set)
         self.detail_canvas.pack(side='left', fill='both', expand=True)
         self.detail_scrollbar.pack(side='right', fill='y')
-        self.detail_content.bind('<Configure>', self._on_detail_resize)
-        # Mouse wheel scroll
-        self.detail_canvas.bind_all('<MouseWheel>', lambda e: self.detail_canvas.yview_scroll(int(-1*(e.delta/120)), 'units'))
+        self.detail_scrollable_frame.bind('<Configure>', self._on_inner_configure)
+        self.content.bind('<Configure>', self._on_content_configure)
+        self.detail_canvas.bind_all('<MouseWheel>', self._on_mousewheel)
 
         self.detail_state = 'trainers'
         self._show_trainers_tab()
@@ -504,8 +499,25 @@ class TrainerHubApp:
         if self.engine:
             self.engine.set_process(game.get('process_name'))
 
-        # Load trainers
+        # Load trainers synchronously first (fast path) then fallback
+        self.trainers_data = None
+        self.trainers = []
         threading.Thread(target=lambda: self.load_trainers(slug), daemon=True).start()
+
+    def _on_content_configure(self, event):
+        try:
+            self.detail_canvas.itemconfig('inner', width=event.width - self.detail_scrollbar.winfo_width() - 10)
+        except Exception:
+            pass
+
+    def _on_inner_configure(self, event):
+        self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
+
+    def _on_mousewheel(self, event):
+        try:
+            self.detail_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+        except Exception:
+            pass
 
     def _tab_btn(self, text, active=False):
         bg = ModernStyle.BG_CARD if active else ModernStyle.BG
@@ -543,7 +555,11 @@ class TrainerHubApp:
         self.trainer_loading = tk.Label(self.detail_scrollable_frame, text="Lade Trainer...", font=('Segoe UI', 13),
                                         bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
         self.trainer_loading.pack(pady=60)
-        if self.trainers:
+        self.reload_btn = tk.Label(self.detail_scrollable_frame, text="↻ Neu laden", font=('Segoe UI', 10),
+                                   bg=ModernStyle.BORDER, fg=ModernStyle.TEXT, padx=15, pady=6, cursor='hand2')
+        self.reload_btn.pack(pady=10)
+        self.reload_btn.bind('<Button-1>', lambda e: self._manual_reload_trainers())
+        if self.trainers_data:
             self._render_trainers()
 
     def _show_cheats_tab(self):
@@ -561,18 +577,39 @@ class TrainerHubApp:
             return
         for c in cheats:
             self._cheat_card(self.detail_scrollable_frame, c)
+        self.detail_scrollable_frame.update_idletasks()
+        self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
 
     def _show_info_tab(self):
         self._clear_scrollable()
         g = self.current_game or {}
-        info = f"Spiel: {g.get('name', '-')}\nProzess: {g.get('process_name', '-')}\nGenre: {g.get('genre', '-')}\nSlug: {g.get('slug', '-')}"
+        info = "Spiel: %s\nProzess: %s\nGenre: %s\nSlug: %s" % (
+            g.get('name', '-'), g.get('process_name', '-'), g.get('genre', '-'), g.get('slug', '-')
+        )
         tk.Label(self.detail_scrollable_frame, text=info, font=('Segoe UI', 11), justify='left',
                  bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(anchor='nw', pady=20)
 
+    def _manual_reload_trainers(self):
+        if self.current_game:
+            self.trainers_data = None
+            self.trainers = []
+            self._show_trainers_tab()
+            threading.Thread(target=lambda: self.load_trainers(self.current_game.get('slug')), daemon=True).start()
+
     def load_trainers(self, slug):
-        data = self.api_call(f'trainers.php?game={slug}')
-        self.trainers_data = data
-        self.root.after(0, self._on_trainers_loaded)
+        print(f"[TrainerHub] load_trainers started for {slug}")
+        try:
+            data = self.api_call(f'trainers.php?game={slug}')
+            print(f"[TrainerHub] load_trainers API response: success={data.get('success')}, trainers={len(data.get('trainers', []))}")
+            self.trainers_data = data
+            if hasattr(self, 'root') and self.root.winfo_exists():
+                self.root.after(0, self._on_trainers_loaded)
+            else:
+                print("[TrainerHub] root destroyed, cannot schedule _on_trainers_loaded")
+        except Exception as e:
+            print(f"[TrainerHub] load_trainers exception: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _on_trainers_loaded(self):
         try:
