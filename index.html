@@ -3,344 +3,585 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerHub Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>TrainerHub — Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg:#050507; --bg-card:#111118; --bg-elevated:#181825; --border:#232333; --border-active:#334155;
-            --text:#f8fafc; --muted:#94a3b8; --accent:#2563eb; --accent-hover:#3b82f6; --gold:#fbbf24;
-            --success:#10b981; --danger:#ef4444; --warning:#f59e0b; --info:#3b82f6;
+            --bg: #0b0c10;
+            --bg-card: #14161d;
+            --bg-elevated: #1c1f28;
+            --border: #2a2e3b;
+            --border-highlight: #3b4154;
+            --text: #e8ebf0;
+            --muted: #7d8493;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0,240,255,0.25);
+            --accent-hover: #4df4ff;
+            --danger: #ff3864;
+            --success: #00ff9d;
+            --warning: #ffd166;
+            --premium: #ff3864;
+            --info: #00f0ff;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-        .layout { display:grid; grid-template-columns:260px 1fr; min-height:100vh; }
-        
-        /* Sidebar */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        h1, h2, h3, .brand { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+        }
+        .login-box i { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
+        .login-box h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .login-box p { color: var(--muted); margin-bottom: 1.5rem; }
+        .login-box input {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0,240,255,0.1);
+        }
+
+        .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
         .sidebar {
-            background:var(--bg-card); border-right:1px solid var(--border);
-            padding:1.5rem; display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
         }
-        .brand { display:flex; align-items:center; gap:0.75rem; margin-bottom:2rem; }
-        .brand i { font-size:1.5rem; color:var(--accent); }
-        .brand h1 { font-size:1.25rem; font-weight:800; }
-        .brand span { display:block; font-size:0.75rem; color:var(--muted); font-weight:500; }
-        .nav { display:flex; flex-direction:column; gap:0.5rem; flex:1; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .brand i { font-size: 1.5rem; color: var(--accent); }
+        .brand h1 { font-size: 1.4rem; font-weight: 700; }
+        .brand h1 span { color: var(--accent); }
+        .brand span.version { display: block; font-size: 0.7rem; color: var(--muted); font-weight: 500; font-family: 'Inter', sans-serif; text-transform: none; }
+
+        .nav { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
         .nav-item {
-            display:flex; align-items:center; gap:0.75rem; padding:0.85rem 1rem; border-radius:10px;
-            color:var(--muted); text-decoration:none; font-weight:600; cursor:pointer; transition:all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.03em;
         }
-        .nav-item:hover { background:var(--bg-elevated); color:var(--text); }
-        .nav-item.active { background:var(--accent); color:#fff; box-shadow:0 0 20px rgba(37,99,235,0.25); }
-        .nav-item i { width:20px; text-align:center; }
-        .sidebar-footer { margin-top:auto; padding-top:1.5rem; border-top:1px solid var(--border); }
-        .version { font-size:0.75rem; color:var(--muted); }
-        
-        /* Main */
-        .main { padding:2rem; overflow-y:auto; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
-        .header h2 { font-size:1.75rem; font-weight:800; }
-        .header-actions { display:flex; gap:0.75rem; }
-        
+        .nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+        .nav-item.active { background: rgba(0,240,255,0.12); color: var(--accent); border: 1px solid rgba(0,240,255,0.2); }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+
+        .main { padding: 2rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h2 { font-size: 1.9rem; font-weight: 700; }
+        .header-actions { display: flex; gap: 0.75rem; }
+
         .btn {
-            display:inline-flex; align-items:center; gap:0.5rem; padding:10px 18px; border-radius:10px;
-            font-weight:700; border:none; cursor:pointer; transition:all 0.2s; font-size:0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-decoration: none;
         }
-        .btn-primary { background:var(--accent); color:#fff; box-shadow:0 0 20px rgba(37,99,235,0.25); }
-        .btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px); }
-        .btn-gold { background:var(--gold); color:#000; }
-        .btn-gold:hover { filter:brightness(1.1); }
-        .btn-danger { background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
-        .btn-danger:hover { background:rgba(239,68,68,0.25); }
-        .btn-secondary { background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); }
-        .btn-secondary:hover { border-color:var(--border-active); }
-        
-        /* Cards */
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .btn-primary {
+            background: transparent;
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 25px var(--accent-glow); }
+        .btn-gold {
+            background: var(--bg-elevated);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+        .btn-gold:hover { background: var(--warning); color: var(--bg); }
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--border-highlight); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
         .stat-card {
-            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
-            position:relative; overflow:hidden; transition:all 0.3s;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        .stat-card:hover { transform:translateY(-3px); border-color:var(--border-active); }
+        .stat-card:hover { border-color: var(--border-highlight); }
         .stat-card::before {
-            content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%;
-            background:linear-gradient(135deg, var(--accent), transparent); opacity:0.1; transform:translate(20px,-20px);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-        .stat-card i { font-size:1.5rem; color:var(--accent); margin-bottom:1rem; }
-        .stat-card h3 { font-size:2rem; font-weight:800; margin-bottom:0.25rem; }
-        .stat-card p { color:var(--muted); font-size:0.9rem; }
-        .stat-card .trend { font-size:0.8rem; color:var(--success); margin-top:0.5rem; }
-        
+        .stat-card:hover::before { opacity: 1; }
+        .stat-card i { font-size: 1.4rem; color: var(--accent); margin-bottom: 1rem; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .stat-card p { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Rajdhani', sans-serif; }
+        .stat-card .trend { font-size: 0.8rem; color: var(--success); margin-top: 0.5rem; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+
         .card {
-            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
-            margin-bottom:1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-        .card-header h3 { font-size:1.15rem; font-weight:700; }
-        
-        /* Tables */
-        .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
-        table { width:100%; border-collapse:collapse; }
-        th, td { padding:12px 16px; text-align:left; border-bottom:1px solid var(--border); }
-        th { background:var(--bg-elevated); color:var(--muted); font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
-        tbody tr:hover { background:rgba(37,99,235,0.05); }
-        td { font-size:0.9rem; }
-        .status-badge {
-            display:inline-flex; align-items:center; gap:0.4rem; padding:4px 10px; border-radius:6px;
-            font-size:0.75rem; font-weight:700;
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .card-header h3 { font-size: 1.25rem; font-weight: 700; }
+
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
-        .status-premium { background:rgba(251,191,36,0.12); color:var(--gold); }
-        .status-free { background:rgba(148,163,184,0.12); color:var(--muted); }
-        .status-active { background:rgba(16,185,129,0.12); color:var(--success); }
-        .status-pending { background:rgba(245,158,11,0.12); color:var(--warning); }
-        .status-rejected { background:rgba(239,68,68,0.12); color:var(--danger); }
-        
-        /* Forms */
-        input, select, textarea {
-            width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border);
-            color:var(--text); border-radius:8px; font-family:'Inter',sans-serif; font-size:0.9rem;
+        .filters input, .filters select {
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
         }
-        input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
-        .form-group { margin-bottom:1rem; }
-        .form-group label { display:block; margin-bottom:0.5rem; color:var(--muted); font-size:0.85rem; font-weight:600; }
-        .form-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1rem; }
-        
-        /* Modal */
-        .modal-overlay {
-            position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000;
-            display:flex; align-items:center; justify-content:center; padding:2rem; opacity:0; pointer-events:none;
-            transition:opacity 0.3s;
+        .filters input:focus, .filters select:focus { outline: none; border-color: var(--accent); }
+
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th {
+            background: var(--bg-elevated);
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: 'Rajdhani', sans-serif;
         }
-        .modal-overlay.open { opacity:1; pointer-events:all; }
+        tbody tr:hover { background: rgba(0,240,255,0.03); }
+        .badge-inline {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+        }
+        .badge-premium { background: rgba(0,240,255,0.12); color: var(--accent); }
+        .badge-free { background: rgba(125,132,147,0.12); color: var(--muted); }
+        .badge-admin { background: rgba(255,56,100,0.12); color: var(--danger); }
+
         .modal {
-            background:var(--bg-card); border:1px solid var(--border); border-radius:20px;
-            max-width:800px; width:100%; max-height:90vh; overflow-y:auto; transform:translateY(20px);
-            transition:transform 0.3s;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
         }
-        .modal-overlay.open .modal { transform:translateY(0); }
-        .modal-header { padding:1.5rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
-        .modal-header h3 { font-size:1.25rem; }
-        .modal-body { padding:1.5rem; }
-        .modal-footer { padding:1rem 1.5rem; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:0.75rem; }
-        .close-btn { background:none; border:none; color:var(--muted); font-size:1.25rem; cursor:pointer; }
-        .close-btn:hover { color:var(--text); }
-        
-        /* Login */
-        .login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, rgba(37,99,235,0.1) 0%, transparent 50%); }
-        .login-card { background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:2.5rem; width:100%; max-width:420px; box-shadow:0 25px 50px rgba(0,0,0,0.5); }
-        .login-card h2 { font-size:1.5rem; margin-bottom:0.5rem; }
-        .login-card p { color:var(--muted); margin-bottom:1.5rem; }
-        .login-card .brand { justify-content:center; margin-bottom:1.5rem; }
-        
-        /* Search & filters */
-        .toolbar { display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
-        .search-box { position:relative; flex:1; min-width:220px; }
-        .search-box i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); }
-        .search-box input { padding-left:38px; }
-        
-        /* Animations */
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        .animate-in { animation:fadeIn 0.4s ease-out; }
-        
-        .hidden { display:none !important; }
-        
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h3 { font-size: 1.4rem; }
+        .modal-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; color: var(--muted); font-size: 0.85rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            z-index: 3000;
+            transform: translateY(150%);
+            transition: transform 0.3s;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+        }
+        .toast.show { transform: translateY(0); }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+
+        .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; color: var(--border-highlight); }
+
         @media(max-width:900px){
-            .layout { grid-template-columns:1fr; }
-            .sidebar { position:relative; height:auto; flex-direction:row; flex-wrap:wrap; gap:0.5rem; }
-            .nav { flex-direction:row; flex-wrap:wrap; }
-            .sidebar-footer { display:none; }
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+            .main { padding: 1rem; }
         }
     </style>
 </head>
-<body>
-    <div id="loginPage" class="login-page">
-        <div class="login-card">
-            <div class="brand">
-                <i class="fas fa-shield-halved"></i>
-                <div>
-                    <h1>TrainerHub Admin</h1>
-                    <span>Management Console</span>
-                </div>
-            </div>
-            <p>Bitte melde dich mit dem Admin-Passwort an.</p>
-            <div class="form-group">
-                <input type="password" id="adminPass" placeholder="Admin-Passwort" onkeypress="if(event.key==='Enter')login()">
-            </div>
-            <button class="btn btn-primary" style="width:100%;" onclick="login()">Einloggen</button>
-            <div id="error" style="color:var(--danger); margin-top:1rem; font-size:0.9rem;"></div>
+<body onload="init()">
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <i class="fas fa-shield-halved"></i>
+            <h2>Admin Panel</h2>
+            <p>TrainerHub Administration — Passwort erforderlich</p>
+            <input type="password" id="adminPass" placeholder="Admin-Passwort" onkeypress="if(event.key==='Enter')doLogin()">
+            <button class="btn btn-primary btn-block" style="width:100%;" onclick="doLogin()">Einloggen</button>
+            <p id="loginError" style="color:var(--danger); margin-top:1rem;"></p>
         </div>
     </div>
 
-    <div id="app" class="layout hidden">
+    <div class="layout" id="adminLayout" style="display:none;">
         <aside class="sidebar">
-            <div class="brand">
-                <i class="fas fa-shield-halved"></i>
+            <a href="/trainerhub/" class="brand">
+                <i class="fas fa-gamepad"></i>
                 <div>
-                    <h1>TrainerHub</h1>
-                    <span>Admin Panel v2.0</span>
+                    <h1>Trainer<span>Hub</span></h1>
+                    <span class="version">Admin Panel v0.5.0</span>
                 </div>
-            </div>
+            </a>
+
             <nav class="nav">
-                <a class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard')">
+                <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>
-                <a class="nav-item" data-tab="users" onclick="showTab('users')">
+                <a class="nav-item" data-view="users" onclick="switchView('users')">
                     <i class="fas fa-users"></i> Benutzer
                 </a>
-                <a class="nav-item" data-tab="trainers" onclick="showTab('trainers')">
-                    <i class="fas fa-gamepad"></i> Trainer
+                <a class="nav-item" data-view="trainers" onclick="switchView('trainers')">
+                    <i class="fas fa-code"></i> Trainer
                 </a>
-                <a class="nav-item" data-tab="community" onclick="showTab('community')">
-                    <i class="fas fa-puzzle-piece"></i> Community Patterns
+                <a class="nav-item" data-view="patterns" onclick="switchView('patterns')">
+                    <i class="fas fa-project-diagram"></i> Patterns
                 </a>
-                <a class="nav-item" data-tab="leaderboard" onclick="showTab('leaderboard')">
-                    <i class="fas fa-trophy"></i> Reputation
+                <a class="nav-item" data-view="leaderboard" onclick="switchView('leaderboard')">
+                    <i class="fas fa-trophy"></i> Leaderboard
                 </a>
-                <a class="nav-item" data-tab="system" onclick="showTab('system')">
+                <a class="nav-item" data-view="system" onclick="switchView('system')">
                     <i class="fas fa-server"></i> System
                 </a>
             </nav>
+
             <div class="sidebar-footer">
-                <button class="btn btn-secondary" style="width:100%;" onclick="logout()">
+                <button class="btn btn-danger" style="width:100%; justify-content:center;" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
-                <div class="version" style="margin-top:1rem; text-align:center;">
-                    <i class="fas fa-circle" style="color:var(--success); font-size:0.5rem;"></i> API Online
-                </div>
             </div>
         </aside>
 
         <main class="main">
-            <!-- Dashboard -->
-            <section id="dashboard" class="tab-section animate-in">
+            <div id="view-dashboard" class="view">
                 <div class="header">
                     <h2>Dashboard</h2>
                     <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="refreshAll()"><i class="fas fa-sync"></i> Aktualisieren</button>
-                        <button class="btn btn-primary" onclick="openAddGameModal()"><i class="fas fa-plus"></i> Spiel hinzufügen</button>
+                        <button class="btn btn-secondary" onclick="loadStats()"><i class="fas fa-sync-alt"></i> Refresh</button>
                     </div>
                 </div>
                 <div class="stats-grid" id="statsGrid">
-                    <!-- Filled by JS -->
+                    <!-- Loaded via JS -->
                 </div>
+
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-bolt"></i> Schnellaktionen</h3>
+                        <h3><i class="fas fa-bolt" style="color:var(--accent);"></i> Schnellaktionen</h3>
                     </div>
                     <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-                        <button class="btn btn-secondary" onclick="clearCache()"><i class="fas fa-broom"></i> API Cache leeren</button>
-                        <button class="btn btn-secondary" onclick="syncStats()"><i class="fas fa-calculator"></i> Statistiken neu berechnen</button>
-                        <button class="btn btn-danger" onclick="if(confirm('Alle Logs älter als 30 Tage löschen?')) purgeLogs()"><i class="fas fa-trash"></i> Alte Logs löschen</button>
+                        <button class="btn btn-primary" onclick="clearCache()"><i class="fas fa-broom"></i> Cache leeren</button>
+                        <button class="btn btn-primary" onclick="syncStats()"><i class="fas fa-sync"></i> Stats syncen</button>
+                        <button class="btn btn-danger" onclick="purgeLogs()"><i class="fas fa-trash"></i> Logs purgen</button>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- Users -->
-            <section id="users" class="tab-section hidden">
+            <div id="view-users" class="view hidden">
                 <div class="header">
                     <h2>Benutzer</h2>
                     <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="exportUsers()"><i class="fas fa-download"></i> Export</button>
+                        <button class="btn btn-primary" onclick="openUserModal()"><i class="fas fa-plus"></i> Benutzer erstellen</button>
                     </div>
                 </div>
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="userSearch" placeholder="Suchen nach E-Mail..." oninput="filterUsers()">
-                    </div>
-                    <select id="userStatusFilter" onchange="filterUsers()" style="width:auto;">
+                <div class="filters">
+                    <input type="text" id="userFilter" placeholder="Suchen..." oninput="filterUsers()">
+                    <select id="userStatusFilter" onchange="filterUsers()">
                         <option value="">Alle Status</option>
-                        <option value="premium">Premium</option>
                         <option value="free">Free</option>
+                        <option value="premium">Premium</option>
                     </select>
                 </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>ID</th><th>E-Mail</th><th>Name</th><th>Status</th><th>Registriert</th><th>Aktionen</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Benutzer</th>
+                                <th>Status</th>
+                                <th>Läuft ab</th>
+                                <th>Erstellt</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
                         <tbody id="usersTable"></tbody>
                     </table>
                 </div>
-            </section>
+            </div>
 
-            <!-- Trainers -->
-            <section id="trainers" class="tab-section hidden">
+            <div id="view-trainers" class="view hidden">
                 <div class="header">
                     <h2>Trainer</h2>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddTrainerModal()"><i class="fas fa-plus"></i> Trainer hinzufügen</button>
+                        <button class="btn btn-primary" onclick="openTrainerModal()"><i class="fas fa-plus"></i> Trainer hinzufügen</button>
                     </div>
                 </div>
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="trainerSearch" placeholder="Spiel oder Trainer suchen..." oninput="filterTrainers()">
-                    </div>
-                    <select id="trainerTypeFilter" onchange="filterTrainers()" style="width:auto;">
-                        <option value="">Alle Typen</option>
-                        <option value="premium">Premium</option>
-                        <option value="free">Free</option>
-                    </select>
+                <div class="filters">
+                    <input type="text" id="trainerFilter" placeholder="Trainer oder Spiel suchen..." oninput="filterTrainers()">
                 </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>ID</th><th>Spiel</th><th>Trainer</th><th>Typ</th><th>Patterns</th><th>Aktionen</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Spiel</th>
+                                <th>Typ</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
                         <tbody id="trainersTable"></tbody>
                     </table>
                 </div>
-            </section>
+            </div>
 
-            <!-- Community -->
-            <section id="community" class="tab-section hidden">
-                <div class="header"><h2>Community Patterns</h2></div>
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="patternSearch" placeholder="Pattern oder Spiel suchen..." oninput="filterPatterns()">
-                    </div>
-                    <select id="patternStatusFilter" onchange="filterPatterns()" style="width:auto;">
-                        <option value="">Alle Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
+            <div id="view-patterns" class="view hidden">
+                <div class="header">
+                    <h2>Community Patterns</h2>
+                </div>
+                <div class="filters">
+                    <input type="text" id="patternFilter" placeholder="Pattern suchen..." oninput="filterPatterns()">
                 </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>ID</th><th>Spiel</th><th>Name</th><th>Pattern</th><th>Autor</th><th>Votes</th><th>Status</th><th>Aktionen</th></tr></thead>
-                        <tbody id="communityTable"></tbody>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Spiel</th>
+                                <th>Name</th>
+                                <th>Author</th>
+                                <th>Votes</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patternsTable"></tbody>
                     </table>
                 </div>
-            </section>
+            </div>
 
-            <!-- Leaderboard -->
-            <section id="leaderboard" class="tab-section hidden">
-                <div class="header"><h2>Reputation Leaderboard</h2></div>
+            <div id="view-leaderboard" class="view hidden">
+                <div class="header">
+                    <h2>Reputation Leaderboard</h2>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th>Benutzer</th>
+                                <th>Reputation</th>
+                                <th>Approved</th>
+                                <th>Votes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-system" class="view hidden">
+                <div class="header">
+                    <h2>System</h2>
+                </div>
                 <div class="card">
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>Rank</th><th>User</th><th>Reputation</th><th>Approved Patterns</th><th>Total Votes</th><th>Letzte Aktivität</th></tr></thead>
-                            <tbody id="leaderboardTable"></tbody>
-                        </table>
+                    <div class="card-header">
+                        <h3><i class="fas fa-info-circle" style="color:var(--accent);"></i> System-Status</h3>
+                    </div>
+                    <div id="systemInfo">
+                        <p style="color:var(--muted);">Lade System-Informationen...</p>
                     </div>
                 </div>
-            </section>
-
-            <!-- System -->
-            <section id="system" class="tab-section hidden">
-                <div class="header"><h2>System</h2></div>
-                <div class="stats-grid" id="systemStats"></div>
-                <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-terminal"></i> Logs</h3></div>
-                    <div id="systemLogs" style="font-family:'Consolas',monospace; font-size:0.85rem; color:var(--muted); max-height:400px; overflow:auto; background:var(--bg); padding:1rem; border-radius:8px;"></div>
-                </div>
-            </section>
+            </div>
         </main>
     </div>
 
-    <!-- Modal -->
-    <div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this) closeModal()">
-        <div class="modal" id="modalContent"></div>
+    <!-- User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">Benutzer bearbeiten</h3>
+                <button class="modal-close" onclick="closeUserModal()">×</button>
+            </div>
+            <input type="hidden" id="editUserId">
+            <div class="form-group">
+                <label>E-Mail</label>
+                <input type="email" id="editUserEmail">
+            </div>
+            <div class="form-group">
+                <label>Benutzername</label>
+                <input type="text" id="editUserUsername">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="editUserStatus">
+                    <option value="free">Free</option>
+                    <option value="premium">Premium</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Premium-Tage (0 = unbegrenzt)</label>
+                <input type="number" id="editUserDays" value="30">
+            </div>
+            <div class="form-group">
+                <label>Neues Passwort (leer lassen = nicht ändern)</label>
+                <input type="password" id="editUserPassword">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closeUserModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveUser()">Speichern</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Trainer Modal -->
+    <div class="modal" id="trainerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="trainerModalTitle">Trainer hinzufügen</h3>
+                <button class="modal-close" onclick="closeTrainerModal()">×</button>
+            </div>
+            <input type="hidden" id="editTrainerId">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="editTrainerName">
+            </div>
+            <div class="form-group">
+                <label>Spiel-ID</label>
+                <input type="number" id="editTrainerGameId">
+            </div>
+            <div class="form-group">
+                <label>Typ</label>
+                <select id="editTrainerType">
+                    <option value="memory">Memory</option>
+                    <option value="savegame">Savegame</option>
+                    <option value="smapi">SMAPI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea id="editTrainerDescription" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closeTrainerModal()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveTrainer()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
 
     <script src="admin.js"></script>
 </body>

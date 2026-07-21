@@ -3,261 +3,506 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerHub Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>TrainerHub — Mein Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg:#050507; --bg-card:#111118; --bg-elevated:#181825; --border:#232333; --border-active:#334155;
-            --text:#f8fafc; --muted:#94a3b8; --accent:#2563eb; --accent-hover:#3b82f6; --gold:#fbbf24;
-            --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+            --bg: #0b0c10;
+            --bg-card: #14161d;
+            --bg-elevated: #1c1f28;
+            --border: #2a2e3b;
+            --border-highlight: #3b4154;
+            --text: #e8ebf0;
+            --muted: #7d8493;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0,240,255,0.25);
+            --accent-hover: #4df4ff;
+            --danger: #ff3864;
+            --success: #00ff9d;
+            --warning: #ffd166;
+            --premium: #ff3864;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-        .container { max-width:1200px; margin:0 auto; padding:2rem; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
-        .header h1 { font-size:2rem; font-weight:800; }
-        .header h1 span { color:var(--accent); }
-        .header-actions { display:flex; gap:0.75rem; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        h1, h2, h3, .brand { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+
+        .navbar {
+            position: fixed;
+            inset: 0 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(11,12,16,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+        }
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .brand i { color: var(--accent); font-size: 1.4rem; }
+        .brand span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 0.75rem; }
         .btn {
-            display:inline-flex; align-items:center; gap:0.5rem; padding:10px 18px; border-radius:10px;
-            font-weight:700; border:none; cursor:pointer; transition:all 0.2s; font-size:0.9rem; text-decoration:none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
-        .btn-primary { background:var(--accent); color:#fff; }
-        .btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px); }
-        .btn-secondary { background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); }
-        .btn-gold { background:rgba(251,191,36,0.15); color:var(--gold); border:1px solid rgba(251,191,36,0.3); }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .btn-primary {
+            background: transparent;
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+        .btn-gold {
+            background: var(--bg-elevated);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+        .btn-gold:hover {
+            background: var(--warning);
+            color: var(--bg);
+        }
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(0,240,255,0.12);
+            color: var(--accent);
+            border: 1px solid rgba(0,240,255,0.3);
+        }
+        .badge.premium { background: rgba(255,56,100,0.12); color: var(--premium); border-color: rgba(255,56,100,0.3); }
+
+        .page { padding-top: 6rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .welcome h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .welcome h1 span { color: var(--accent); text-shadow: 0 0 20px rgba(0,240,255,0.2); }
+        .welcome p { color: var(--muted); margin-bottom: 1.5rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
         .stat-card {
-            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
-            position:relative; overflow:hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        .stat-card i { font-size:1.5rem; color:var(--accent); margin-bottom:1rem; }
-        .stat-card h3 { font-size:2rem; font-weight:800; margin-bottom:0.25rem; }
-        .stat-card p { color:var(--muted); font-size:0.9rem; }
+        .stat-card:hover { border-color: var(--border-highlight); }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-card i { font-size: 1.4rem; color: var(--accent); margin-bottom: 1rem; }
+        .stat-card h3 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .stat-card p { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Rajdhani', sans-serif; }
+        .stat-card.premium-accent::before { background: var(--premium); opacity: 1; }
+        .stat-card.premium-accent i { color: var(--premium); }
+        .stat-card.premium-accent h3 { color: var(--premium); }
+
         .card {
-            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
-            margin-bottom:1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
         }
-        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-        .card-header h2 { font-size:1.25rem; font-weight:700; }
-        .status-badge {
-            display:inline-flex; align-items:center; gap:0.4rem; padding:6px 12px; border-radius:8px;
-            font-size:0.8rem; font-weight:700;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
         }
-        .status-premium { background:rgba(251,191,36,0.12); color:var(--gold); }
-        .status-free { background:rgba(148,163,184,0.12); color:var(--muted); }
-        .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
-        table { width:100%; border-collapse:collapse; }
-        th, td { padding:12px 16px; text-align:left; border-bottom:1px solid var(--border); }
-        th { background:var(--bg-elevated); color:var(--muted); font-size:0.75rem; text-transform:uppercase; }
-        tbody tr:hover { background:rgba(37,99,235,0.05); }
-        .login { max-width:420px; margin:5rem auto; background:var(--bg-card); border:1px solid var(--border); padding:2.5rem; border-radius:20px; }
-        .login h2 { margin-bottom:1rem; }
-        input { width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px; margin-bottom:1rem; }
-        .hidden { display:none !important; }
-        .chart { display:flex; align-items:flex-end; gap:8px; height:120px; padding:1rem 0; }
-        .bar-col { flex:1; text-align:center; }
-        .bar { background:var(--accent); border-radius:6px 6px 0 0; min-height:4px; transition:height 0.5s; }
-        .bar-col span { font-size:0.7rem; color:var(--muted); display:block; margin-top:4px; }
-        @media(max-width:768px){ .header{flex-direction:column; gap:1rem; align-items:flex-start;} .container{padding:1rem;} }
+        .card-header h2 { font-size: 1.4rem; font-weight: 700; }
+
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 140px;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .bar-col { flex: 1; text-align: center; min-width: 30px; }
+        .bar {
+            background: var(--accent);
+            border-radius: 6px 6px 0 0;
+            min-height: 4px;
+            transition: height 0.5s ease;
+            box-shadow: 0 0 15px rgba(0,240,255,0.15);
+        }
+        .bar-col span { font-size: 0.7rem; color: var(--muted); display: block; margin-top: 6px; font-family: 'Rajdhani', sans-serif; }
+
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th {
+            background: var(--bg-elevated);
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        tbody tr:hover { background: rgba(0,240,255,0.03); }
+        .status-success { color: var(--success); }
+        .status-fail { color: var(--danger); }
+
+        .api-key {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .api-key input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .login {
+            max-width: 420px;
+            margin: 10rem auto 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+        }
+        .login h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .login p { color: var(--muted); margin-bottom: 1.5rem; }
+        .login input {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .login input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0,240,255,0.1);
+        }
+        .hidden { display: none !important; }
+
+        @media(max-width:768px){
+            .navbar { padding: 1rem; }
+            .container { padding: 1rem; }
+            .welcome h1 { font-size: 1.8rem; }
+            .nav-links { display: none; }
+        }
     </style>
 </head>
-<body>
+<body onload="checkAuth()">
+    <nav class="navbar">
+        <a href="/trainerhub/" class="brand">
+            <i class="fas fa-gamepad"></i>
+            Trainer<span>Hub</span>
+        </a>
+        <div class="nav-links" id="navLinks">
+            <!-- Populated by JS -->
+        </div>
+    </nav>
+
     <div id="login" class="login">
-        <h2><i class="fas fa-user-circle" style="color:var(--accent);"></i> TrainerHub Dashboard</h2>
-        <p style="color:var(--muted); margin-bottom:1.5rem;">Logge dich mit deinem TrainerHub-Account ein.</p>
+        <h2><i class="fas fa-gamepad" style="color:var(--accent);"></i> Mein Dashboard</h2>
+        <p>Logge dich mit deinem TrainerHub-Account ein.</p>
         <input type="text" id="email" placeholder="E-Mail oder Benutzername" onkeypress="if(event.key==='Enter')login()">
         <input type="password" id="password" placeholder="Passwort" onkeypress="if(event.key==='Enter')login()">
         <button class="btn btn-primary" style="width:100%;" onclick="login()">Einloggen</button>
         <div id="error" style="color:var(--danger); margin-top:1rem;"></div>
     </div>
 
-    <div id="dashboard" class="container hidden">
-        <div class="header">
-            <div>
-                <h1>Willkommen, <span id="userName">User</span> 👋</h1>
-                <p style="color:var(--muted);">Dein persönliches TrainerHub Dashboard.</p>
+    <div id="dashboard" class="page hidden">
+        <div class="container">
+            <div class="welcome">
+                <h1>Willkommen, <span id="userName">User</span></h1>
+                <p>Dein persönliches TrainerHub Dashboard.</p>
             </div>
-            <div class="header-actions">
-                <a href="/trainerhub/setup" class="btn btn-secondary"><i class="fas fa-download"></i> Download App</a>
-                <button class="btn btn-primary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-            </div>
-        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-crown"></i>
-                <h3 id="userStatus">Free</h3>
-                <p>Account Status</p>
+            <div class="stats-grid">
+                <div class="stat-card premium-accent" id="statusCard">
+                    <i class="fas fa-crown"></i>
+                    <h3 id="subStatus">Free</h3>
+                    <p>Account Status</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3 id="activations">0</h3>
+                    <p>Trainer-Aktivierungen</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <h3 id="favorites">0</h3>
+                    <p>Favoriten</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-trophy"></i>
+                    <h3 id="reputation">0</h3>
+                    <p>Reputation</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <i class="fas fa-bolt"></i>
-                <h3 id="totalActivations">0</h3>
-                <p>Trainer-Aktivierungen</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-star"></i>
-                <h3 id="favCount">0</h3>
-                <p>Favoriten</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-trophy"></i>
-                <h3 id="reputation">0</h3>
-                <p>Reputation</p>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-chart-bar"></i> Aktivierungen der letzten 14 Tage</h2>
-                <span id="successRate" class="status-badge status-active">0% Erfolgsrate</span>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar" style="color:var(--accent);"></i> Aktivierungen der letzten 14 Tage</h2>
+                    <span id="successRate" style="color:var(--muted); font-family:'Rajdhani',sans-serif; text-transform:uppercase;">0% Erfolgsrate</span>
+                </div>
+                <div class="chart" id="chart">
+                    <!-- Bars loaded via JS -->
+                </div>
             </div>
-            <div class="chart" id="activityChart">
-                <!-- Bars filled by JS -->
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-history"></i> Letzte Aktivitäten</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-history" style="color:var(--accent);"></i> Letzte Aktivitäten</h2>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Spiel</th>
+                                <th>Trainer</th>
+                                <th>Aktion</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Datum</th><th>Spiel</th><th>Trainer</th><th>Aktion</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="activityTable"></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-key"></i> API-Key</h2>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key" style="color:var(--accent);"></i> API-Key</h2>
+                </div>
+                <p style="color:var(--muted); margin-bottom:1rem; font-size:0.9rem;">
+                    Dein API-Key für die TrainerHub Desktop-App.
+                </p>
+                <div class="api-key">
+                    <input type="text" id="apiKey" readonly>
+                    <button class="btn btn-primary" onclick="copyApiKey()">
+                        <i class="fas fa-copy"></i> Kopieren
+                    </button>
+                </div>
             </div>
-            <div style="display:flex; gap:0.75rem; align-items:center;">
-                <input type="text" id="apiKey" readonly style="font-family:monospace; flex:1;">
-                <button class="btn btn-secondary" onclick="copyApiKey()">Kopieren</button>
-            </div>
-            <p style="color:var(--muted); font-size:0.85rem; margin-top:0.75rem;">Dieser Key verbindet die Desktop-App mit deinem Account.</p>
         </div>
     </div>
 
     <script>
-        const API = '/trainerhub/api';
-        let apiKey = '';
+        const API_BASE = '/trainerhub/api';
+        let apiKey = localStorage.getItem('trainerhub_api_key');
 
-        async function api(endpoint, method='GET', body=null) {
-            const opts = { method, headers: { 'Content-Type': 'application/json' } };
-            if (apiKey) opts.headers['Authorization'] = `Bearer ${apiKey}`;
-            if (body) opts.body = JSON.stringify(body);
-            try {
-                const r = await fetch(`${API}/${endpoint}`, opts);
-                if (r.status === 401) { logout(); }
-                return r.json();
-            } catch (e) {
-                return { success:false, error:e.message };
+        function checkAuth() {
+            if (apiKey) {
+                showDashboard();
+            } else {
+                document.getElementById('login').classList.remove('hidden');
+                document.getElementById('dashboard').classList.add('hidden');
             }
         }
 
         async function login() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const data = await api('auth.php?action=login', 'POST', { email, password });
-            if (data.success) {
-                apiKey = data.api_key;
-                localStorage.setItem('trainerhub_api_key', apiKey);
-                showDashboard();
-            } else {
-                document.getElementById('error').textContent = data.error || 'Login fehlgeschlagen';
-            }
-        }
+            const error = document.getElementById('error');
+            error.textContent = '';
 
-        function logout() {
-            localStorage.removeItem('trainerhub_api_key');
-            apiKey = '';
-            location.reload();
+            try {
+                const res = await fetch(`${API_BASE}/auth.php?action=login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    apiKey = data.api_key;
+                    localStorage.setItem('trainerhub_api_key', data.api_key);
+                    localStorage.setItem('trainerhub_sub', data.subscription || 'free');
+                    showDashboard();
+                } else {
+                    error.textContent = data.error || 'Login fehlgeschlagen';
+                }
+            } catch (e) {
+                error.textContent = 'Fehler: ' + e.message;
+            }
         }
 
         async function showDashboard() {
             document.getElementById('login').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('apiKey').value = apiKey;
 
-            // Load account status
-            const status = await api('billing.php?action=status');
-            if (status.success) {
-                document.getElementById('userName').textContent = status.username || status.email?.split('@')[0] || 'User';
-                const isPremium = status.subscription === 'premium';
-                document.getElementById('userStatus').textContent = isPremium ? 'Premium' : 'Free';
-                document.getElementById('userStatus').style.color = isPremium ? 'var(--gold)' : 'var(--muted)';
-                document.getElementById('apiKey').value = apiKey;
-            }
+            try {
+                const res = await fetch(`${API_BASE}/billing.php?action=status`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const isPremium = data.subscription === 'premium';
+                    document.getElementById('subStatus').textContent = isPremium ? 'Premium' : 'Free';
+                    document.getElementById('userName').textContent = data.username || data.email?.split('@')[0] || 'User';
+                    if (!isPremium) {
+                        document.getElementById('statusCard').classList.remove('premium-accent');
+                    }
+                }
+            } catch (e) { console.error(e); }
 
-            // Load stats
-            const stats = await api('trainer-logs.php?action=stats');
-            if (stats.success) {
-                document.getElementById('totalActivations').textContent = stats.total_activations || 0;
-                const total = stats.total_activations || 1;
-                const rate = Math.round(((stats.successful || 0) / total) * 100);
-                document.getElementById('successRate').textContent = `${rate}% Erfolgsrate`;
-            }
+            try {
+                const res = await fetch(`${API_BASE}/trainer-logs.php?action=stats`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('activations').textContent = data.total_activations || 0;
+                    document.getElementById('successRate').textContent = (data.success_rate || 0) + '% Erfolgsrate';
+                    renderChart(data.chart_data || []);
+                    renderHistory(data.recent || []);
+                }
+            } catch (e) { console.error(e); }
 
-            // Load favorites
-            const cfg = await api('config-sync.php?action=download');
-            if (cfg.success) {
-                const favs = cfg.config?.favorites || [];
-                document.getElementById('favCount').textContent = favs.length;
-            }
+            try {
+                const res = await fetch(`${API_BASE}/config-sync.php?action=get`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                if (data.success && data.config) {
+                    const cfg = typeof data.config === 'string' ? JSON.parse(data.config) : data.config;
+                    document.getElementById('favorites').textContent = (cfg.favorites || []).length;
+                }
+            } catch (e) { console.error(e); }
 
-            // Load reputation
-            const lb = await api('premium.php?action=leaderboard');
-            if (lb.success) {
-                const me = lb.leaderboard?.find(x => x.email === status.email);
-                document.getElementById('reputation').textContent = me?.reputation || 0;
-            }
+            try {
+                const res = await fetch(`${API_BASE}/premium.php?action=leaderboard`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                if (data.success && data.leaderboard) {
+                    const me = data.leaderboard.find(u => u.email === (document.getElementById('userName').textContent + '@trainerhub.local'));
+                    if (me) document.getElementById('reputation').textContent = me.reputation || 0;
+                }
+            } catch (e) { console.error(e); }
 
-            // Load logs and chart
-            const logs = await api('trainer-logs.php?action=list&limit=100');
-            if (logs.success) {
-                renderChart(logs.logs || []);
-                renderTable(logs.logs || []);
-            }
+            updateNav();
         }
 
-        function renderChart(logs) {
-            const days = {};
-            for (const l of logs) {
-                const d = new Date(l.created_at * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
-                days[d] = (days[d] || 0) + 1;
+        function updateNav() {
+            const sub = localStorage.getItem('trainerhub_sub') || 'free';
+            const isAdmin = localStorage.getItem('trainerhub_is_admin') === 'true';
+            const container = document.getElementById('navLinks');
+
+            let adminBtn = '';
+            if (isAdmin) {
+                adminBtn = `<a href="/trainerhub/admin/" class="btn btn-danger" style="margin-right:10px;"><i class="fas fa-shield-halved"></i> Admin</a>`;
             }
-            const sorted = Object.entries(days).sort((a,b) => a[0].localeCompare(b[0])).slice(-14);
-            const max = Math.max(...sorted.map(x => x[1]), 1);
-            document.getElementById('activityChart').innerHTML = sorted.map(([d,v]) => `
+
+            container.innerHTML = `
+                <span class="badge ${sub === 'premium' ? 'premium' : ''}">${sub === 'premium' ? '<i class="fas fa-crown"></i> Premium' : 'Free'}</span>
+                <a href="/trainerhub/setup" class="btn btn-gold" style="margin-right:10px;"><i class="fas fa-download"></i> Download</a>
+                ${adminBtn}
+                <button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            `;
+        }
+
+        function renderChart(data) {
+            const chart = document.getElementById('chart');
+            if (!data || data.length === 0) {
+                chart.innerHTML = '<div style="color:var(--muted); text-align:center; width:100%; align-self:center;">Keine Daten verfügbar</div>';
+                return;
+            }
+            const max = Math.max(...data.map(d => d.count), 1);
+            chart.innerHTML = data.map(d => `
                 <div class="bar-col">
-                    <div class="bar" style="height:${Math.max(4, (v/max)*100)}px;"></div>
-                    <span>${v}</span>
-                    <span>${d}</span>
+                    <div class="bar" style="height:${Math.max((d.count / max) * 100, 4)}%"></div>
+                    <span>${d.date}</span>
                 </div>
             `).join('');
         }
 
-        function renderTable(logs) {
-            document.getElementById('activityTable').innerHTML = logs.slice(0,20).map(l => `
+        function renderHistory(recent) {
+            const tbody = document.getElementById('historyTable');
+            if (!recent || recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Noch keine Aktivierungen</td></tr>';
+                return;
+            }
+            tbody.innerHTML = recent.map(r => `
                 <tr>
-                    <td>${new Date(l.created_at * 1000).toLocaleString('de-DE')}</td>
-                    <td>${escape(l.game_name || '-')}</td>
-                    <td>${escape(l.trainer_name || '-')}</td>
-                    <td>${escape(l.action || '-')}</td>
-                    <td><span class="status-badge ${l.success ? 'status-active' : 'status-rejected'}">${l.success ? 'Erfolg' : 'Fehler'}</span></td>
+                    <td>${new Date(r.created_at * 1000).toLocaleString('de-DE')}</td>
+                    <td>${escapeHtml(r.game_name || '-')}</td>
+                    <td>${escapeHtml(r.trainer_name || '-')}</td>
+                    <td>${escapeHtml(r.action || 'activate')}</td>
+                    <td class="${r.success ? 'status-success' : 'status-fail'}">${r.success ? '✓ Erfolg' : '✗ Fehlgeschlagen'}</td>
                 </tr>
             `).join('');
-        }
-
-        function escape(text) {
-            const div = document.createElement('div');
-            div.textContent = text || '';
-            return div.innerHTML;
         }
 
         function copyApiKey() {
@@ -267,10 +512,18 @@
             alert('API-Key kopiert!');
         }
 
-        // Auto-login if key stored
-        if (localStorage.getItem('trainerhub_api_key')) {
-            apiKey = localStorage.getItem('trainerhub_api_key');
-            showDashboard();
+        function logout() {
+            localStorage.removeItem('trainerhub_api_key');
+            localStorage.removeItem('trainerhub_sub');
+            localStorage.removeItem('trainerhub_is_admin');
+            apiKey = null;
+            location.reload();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
