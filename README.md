@@ -19,12 +19,6 @@ Fertige Windows-EXE: https://sayfespace.online/trainerhub/TrainerHub-windows.zip
 - Auto-Update-Hinweis
 - Account-/Premium-Status
 
-## Login
-
-- URL: https://sayfespace.online/trainerhub/
-- Benutzer: `dom`
-- Passwort: `TrainerHub2026!`
-
 ## Build
 
 Lokal unter Windows:
