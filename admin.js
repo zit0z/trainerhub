@@ -53,7 +53,9 @@ function doLogin() {
 
 function showApp() {
     document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminLayout').style.display = 'flex';
+    const layout = document.getElementById('adminLayout');
+    layout.classList.remove('hidden');
+    layout.style.display = 'flex';
     const hash = window.location.hash.replace('#', '') || 'dashboard';
     switchView(hash, false);
 }
