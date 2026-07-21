@@ -158,14 +158,35 @@ class MemoryEngine:
             self.process_name = process_name
         if not PYMEM_OK or not self.process_name:
             return False
+        # Try exact name first, then variants without .exe, lowercase, etc.
+        names = [self.process_name, self.process_name.replace('.exe', ''),
+                 self.process_name.lower(), self.process_name.replace(' ', '').lower()]
+        # Find by psutil partial match
         try:
-            self.pm = Pymem(self.process_name)
-            self.pid = self.pm.process_id
-            return True
+            import psutil
+            for proc in psutil.process_iter(['pid', 'name']):
+                pname = proc.info['name']
+                if pname and (pname.lower() in [n.lower() for n in names] or
+                              any(n.lower() in pname.lower() for n in names)):
+                    try:
+                        self.pm = Pymem(proc.info['pid'])
+                        self.pid = proc.info['pid']
+                        return True
+                    except Exception:
+                        pass
         except Exception:
-            self.pm = None
-            self.pid = None
-            return False
+            pass
+        # Fallback exact
+        for name in names:
+            try:
+                self.pm = Pymem(name)
+                self.pid = self.pm.process_id
+                return True
+            except Exception:
+                pass
+        self.pm = None
+        self.pid = None
+        return False
 
     def is_attached(self):
         return self.pm is not None
@@ -412,8 +433,14 @@ class CheatEngine:
         self.process_name = None
 
     def set_process(self, process_name):
-        self.process_name = process_name
-        self.memory.attach(process_name)
+        # Accept comma-separated list of names
+        names = [n.strip() for n in process_name.split(',')] if isinstance(process_name, str) and ',' in process_name else [process_name]
+        for n in names:
+            self.memory.attach(n)
+            if self.memory.is_attached():
+                self.process_name = n
+                return True
+        return False
 
     def activate(self, trainer, game=None):
         ctype = trainer.get('cheat_type', 'memory')

@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.1'
+APP_VERSION = '0.6.2'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -738,20 +738,32 @@ class TrainerHubApp:
         if not self.current_game:
             self.show_toast("Bitte zuerst ein Spiel auswählen", ModernStyle.WARNING)
             return
-        pname = self.current_game.get('process_name', '')
-        if not pname:
+        pnames = []
+        if self.current_game.get('process_name'):
+            pnames.append(self.current_game['process_name'])
+        if self.current_game.get('launcher_processes'):
+            pnames.extend([p.strip() for p in self.current_game['launcher_processes'].split(',') if p.strip()])
+        if not pnames:
             self.proc_status.config(text="● Kein Prozess bekannt", fg=ModernStyle.WARNING)
             return
         if not WINDOWS or not self.engine or not self.engine.memory:
             self.proc_status.config(text="● Nur unter Windows verfügbar", fg=ModernStyle.WARNING)
             return
-        ok = self.engine.set_process(pname)
-        if ok:
+
+        found = False
+        for pname in pnames:
+            ok = self.engine.set_process(pname)
+            if ok:
+                found = True
+                self.process_name = pname
+                break
+        if found:
             self.proc_status.config(text=f"● Prozess aktiv (PID {self.engine.memory.pid})", fg=ModernStyle.SUCCESS)
             self.show_toast("Prozess verbunden", ModernStyle.SUCCESS)
         else:
-            self.proc_status.config(text=f"● {pname} nicht gestartet", fg=ModernStyle.DANGER)
-            self.show_toast("Spiel nicht gestartet", ModernStyle.DANGER)
+            tried = ', '.join(pnames)
+            self.proc_status.config(text=f"● Nicht gestartet", fg=ModernStyle.DANGER)
+            self.show_toast(f"Kein Prozess gefunden: {tried}", ModernStyle.DANGER)
 
     # ----------------------------- API -----------------------------
     def api_call(self, endpoint, method='GET', data=None):
