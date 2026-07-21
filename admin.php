@@ -207,5 +207,97 @@ if ($action === 'reject_community_pattern') {
     jsonResponse(['success' => true, 'message' => 'Rejected']);
 }
 
+if ($action === 'system') {
+    $dbSize = '0 MB';
+    if (defined('DB_PATH') && file_exists(DB_PATH)) {
+        $dbSize = round(filesize(DB_PATH) / 1024 / 1024, 2) . ' MB';
+    }
+    $diskFree = round(disk_free_space('/') / 1024 / 1024 / 1024, 2) . ' GB';
+    $uptime = function_exists('shell_exec') ? trim(shell_exec('uptime -p') ?: 'unbekannt') : 'unbekannt';
+    jsonResponse([
+        'success' => true,
+        'db_size' => $dbSize,
+        'disk_free' => $diskFree,
+        'uptime' => $uptime
+    ]);
+}
+
+if ($action === 'create_user') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $email = $data['email'] ?? '';
+    $username = $data['username'] ?? '';
+    $password = $data['password'] ?? '';
+    $status = $data['subscription_status'] ?? 'free';
+    $days = (int)($data['premium_days'] ?? 30);
+    $expires = $status !== 'free' ? strtotime("+{$days} days") : null;
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (email, username, password_hash, subscription_status, subscription_expires_at) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$email, $username, $hash, $status, $expires]);
+    jsonResponse(['success' => true, 'user_id' => $pdo->lastInsertId()]);
+}
+
+if ($action === 'edit_user') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = (int)($_GET['id'] ?? 0);
+    $email = $data['email'] ?? '';
+    $username = $data['username'] ?? '';
+    $status = $data['subscription_status'] ?? 'free';
+    $days = (int)($data['premium_days'] ?? 30);
+    $expires = $status !== 'free' ? strtotime("+{$days} days") : null;
+    if (!empty($data['password'])) {
+        $hash = password_hash($data['password'], PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET email=?, username=?, subscription_status=?, subscription_expires_at=?, password_hash=? WHERE id=?");
+        $stmt->execute([$email, $username, $status, $expires, $hash, $id]);
+    } else {
+        $stmt = $pdo->prepare("UPDATE users SET email=?, username=?, subscription_status=?, subscription_expires_at=? WHERE id=?");
+        $stmt->execute([$email, $username, $status, $expires, $id]);
+    }
+    jsonResponse(['success' => true, 'message' => 'Benutzer aktualisiert']);
+}
+
+if ($action === 'create_trainer') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $stmt = $pdo->prepare("INSERT INTO trainers (game_id, name, description, cheat_type, is_premium, is_active) VALUES (?, ?, ?, ?, 0, 1)");
+    $stmt->execute([
+        $data['game_id'] ?? 0,
+        $data['name'] ?? '',
+        $data['description'] ?? '',
+        $data['type'] ?? 'memory_scan'
+    ]);
+    jsonResponse(['success' => true, 'trainer_id' => $pdo->lastInsertId()]);
+}
+
+if ($action === 'edit_trainer') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = (int)($_GET['id'] ?? 0);
+    $stmt = $pdo->prepare("UPDATE trainers SET game_id=?, name=?, description=?, cheat_type=? WHERE id=?");
+    $stmt->execute([
+        $data['game_id'] ?? 0,
+        $data['name'] ?? '',
+        $data['description'] ?? '',
+        $data['type'] ?? 'memory_scan',
+        $id
+    ]);
+    jsonResponse(['success' => true, 'message' => 'Trainer aktualisiert']);
+}
+
+if ($action === 'list_patterns') {
+    $stmt = $pdo->query("
+        SELECT cp.*, u.email as author_name, g.name as game_name
+        FROM community_patterns cp
+        JOIN users u ON u.id = cp.user_id
+        JOIN games g ON g.id = cp.game_id
+        ORDER BY cp.created_at DESC
+    ");
+    jsonResponse(['success' => true, 'patterns' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+if ($action === 'approve_pattern') {
+    $id = (int)($_GET['id'] ?? 0);
+    $stmt = $pdo->prepare("UPDATE community_patterns SET status = CASE WHEN status = 'approved' THEN 'pending' ELSE 'approved' END WHERE id = ?");
+    $stmt->execute([$id]);
+    jsonResponse(['success' => true, 'message' => 'Pattern aktualisiert']);
+}
+
 jsonResponse(['success' => false, 'error' => 'Invalid action'], 400);
 ?>
