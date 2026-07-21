@@ -8,7 +8,7 @@ import struct
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.5.6'
+APP_VERSION = '0.5.7'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -102,7 +102,7 @@ class TrainerHubApp:
 
         self.build_ui()
         if self.api_key:
-            self.validate_key()
+            self._on_login_success()
         else:
             self.show_login()
         self.apply_theme(self.config.get('theme', 'dark'))
