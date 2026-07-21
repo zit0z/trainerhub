@@ -53,7 +53,7 @@ function doLogin() {
 
 function showApp() {
     document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminLayout').style.display = 'grid';
+    document.getElementById('adminLayout').style.display = 'flex';
     const hash = window.location.hash.replace('#', '') || 'dashboard';
     switchView(hash, false);
 }
@@ -119,12 +119,12 @@ async function loadStats() {
     if (!data.success) return;
     state.stats = data;
     document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><i class="fas fa-gamepad"></i><h3>${data.games || 0}</h3><p>Spiele</p></div>
-        <div class="stat-card"><i class="fas fa-code"></i><h3>${data.trainers || 0}</h3><p>Trainer</p></div>
-        <div class="stat-card"><i class="fas fa-users"></i><h3>${data.users || 0}</h3><p>Benutzer</p></div>
-        <div class="stat-card"><i class="fas fa-crown"></i><h3>${data.premium_users || 0}</h3><p>Premium</p></div>
-        <div class="stat-card"><i class="fas fa-bolt"></i><h3>${data.activations_today || 0}</h3><p>Aktivierungen heute</p></div>
-        <div class="stat-card"><i class="fas fa-project-diagram"></i><h3>${data.patterns || 0}</h3><p>Patterns</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-gamepad"></i><h3>${data.games || 0}</h3><p>Spiele</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-code"></i><h3>${data.trainers || 0}</h3><p>Trainer</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-users"></i><h3>${data.users || 0}</h3><p>Benutzer</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-crown"></i><h3>${data.premium_users || 0}</h3><p>Premium</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-bolt"></i><h3>${data.activations_today || 0}</h3><p>Aktivierungen heute</p></div>
+        <div class="card" style="padding:22px;"><i class="fas fa-project-diagram"></i><h3>${data.patterns || 0}</h3><p>Patterns</p></div>
     `;
 }
 
@@ -408,9 +408,9 @@ async function loadSystem() {
     }
     container.innerHTML = `
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
-            <div class="stat-card"><i class="fas fa-database"></i><h3>${data.db_size || '?'}</h3><p>Datenbankgröße</p></div>
-            <div class="stat-card"><i class="fas fa-hdd"></i><h3>${data.disk_free || '?'}</h3><p>Freier Speicher</p></div>
-            <div class="stat-card"><i class="fas fa-clock"></i><h3>${data.uptime || '?'}</h3><p>Server-Uptime</p></div>
+            <div class="card" style="padding:22px;"><i class="fas fa-database"></i><h3>${data.db_size || '?'}</h3><p>Datenbankgröße</p></div>
+            <div class="card" style="padding:22px;"><i class="fas fa-hdd"></i><h3>${data.disk_free || '?'}</h3><p>Freier Speicher</p></div>
+            <div class="card" style="padding:22px;"><i class="fas fa-clock"></i><h3>${data.uptime || '?'}</h3><p>Server-Uptime</p></div>
         </div>
     `;
 }
