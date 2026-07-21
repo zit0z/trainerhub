@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.3'
+APP_VERSION = '0.6.4'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -575,34 +575,56 @@ class TrainerHubApp:
         self.root.after(0, self._on_trainers_loaded)
 
     def _on_trainers_loaded(self):
-        if self.detail_state == 'trainers':
-            self._render_trainers()
-        elif self.detail_state == 'cheats':
-            self._show_cheats_tab()
+        try:
+            if not hasattr(self, 'detail_scrollable_frame') or not self.detail_scrollable_frame.winfo_exists():
+                return
+            if self.detail_state == 'trainers' or (hasattr(self, 'tab_trainers') and self.tab_trainers.cget('bg') == ModernStyle.BG_CARD):
+                self._render_trainers()
+            elif self.detail_state == 'cheats':
+                self._show_cheats_tab()
+        except Exception as e:
+            print(f"_on_trainers_loaded error: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _render_trainers(self):
-        if hasattr(self, 'trainer_loading') and self.trainer_loading.winfo_exists():
-            self.trainer_loading.destroy()
-        self._clear_scrollable()
+        try:
+            if hasattr(self, 'trainer_loading') and self.trainer_loading.winfo_exists():
+                self.trainer_loading.destroy()
+            self._clear_scrollable()
 
-        data = self.trainers_data or {}
-        if not data.get('success'):
-            tk.Label(self.detail_scrollable_frame, text=f"Fehler: {data.get('error', 'Unbekannter Fehler')}",
-                     font=('Segoe UI', 13), bg=ModernStyle.BG, fg=ModernStyle.DANGER).pack(pady=60)
-            return
+            data = self.trainers_data or {}
+            if not data.get('success'):
+                err = data.get('error', 'Unbekannter Fehler')
+                tk.Label(self.detail_scrollable_frame, text=f"Fehler: {err}",
+                         font=('Segoe UI', 13), bg=ModernStyle.BG, fg=ModernStyle.DANGER).pack(pady=60)
+                return
 
-        self.trainers = data.get('trainers', [])
-        sub = data.get('subscription', 'free')
-        tk.Label(self.detail_scrollable_frame, text=f"Abonnement: {sub.upper()}", font=('Segoe UI', 10, 'bold'),
-                 bg=ModernStyle.BG, fg=ModernStyle.ACCENT if sub == 'premium' else ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(0, 15))
+            self.trainers = data.get('trainers', [])
+            sub = data.get('subscription', 'free')
+            tk.Label(self.detail_scrollable_frame, text=f"Abonnement: {sub.upper()}", font=('Segoe UI', 10, 'bold'),
+                     bg=ModernStyle.BG, fg=ModernStyle.ACCENT if sub == 'premium' else ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(0, 15))
 
-        if not self.trainers:
-            tk.Label(self.detail_scrollable_frame, text="Keine Trainer verfügbar", font=('Segoe UI', 13),
-                     bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
-            return
+            if not self.trainers:
+                tk.Label(self.detail_scrollable_frame, text="Keine Trainer verfügbar", font=('Segoe UI', 13),
+                         bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
+                return
 
-        for trainer in self.trainers:
-            self._trainer_card(self.detail_scrollable_frame, trainer)
+            for trainer in self.trainers:
+                self._trainer_card(self.detail_scrollable_frame, trainer)
+
+            self.detail_scrollable_frame.update_idletasks()
+            self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
+        except Exception as e:
+            print(f"_render_trainers error: {e}")
+            import traceback
+            traceback.print_exc()
+            try:
+                self._clear_scrollable()
+                tk.Label(self.detail_scrollable_frame, text=f"Fehler beim Laden: {str(e)[:200]}",
+                         font=('Segoe UI', 13), bg=ModernStyle.BG, fg=ModernStyle.DANGER).pack(pady=60)
+            except Exception:
+                pass
 
     def _trainer_card(self, parent, trainer):
         card = tk.Frame(parent, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
