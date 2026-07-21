@@ -8,7 +8,7 @@ a = Analysis(
     binaries=[],
     datas=[],
     hiddenimports=[
-        'ui_components', 'gui_module', 'updater',
+        'ui_components', 'gui_module', 'updater', 'cheat_engine',
         'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32'
     ],
     hookspath=[],

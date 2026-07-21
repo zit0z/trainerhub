@@ -17,10 +17,10 @@ class ModernStyle:
     WARNING = "#f59e0b"
     DANGER = "#ef4444"
     GOLD = "#fbbf24"
-    PURPLE = "#9146ff"
-    CYAN = "#06b6d4"
-    GRADIENT_START = "#2563eb"
-    GRADIENT_END = "#7c3aed"
+    ACCENT = "#00f0ff"
+    ACCENT_HOVER = "#4df4ff"
+    GRADIENT_START = "#00f0ff"
+    GRADIENT_END = "#ff3864"
 
     @classmethod
     def apply(cls, root):
@@ -30,10 +30,10 @@ class ModernStyle:
         style.configure('Card.TFrame', background=cls.BG_CARD)
         style.configure('TLabel', background=cls.BG, foreground=cls.TEXT, font=('Segoe UI', 10))
         style.configure('Muted.TLabel', background=cls.BG, foreground=cls.TEXT_MUTED, font=('Segoe UI', 9))
-        style.configure('Heading.TLabel', background=cls.BG, foreground=cls.TEXT, font=('Segoe UI', 18, 'bold'))
-        style.configure('Title.TLabel', background=cls.BG, foreground=cls.TEXT, font=('Segoe UI', 24, 'bold'))
-        style.configure('Accent.TButton', background=cls.ACCENT, foreground='#ffffff', font=('Segoe UI', 10, 'bold'), padding=8)
-        style.map('Accent.TButton', background=[('active', cls.ACCENT_HOVER)], foreground=[('active', '#ffffff')])
+        style.configure('Heading.TLabel', background=cls.BG, foreground=cls.TEXT, font=('Rajdhani', 18, 'bold'))
+        style.configure('Title.TLabel', background=cls.BG, foreground=cls.TEXT, font=('Rajdhani', 24, 'bold'))
+        style.configure('Accent.TButton', background=cls.ACCENT, foreground=cls.BG, font=('Segoe UI', 10, 'bold'), padding=8)
+        style.map('Accent.TButton', background=[('active', cls.ACCENT_HOVER)], foreground=[('active', cls.BG)])
         style.configure('Secondary.TButton', background=cls.BG_CARD, foreground=cls.TEXT, font=('Segoe UI', 10), padding=8)
         style.map('Secondary.TButton', background=[('active', cls.BORDER)])
         style.configure('Danger.TButton', background=cls.DANGER, foreground='#ffffff', font=('Segoe UI', 10, 'bold'), padding=8)
@@ -42,6 +42,19 @@ class ModernStyle:
         style.configure('TEntry', fieldbackground=cls.BG_INPUT, foreground=cls.TEXT, insertcolor=cls.TEXT)
         style.configure('TCombobox', fieldbackground=cls.BG_INPUT, foreground=cls.TEXT)
         style.configure('Horizontal.TProgressbar', background=cls.ACCENT, troughcolor=cls.BG_CARD, borderwidth=0)
+        style.configure('Vertical.TScrollbar', background=cls.BG_CARD, troughcolor=cls.BG, borderwidth=0)
+        style.map('Vertical.TScrollbar', background=[('active', cls.BORDER_ACTIVE)])
+
+        # Load Rajdhani font via Google Fonts if possible (windows will fetch it if URL accessible, tk does not support CSS)
+        # Fallback to Segoe UI if not installed
+        try:
+            import tkinter.font as tkfont
+            fonts = tkfont.families()
+            if 'Rajdhani' not in fonts:
+                # Try to register from local
+                pass
+        except Exception:
+            pass
 
 
 class RoundedFrame(tk.Canvas):
