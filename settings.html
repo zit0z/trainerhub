@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen — TrainerHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .dashboard-card { padding: 22px; }
+        .dashboard-card .value { font-family:'Rajdhani',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); }
+        .dashboard-card .label { color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; }
+        .dashboard-card .icon { font-size:1.6rem; color:var(--accent); opacity:0.8; }
+        .game-list-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); transition:background .15s; }
+        .game-list-item:hover { background:rgba(255,255,255,0.02); }
+        .game-list-item:last-child { border-bottom:none; }
+        .game-icon { width:44px; height:44px; border-radius:10px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.3rem; }
+        .quick-action { display:flex; align-items:center; gap:12px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
+        .quick-action:hover { border-color:var(--accent); box-shadow:0 0 16px rgba(0,240,255,0.1); }
+        .premium-cta { background:linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(255,56,100,0.08) 100%); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+    </style>
+</head>
+<body>
+    <aside class="nav-sidebar">
+        <div class="nav-main">
+            <div style="padding:0 8px 24px;">
+                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+            </div>
+            <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+            <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
+            <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+            <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </div>
+        <div style="padding:18px; border-top:1px solid var(--border);">
+            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
+                <div>
+                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
+                    <div id="userSub" class="badge badge-free">Free</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Einstellungen</h1>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <span id="versionBadge" class="badge badge-free">v0.6.7</span>
+                <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
+            </div>
+        </div>
+
+        <div style="padding:28px;">
+            
+        <p class="section-subtitle">Verwalte dein Konto und die App-Einstellungen.</p>
+        <div class="grid-2">
+            <div class="card" style="padding:24px;">
+                <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Konto</h3>
+                <div style="color:var(--text-muted); line-height:1.8; font-size:14px;">
+                    <div>E-Mail: <span id="setEmail" style="color:var(--text);">-</span></div>
+                    <div>Status: <span id="setSub" style="color:var(--text);">-</span></div>
+                    <div>API-Key: <span id="setKey" style="color:var(--text);">-</span></div>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:16px;" onclick="showKey()">API-Key anzeigen</button>
+                <button class="btn btn-danger btn-sm" style="margin-top:12px;" onclick="logoutWeb()">Abmelden</button>
+            </div>
+            <div class="card" style="padding:24px;">
+                <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">App</h3>
+                <div style="color:var(--text-muted); line-height:1.8; font-size:14px;">
+                    <div>Version: <span style="color:var(--text);">v0.6.7</span></div>
+                    <div>Letztes Update: <span style="color:var(--text);">21.07.2026</span></div>
+                </div>
+                <a href="setup" class="btn btn-primary btn-sm" style="margin-top:16px;">App downloaden</a>
+            </div>
+        </div>
+        <script>
+            function logoutWeb() {{ localStorage.removeItem('trainerhub_api_key'); location.href='login'; }}
+            async function loadSettings() {{
+                const key = localStorage.getItem('trainerhub_api_key');
+                if (!key) {{ location.href='login'; return; }}
+                try {{
+                    const res = await fetch('api/billing.php?action=status', {{headers:{{'Authorization':'Bearer '+key}}}});
+                    const data = await res.json();
+                    if (!data.success) {{ location.href='login'; return; }}
+                    document.getElementById('setEmail').textContent = data.email || '-';
+                    document.getElementById('setSub').textContent = (data.subscription || 'free').toUpperCase();
+                    window.currentKey = key;
+                }} catch(e) {{ console.error(e); }}
+            }}
+            function showKey() {{
+                const el = document.getElementById('setKey');
+                el.textContent = window.currentKey ? (window.currentKey.slice(0,12)+'...') : '-';
+            }}
+            loadSettings();
+        </script>
+    
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        document.getElementById('navSettings').classList.add('active');
+        async function loadUser() {
+            const key = localStorage.getItem('trainerhub_api_key');
+            if (!key) { location.href='login'; return; }
+            try {
+                const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+                const data = await res.json();
+                if (!data.success) { location.href='login'; return; }
+                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
+                const subEl = document.getElementById('userSub');
+                if (data.subscription === 'premium') { subEl.className='badge badge-premium'; subEl.textContent='Premium'; }
+                else { subEl.className='badge badge-free'; subEl.textContent='Free'; }
+            } catch(e) { console.error(e); }
+        }
+        loadUser();
+    </script>
+</body>
+</html>

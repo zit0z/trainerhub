@@ -28,15 +28,20 @@
             <div style="padding:0 8px 24px;">
                 <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
             </div>
-            <a href="dashboard" class="nav-item active"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
-            <a href="#" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
-            <a href="#" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
-            <a href="#" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+            <a href="dashboard" class="nav-item active" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+            <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
+            <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+            <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
         </div>
         <div style="padding:18px; border-top:1px solid var(--border);">
             <div id="userMini" style="display:flex; align-items:center; gap:12px;">
                 <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
-                <div><div id="userName" style="font-weight:600;font-size:14px;">...</div><div id="userSub" class="badge badge-free">Free</div></div>
+                <div>
+                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
+                    <div id="userSub" class="badge badge-free">Free</div>
+                    <a id="loginLink" href="login" style="display:none; font-size:12px; color:var(--accent); text-decoration:none;">Login</a>
+                </div>
             </div>
         </div>
     </aside>
@@ -87,7 +92,7 @@
                     <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Schnellaktionen</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div class="quick-action" onclick="location.href='setup'"><i class="fas fa-download"></i><div><div style="font-weight:600;">App installieren</div><div style="font-size:12px; color:var(--text-muted);">Windows .exe</div></div></div>
-                        <div class="quick-action" onclick="location.href='/trainerhub/'"><i class="fas fa-search"></i><div><div style="font-weight:600;">Spiele finden</div><div style="font-size:12px; color:var(--text-muted);">299 Titel</div></div></div>
+                        <div class="quick-action" onclick="location.href='games'"><i class="fas fa-search"></i><div><div style="font-weight:600;">Spiele finden</div><div style="font-size:12px; color:var(--text-muted);">299 Titel</div></div></div>
                         <div class="quick-action" onclick="alert('Hier entsteht der Memory-Scanner.')"><i class="fas fa-memory"></i><div><div style="font-weight:600;">Scanner</div><div style="font-size:12px; color:var(--text-muted);">Pro Version</div></div></div>
                         <div class="quick-action" onclick="alert('Support kommt bald.')"><i class="fas fa-life-ring"></i><div><div style="font-weight:600;">Hilfe</div><div style="font-size:12px; color:var(--text-muted);">Support</div></div></div>
                     </div>
@@ -112,19 +117,39 @@
     </div>
 
     <script>
+        function logoutWeb() {
+            localStorage.removeItem('trainerhub_api_key');
+            location.href = 'login';
+        }
+        document.getElementById('navLogout').addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutWeb();
+        });
+
         async function loadDashboard() {
             try {
                 const key = localStorage.getItem('trainerhub_api_key') || '';
+                if (!key) {
+                    document.getElementById('userName').textContent = 'Gast';
+                    document.getElementById('userSub').className = 'badge badge-free';
+                    document.getElementById('userSub').textContent = 'Free';
+                    document.getElementById('loginLink').style.display = 'inline';
+                    return;
+                }
                 const [statusRes, logsRes] = await Promise.all([
-                    fetch('api/billing.php?action=status', {headers: key ? {'Authorization':'Bearer '+key} : {}}),
-                    fetch('api/trainer-logs.php?action=stats', {headers: key ? {'Authorization':'Bearer '+key} : {}})
+                    fetch('api/billing.php?action=status', {headers: {'Authorization':'Bearer '+key}}),
+                    fetch('api/trainer-logs.php?action=stats', {headers: {'Authorization':'Bearer '+key}})
                 ]);
                 const status = await statusRes.json();
                 const logs = await logsRes.json();
                 if (status.success) {
-                    document.getElementById('userName').textContent = status.user?.username || 'User';
+                    document.getElementById('userName').textContent = status.user?.username || status.email?.split('@')[0] || 'User';
                     const subEl = document.getElementById('userSub');
                     if (status.subscription === 'premium') { subEl.className = 'badge badge-premium'; subEl.textContent = 'Premium'; }
+                    else { subEl.className = 'badge badge-free'; subEl.textContent = 'Free'; }
+                } else {
+                    document.getElementById('userName').textContent = 'Gast';
+                    document.getElementById('loginLink').style.display = 'inline';
                 }
                 if (logs.success) document.getElementById('statActivations').textContent = logs.total_activations || 0;
             } catch (e) { console.error(e); }
