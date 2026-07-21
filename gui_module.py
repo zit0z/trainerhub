@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.4.1'
+APP_VERSION = '0.5.0'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -325,19 +325,23 @@ class TrainerHubApp:
                  fg=ModernStyle.TEXT, font=('Segoe UI', 12, 'bold')).pack(anchor='w')
         btn_frame = tk.Frame(tools_card.inner, bg=ModernStyle.BG_CARD)
         btn_frame.pack(fill='x', pady=(10,0))
-        AnimatedButton(btn_frame, text="Tutorial", command=self.show_tutorial, width=140, height=34,
+        AnimatedButton(btn_frame, text="Changelog", command=self.show_changelog, width=110, height=34,
                          bg=ModernStyle.BORDER, fg=ModernStyle.TEXT, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='left', padx=(0,8))
-        AnimatedButton(btn_frame, text="Log speichern", command=self.export_log, width=140, height=34,
+        AnimatedButton(btn_frame, text="Verlauf", command=self.show_history, width=110, height=34,
+                         bg=ModernStyle.BORDER, fg=ModernStyle.TEXT, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='left', padx=(0,8))
+        AnimatedButton(btn_frame, text="Log speichern", command=self.export_log, width=110, height=34,
                          bg=ModernStyle.BORDER, fg=ModernStyle.TEXT, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='left')
         
         # Hotkey hint
-        tk.Label(tools_card.inner, text="Hotkeys: F5 = Prozess prüfen | F1 = Tutorial",
+        tk.Label(tools_card.inner, text="Hotkeys: F5 = Prozess prüfen | F1 = Tutorial | F9 = Global",
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack(anchor='w', pady=(12,0))
         
         self.root.bind('<F5>', lambda e: self.check_process())
         self.root.bind('<F1>', lambda e: self.show_tutorial())
         
         self.load_trainers()
+        self.show_changelog(first_start=True)
+        self.start_smapipoll()
 
     def _create_stat_card(self, parent, label, value, idx):
         card = RoundedFrame(parent, radius=14, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER, height=80)
@@ -374,7 +378,7 @@ class TrainerHubApp:
 
     # ----------------------------- API -----------------------------
     def api_call(self, endpoint, method='GET', data=None):
-        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.1'}
+        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.0'}
         if self.api_key:
             headers['Authorization'] = f'Bearer {self.api_key}'
         url = f'{self.api_base}/{endpoint}'
@@ -651,7 +655,7 @@ class TrainerHubApp:
 
     def toggle_favorite(self, name):
         if name in self.favorites:
-            self.favorites.remove(name)
+            self.favorites.discard(name)
             self.log(f"{name} aus Favoriten entfernt")
         else:
             self.favorites.add(name)
@@ -659,6 +663,7 @@ class TrainerHubApp:
         self.config['favorites'] = list(self.favorites)
         save_config(self.config)
         self.render_trainers()
+        self.sync_favorites()
 
     def show_premium_dialog(self):
         try:
@@ -1251,6 +1256,190 @@ Tastenkürzel:
             sync.log_history(trainer_name, self.current_game or '', success)
         except Exception as e:
             self.log(f"Log-Aktivierung fehlgeschlagen: {e}")
+
+    def sync_favorites(self):
+        try:
+            from features import ConfigSync
+            sync = ConfigSync(self.api_base, self.api_key, self.log)
+            # Upload
+            resp = sync.upload_favorites(self.favorites)
+            if resp.get('success'):
+                self.log("Favoriten in Cloud gespeichert.", 'success')
+            # Download
+            down = sync.download_favorites()
+            if down.get('success') and 'favorites' in down.get('config', {}):
+                cloud = set(down['config']['favorites'])
+                if cloud != self.favorites:
+                    self.favorites = cloud
+                    self.config['favorites'] = list(cloud)
+                    save_config(self.config)
+                    self.log(f"{len(cloud)} Favoriten aus Cloud geladen.", 'success')
+                    if hasattr(self, 'stat_value_label'):
+                        self.render_trainers()
+        except Exception as e:
+            self.log(f"Cloud-Sync fehlgeschlagen: {e}")
+
+    def show_changelog(self, first_start=False):
+        data = self.api_call('changelog.php')
+        if not data.get('success'):
+            if not first_start:
+                messagebox.showerror("Fehler", "Changelog konnte nicht geladen werden.")
+            return
+        versions = data.get('versions', [])
+        if first_start and versions:
+            last_seen = self.config.get('last_seen_changelog', '')
+            if last_seen == versions[0].get('version'):
+                return
+        
+        win = tk.Toplevel(self.root)
+        win.title("Changelog")
+        win.geometry("520x600")
+        win.configure(bg=ModernStyle.BG)
+        card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
+        card.pack(fill='both', expand=True, padx=20, pady=20)
+        inner = card.inner
+        inner.configure(padx=25, pady=25)
+        tk.Label(inner, text="Was ist neu?", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 18, 'bold')).pack(anchor='w')
+        tk.Label(inner, text="TrainerHub Updates", bg=ModernStyle.BG_CARD,
+                 fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=(5,15))
+        
+        container = tk.Frame(inner, bg=ModernStyle.BG_CARD)
+        container.pack(fill='both', expand=True)
+        for v in versions[:5]:
+            vcard = tk.Frame(container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER, highlightthickness=1, bd=0)
+            vcard.pack(fill='x', pady=(0,10))
+            tk.Label(vcard, text=f"v{v.get('version')} — {v.get('date')}", bg=ModernStyle.BG_CARD,
+                     fg=ModernStyle.ACCENT, font=('Segoe UI', 11, 'bold')).pack(anchor='w', padx=15, pady=(10,0))
+            tk.Label(vcard, text=v.get('title', ''), bg=ModernStyle.BG_CARD,
+                     fg=ModernStyle.TEXT, font=('Segoe UI', 10, 'bold')).pack(anchor='w', padx=15, pady=(5,0))
+            for c in v.get('changes', []):
+                tk.Label(vcard, text=f"• {c}", bg=ModernStyle.BG_CARD,
+                         fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9), wraplength=400).pack(anchor='w', padx=15, pady=(2,0))
+            tk.Label(vcard, text='', bg=ModernStyle.BG_CARD).pack(pady=(5,0))
+        
+        if versions:
+            self.config['last_seen_changelog'] = versions[0].get('version')
+            save_config(self.config)
+        
+        AnimatedButton(inner, text="Schließen", command=win.destroy, width=120, height=36).pack(anchor='e', pady=(15,0))
+
+    def show_history(self):
+        data = self.api_call('trainer-logs.php?action=list&limit=100')
+        stats = self.api_call('trainer-logs.php?action=stats')
+        
+        win = tk.Toplevel(self.root)
+        win.title("Trainer-Verlauf")
+        win.geometry("640x520")
+        win.configure(bg=ModernStyle.BG)
+        card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
+        card.pack(fill='both', expand=True, padx=20, pady=20)
+        inner = card.inner
+        inner.configure(padx=25, pady=25)
+        tk.Label(inner, text="Dein Trainer-Verlauf", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 18, 'bold')).pack(anchor='w')
+        
+        # Mini chart from log counts per day
+        if data.get('success') and data.get('logs'):
+            from collections import Counter
+            days = Counter()
+            for l in data['logs']:
+                day = time.strftime('%d.%m', time.localtime(l.get('created_at', 0)))
+                days[day] += 1
+            labels = list(days.keys())[:14][::-1]
+            values = [days.get(d, 0) for d in labels]
+            max_v = max(values) if values else 1
+            chart_frame = tk.Frame(inner, bg=ModernStyle.BG_CARD)
+            chart_frame.pack(fill='x', pady=(15,0))
+            tk.Label(chart_frame, text="Aktivierungen/Tag", bg=ModernStyle.BG_CARD,
+                     fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
+            bars = tk.Frame(chart_frame, bg=ModernStyle.BG_CARD)
+            bars.pack(fill='x', pady=(10,0))
+            for d, v in zip(labels, values):
+                col = tk.Frame(bars, bg=ModernStyle.BG_CARD)
+                col.pack(side='left', expand=True)
+                h = max(20, int((v / max_v) * 80))
+                bar = tk.Frame(col, bg=ModernStyle.ACCENT, width=30, height=h)
+                bar.pack()
+                tk.Label(col, text=str(v), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                         font=('Segoe UI', 8)).pack()
+                tk.Label(col, text=d, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+                         font=('Segoe UI', 7)).pack()
+        
+        # Stats
+        if stats.get('success'):
+            sf = tk.Frame(inner, bg=ModernStyle.BG_CARD)
+            sf.pack(fill='x', pady=(20,0))
+            for lbl, val, col in [
+                ('Gesamt', stats.get('total_activations', 0), ModernStyle.TEXT),
+                ('Erfolgreich', stats.get('successful', 0), ModernStyle.SUCCESS),
+                ('Fehler', stats.get('failed', 0), ModernStyle.DANGER)
+            ]:
+                c = tk.Frame(sf, bg=ModernStyle.BG_CARD)
+                c.pack(side='left', expand=True)
+                tk.Label(c, text=str(val), bg=ModernStyle.BG_CARD, fg=col, font=('Segoe UI', 20, 'bold')).pack()
+                tk.Label(c, text=lbl, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack()
+        
+        listbox = scrolledtext.ScrolledText(inner, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT,
+                                            font=('Consolas', 9), height=12, relief='flat')
+        listbox.pack(fill='both', expand=True, pady=(15,0))
+        for l in data.get('logs', [])[:50]:
+            t = time.strftime('%d.%m.%Y %H:%M', time.localtime(l.get('created_at', 0)))
+            s = '✅' if l.get('success') else '❌'
+            listbox.insert(tk.END, f"{t} {s} {l.get('action', '?')} ({l.get('game_name', '?')} / {l.get('trainer_name', '?')})\n")
+
+    def start_smapipoll(self):
+        if not BRIDGE:
+            return
+        self.smapipoll_active = False
+        def poll():
+            last_values = {}
+            while True:
+                time.sleep(5)
+                if self.current_game == 'stardew-valley':
+                    try:
+                        if not self.bridge_client:
+                            client = stardew_bridge.StardewBridgeClient()
+                            if client.connect(timeout=1.0):
+                                self.bridge_client = client
+                                self.log("SMAPI Bridge verbunden.", 'success')
+                        if self.bridge_client:
+                            vals = {}
+                            for stat in ['money', 'health', 'stamina']:
+                                vals[stat] = self.bridge_client.get(stat)
+                            if vals != last_values:
+                                last_values = vals
+                                self.log(f"SMAPI Live | ${vals.get('money','?')} | HP {vals.get('health','?')} | Energy {vals.get('stamina','?')}", 'info')
+                    except Exception:
+                        pass
+        threading.Thread(target=poll, daemon=True).start()
+
+    def open_multi_freeze_manager(self):
+        win = tk.Toplevel(self.root)
+        win.title("Multi-Game Freeze Manager")
+        win.geometry("580x480")
+        win.configure(bg=ModernStyle.BG)
+        card = RoundedFrame(win, radius=16, bg=ModernStyle.BG_CARD, border_color=ModernStyle.BORDER)
+        card.pack(fill='both', expand=True, padx=20, pady=20)
+        inner = card.inner
+        inner.configure(padx=20, pady=20)
+        tk.Label(inner, text="Freeze Manager", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                 font=('Segoe UI', 16, 'bold')).pack(anchor='w')
+        tk.Label(inner, text="Aktive Freeze-Threads und Adressen", bg=ModernStyle.BG_CARD,
+                 fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=(5,0))
+        
+        listbox = tk.Listbox(inner, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, font=('Consolas', 10), height=12)
+        listbox.pack(fill='both', expand=True, pady=(15,0))
+        
+        def refresh():
+            listbox.delete(0, tk.END)
+            for key, t in list(self.freeze_threads.items()):
+                status = 'läuft' if t.is_alive() else 'gestoppt'
+                listbox.insert(tk.END, f"{key} — {status}")
+        
+        AnimatedButton(inner, text="Aktualisieren", command=refresh, width=120, height=34).pack(anchor='w', pady=(10,0))
+        refresh()
+
 
 
 def check_for_updates_gui():

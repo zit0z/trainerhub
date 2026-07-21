@@ -129,7 +129,7 @@ class ConfigSync:
         self.log = log_callback or print
 
     def api_call(self, endpoint, method='GET', data=None):
-        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.1'}
+        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.0'}
         if self.api_key:
             headers['Authorization'] = f'Bearer {self.api_key}'
         url = f'{self.api_base}/{endpoint}'
