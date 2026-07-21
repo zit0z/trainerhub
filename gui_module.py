@@ -8,7 +8,7 @@ import struct
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.5.7'
+APP_VERSION = '0.5.8'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -100,6 +100,7 @@ class TrainerHubApp:
         self.theme_manager = None
         self.search_var = tk.StringVar()
 
+        self.premium_badge = None
         self.build_ui()
         if self.api_key:
             self._on_login_success()
@@ -145,14 +146,20 @@ class TrainerHubApp:
         self.status_frame = tk.Frame(self.header, bg=ModernStyle.BG)
         self.status_frame.pack(side='right')
 
-        self.premium_badge = StatusBadge(self.status_frame, "FREE", ModernStyle.TEXT_MUTED)
-        self.premium_badge.pack(side='left', padx=(0, 12))
+        self._refresh_status_badge()
 
+    def _refresh_status_badge(self):
+        for w in self.status_frame.winfo_children():
+            w.destroy()
+        status = 'PREMIUM' if self.is_premium() else 'FREE'
+        color = ModernStyle.GOLD if self.is_premium() else ModernStyle.TEXT_MUTED
+        self.premium_badge = StatusBadge(self.status_frame, status, color)
+        self.premium_badge.pack(side='left', padx=(0, 12))
         tk.Button(self.status_frame, text="Logout", bg=ModernStyle.BG_CARD, fg=ModernStyle.DANGER,
                   relief='flat', font=('Segoe UI', 10), padx=15, pady=5,
                   command=self.logout).pack(side='left')
 
-        # Content area
+    # ----------------------------- LOGIN -----------------------------
         self.content = tk.Frame(self.main_frame, bg=ModernStyle.BG)
         self.content.pack(side='top', fill='both', expand=True, padx=25, pady=15)
 
@@ -264,8 +271,9 @@ class TrainerHubApp:
             self.premium_data = self.api_call('premium.php?action=status')
             status = 'PREMIUM' if self.is_premium() else 'FREE'
             color = ModernStyle.GOLD if self.is_premium() else ModernStyle.TEXT_MUTED
-            self.premium_badge = StatusBadge(self.status_frame, status, color)
-            self.premium_badge.pack(side='left', padx=(0, 12))
+            if self.premium_badge:
+                self.premium_badge.destroy()
+            self._refresh_status_badge()
             self.sidebar_status.config(text="● Online", fg=ModernStyle.SUCCESS)
             self.show_dashboard()
             self.init_hotkeys()
@@ -453,6 +461,13 @@ class TrainerHubApp:
         AnimatedButton(top, text="🔍 Prozess prüfen", command=self.check_process,
                        width=150, height=34, bg=ModernStyle.BORDER, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='right')
 
+        # Loading / trainer container
+        self.trainer_container = tk.Frame(self.content, bg=ModernStyle.BG)
+        self.trainer_container.pack(fill='both', expand=True)
+        self.loading_label = tk.Label(self.trainer_container, text="Lade Trainer...", font=('Segoe UI', 12),
+                                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
+        self.loading_label.pack(pady=40)
+
         threading.Thread(target=lambda: self.load_trainers(slug), daemon=True).start()
 
     def load_trainers(self, slug=None):
@@ -461,21 +476,30 @@ class TrainerHubApp:
         if not slug:
             return
         data = self.api_call(f'trainers.php?game={slug}')
-        self.trainers = data.get('trainers', [])
+        self.trainers_data = data
         self.root.after(0, self.render_trainers)
 
     def render_trainers(self):
-        if hasattr(self, 'trainer_container'):
-            for w in self.trainer_container.winfo_children():
-                w.destroy()
-        else:
-            self.trainer_container = tk.Frame(self.content, bg=ModernStyle.BG)
-            self.trainer_container.pack(fill='both', expand=True)
+        for w in self.trainer_container.winfo_children():
+            w.destroy()
 
+        data = getattr(self, 'trainers_data', {})
+        if not data.get('success'):
+            error = data.get('error', 'Fehler beim Laden der Trainer')
+            tk.Label(self.trainer_container, text=f"Fehler: {error}", font=('Segoe UI', 12),
+                     bg=ModernStyle.BG, fg=ModernStyle.DANGER).pack(pady=30)
+            return
+
+        self.trainers = data.get('trainers', [])
         if not self.trainers:
             tk.Label(self.trainer_container, text="Keine Trainer für dieses Spiel verfügbar",
                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 12)).pack(pady=30)
             return
+
+        sub = data.get('subscription', 'free')
+        sub_label = tk.Label(self.trainer_container, text=f"Abonnement: {sub.upper()}", font=('Segoe UI', 10),
+                             bg=ModernStyle.BG, fg=ModernStyle.GOLD if sub == 'premium' else ModernStyle.TEXT_MUTED)
+        sub_label.pack(anchor='w', pady=(0, 10))
 
         for trainer in self.trainers:
             card = tk.Frame(self.trainer_container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
@@ -485,10 +509,13 @@ class TrainerHubApp:
             header.pack(fill='x', padx=20, pady=(12, 8))
             tk.Label(header, text=trainer.get('title', 'Trainer'), font=('Segoe UI', 13, 'bold'),
                      bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(side='left')
-            premium = trainer.get('premium', False)
+            premium = trainer.get('is_premium', False) or trainer.get('premium', False)
+            locked = trainer.get('locked', False)
             if premium:
-                tk.Label(header, text="PREMIUM", font=('Segoe UI', 8, 'bold'),
-                         bg=ModernStyle.GOLD, fg='#000000', padx=8, pady=2).pack(side='left', padx=(10, 0))
+                label = "PREMIUM" if not locked else "🔒 PREMIUM"
+                color = ModernStyle.GOLD if not locked else ModernStyle.TEXT_MUTED
+                tk.Label(header, text=label, font=('Segoe UI', 8, 'bold'),
+                         bg=color, fg='#000000' if not locked else ModernStyle.TEXT, padx=8, pady=2).pack(side='left', padx=(10, 0))
             desc = trainer.get('description', '')
             if desc:
                 tk.Label(card, text=desc, font=('Segoe UI', 10),
@@ -496,8 +523,12 @@ class TrainerHubApp:
 
             btn_frame = tk.Frame(card, bg=ModernStyle.BG_CARD)
             btn_frame.pack(fill='x', padx=20, pady=(10, 0))
-            AnimatedButton(btn_frame, text="Aktivieren", command=lambda t=trainer: self.activate_trainer(t),
-                           width=130, height=34).pack(side='left', padx=(0, 10))
+            if locked:
+                tk.Label(btn_frame, text="Premium erforderlich", font=('Segoe UI', 10),
+                         bg=ModernStyle.BG_CARD, fg=ModernStyle.GOLD).pack(side='left')
+            else:
+                AnimatedButton(btn_frame, text="Aktivieren", command=lambda t=trainer: self.activate_trainer(t),
+                               width=130, height=34).pack(side='left', padx=(0, 10))
             AnimatedButton(btn_frame, text="Info", command=lambda t=trainer: self.show_trainer_info(t),
                            width=80, height=34, bg=ModernStyle.BORDER, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='left')
 
@@ -566,7 +597,9 @@ class TrainerHubApp:
     # ----------------------------- PREMIUM -----------------------------
     def is_premium(self):
         try:
-            return self.premium_data.get('is_premium', False) or self.user_info.get('subscription_status') == 'premium'
+            return (self.premium_data.get('subscription') == 'premium' or
+                    self.user_info.get('subscription') == 'premium' or
+                    self.user_info.get('subscription_status') == 'premium')
         except Exception:
             return False
 
