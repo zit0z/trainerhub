@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
+  actions: write
 
 jobs:
   build:
@@ -42,17 +42,4 @@ jobs:
       with:
         name: TrainerHub-windows
         path: TrainerHub-windows.zip
-
-    - name: Create Release
-      if: github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v0.3.${{ github.run_number }}
-        name: TrainerHub v0.3.${{ github.run_number }}
-        files: TrainerHub-windows.zip
-        body: |
-          TrainerHub Windows build (OneDir).
-          Extract ZIP and run TrainerHub.exe.
-          SmartScreen: Right-click → Properties → Unblock.
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        retention-days: 90
