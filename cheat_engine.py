@@ -545,19 +545,13 @@ class CheatEngine:
         # For Stardew official commands, fallback to savegame if no SMAPI and command is /money /health /stamina /backpack
         gname = self._game_name(game)
         title = trainer.get('title', '').lower()
-        if 'stardew' in gname and not self.smapi.is_running():
-            if any(k in title for k in ['money', 'geld']):
-                ok, path = self.savegame.edit_stardew_money(999999)
-                return {'success': ok, 'message': f'Geld im Savegame auf 999.999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
-            if any(k in title for k in ['health', 'leben']):
-                ok, path = self.savegame.edit_stardew_field('health', 999)
-                return {'success': ok, 'message': f'Leben im Savegame auf 999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
-            if any(k in title for k in ['stamina', 'energie', 'ausdauer']):
-                ok, path = self.savegame.edit_stardew_field('stamina', 999)
-                return {'success': ok, 'message': f'Energie im Savegame auf 999 gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
-            if 'backpack' in title:
-                ok, path = self.savegame.edit_stardew_field('maxItems', 36)
-                return {'success': ok, 'message': f'Rucksack im Savegame auf 36 Slots gesetzt. Neustart nötig. ({path})' if ok else 'Savegame nicht gefunden.'}
+        if 'stardew' in gname:
+            import stardew_savegame
+            res = stardew_savegame.edit_save(trainer)
+            if res['success']:
+                return res
+            if not self.memory.is_attached():
+                return {'success': False, 'message': 'Kein Savegame gefunden und kein laufender Prozess. Starte Stardew und speichere einmal.'}
         ok, msg = self.injector.run(pname, cmd, open_console_key='T')
         return {'success': ok, 'message': msg}
 
@@ -574,25 +568,9 @@ class CheatEngine:
 
     def _activate_savegame(self, trainer, game):
         gname = self._game_name(game)
-        effect = trainer.get('effect', '') or trainer.get('command', '') or trainer.get('title', '')
         if 'stardew' in gname:
-            if any(k in effect.lower() for k in ['money', 'geld']):
-                ok, path = self.savegame.edit_stardew_money(999999)
-                return {'success': ok, 'message': f'Geld auf 999.999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
-            if any(k in effect.lower() for k in ['health', 'leben']):
-                ok, path = self.savegame.edit_stardew_field('health', 999)
-                return {'success': ok, 'message': f'Leben auf 999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
-            if any(k in effect.lower() for k in ['stamina', 'energie', 'ausdauer']):
-                ok, path = self.savegame.edit_stardew_field('stamina', 999)
-                return {'success': ok, 'message': f'Energie auf 999 gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
-            if 'backpack' in effect.lower():
-                ok, path = self.savegame.edit_stardew_field('maxItems', 36)
-                return {'success': ok, 'message': f'Rucksack auf 36 Slots gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
-            m = re.search(r'(?:set|edit)\s+([a-zA-Z_]+)\s*=\s*(\d+)', effect, re.I)
-            if m:
-                ok, path = self.savegame.edit_stardew_field(m.group(1), m.group(2))
-                return {'success': ok, 'message': f'Feld {m.group(1)} gesetzt. Neustart nötig.' if ok else 'Savegame nicht gefunden.'}
-            return {'success': True, 'message': 'Savegame-Cheat vorbereitet. Bitte Spiel neu starten.'}
+            import stardew_savegame
+            return stardew_savegame.edit_save(trainer)
         return {'success': False, 'message': 'Savegame-Editor für dieses Spiel nicht verfügbar.'}
 
     def _activate_config(self, trainer, game):

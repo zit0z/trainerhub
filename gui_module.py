@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.5'
+APP_VERSION = '0.6.6'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -696,40 +696,44 @@ class TrainerHubApp:
     def _toggle_switch(self, parent, trainer):
         name = trainer.get('title', '')
         active = self.engine and self.engine.active_cheats.get(name, False)
-        bg = ModernStyle.ACCENT if active else ModernStyle.BORDER
-        txt = "AN" if active else "AUS"
-        btn = tk.Label(parent, text=txt, font=('Segoe UI', 10, 'bold'),
-                       bg=bg, fg=ModernStyle.BG if active else ModernStyle.TEXT,
-                       padx=18, pady=6, cursor='hand2')
-        btn.pack(side='left')
+        container = tk.Frame(parent, bg=ModernStyle.BG_CARD)
+        container.pack(side='left')
+        status_lbl = tk.Label(container, text="AUS", font=('Segoe UI', 9, 'bold'),
+                              bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED)
+        status_lbl.pack(side='left', padx=(0, 10))
 
-        def toggle():
+        def toggle(state):
             if not self.engine:
                 self.show_toast("Cheat-Engine nicht verfügbar", ModernStyle.DANGER)
+                sw.set(False)
                 return
-            is_active = self.engine.active_cheats.get(name, False)
-            if is_active:
-                res = self.engine.deactivate(trainer)
-                btn.config(text="AUS", bg=ModernStyle.BORDER, fg=ModernStyle.TEXT)
-                self.show_toast(res.get('message', 'Deaktiviert'), ModernStyle.TEXT_MUTED)
-            else:
+            if state:
                 ctype = trainer.get('cheat_type', 'memory')
                 if ctype == 'two_scan':
                     self._open_two_scan_dialog(trainer)
+                    sw.set(False)
                     return
                 res = self.engine.activate(trainer, self.current_game)
                 if res.get('success'):
-                    btn.config(text="AN", bg=ModernStyle.ACCENT, fg=ModernStyle.BG)
+                    self.engine.active_cheats[name] = True
+                    status_lbl.config(text="AN", fg=ModernStyle.ACCENT)
                     self.show_toast(res.get('message', 'Aktiviert'), ModernStyle.ACCENT)
                 else:
-                    # For errors suggesting scan/SMAPI, open config dialog
+                    sw.set(False)
                     msg = res.get('message', '')
                     if '2-Werte-Scan' in msg or 'SMAPI' in msg or 'Prozess' in msg:
                         self._open_cheat_config(trainer, msg)
                     else:
                         self.show_toast(msg, ModernStyle.DANGER)
+            else:
+                res = self.engine.deactivate(trainer)
+                status_lbl.config(text="AUS", fg=ModernStyle.TEXT_MUTED)
+                self.show_toast(res.get('message', 'Deaktiviert'), ModernStyle.TEXT_MUTED)
 
-        btn.bind('<Button-1>', lambda e: toggle())
+        sw = ToggleSwitch(container, command=toggle, initial=active, bg=ModernStyle.BG_CARD)
+        sw.pack(side='left')
+        if active:
+            status_lbl.config(text="AN", fg=ModernStyle.ACCENT)
 
     def _open_two_scan_dialog(self, trainer):
         d = tk.Toplevel(self.root)

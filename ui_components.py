@@ -225,3 +225,44 @@ class ModernCombobox(tk.Frame):
 
     def set(self, value):
         self.var.set(value)
+
+
+class GradientLabel(tk.Label):
+    """Label with gradient text effect using multiple offsets."""
+    def __init__(self, parent, text, font=None, **kw):
+        super().__init__(parent, text=text, font=font, **kw)
+
+class ToggleSwitch(tk.Canvas):
+    """Animated toggle switch for cheat cards."""
+    WIDTH = 44
+    HEIGHT = 24
+    def __init__(self, parent, command=None, initial=False, **kw):
+        bg = kw.pop('bg', ModernStyle.BG_CARD)
+        super().__init__(parent, width=self.WIDTH, height=self.HEIGHT, bg=bg, highlightthickness=0, **kw)
+        self.command = command
+        self.state = initial
+        self.r = self.HEIGHT // 2
+        self.draw()
+        self.bind('<Button-1>', self._toggle)
+        self.bind('<Enter>', lambda e: self.config(cursor='hand2'))
+
+    def draw(self):
+        self.delete('all')
+        color = ModernStyle.ACCENT if self.state else ModernStyle.BORDER
+        # Rounded track
+        self.create_oval(2, 2, self.HEIGHT-2, self.HEIGHT-2, fill=color, outline='')
+        self.create_oval(self.WIDTH-self.HEIGHT+2, 2, self.WIDTH-2, self.HEIGHT-2, fill=color, outline='')
+        self.create_rectangle(self.r, 2, self.WIDTH-self.r, self.HEIGHT-2, fill=color, outline='')
+        # Knob
+        x = self.WIDTH - self.r - 2 if self.state else self.r + 2
+        self.create_oval(x-self.r+4, 4, x+self.r-4, self.HEIGHT-4, fill=ModernStyle.TEXT, outline='')
+
+    def _toggle(self, event=None):
+        self.state = not self.state
+        self.draw()
+        if self.command:
+            self.command(self.state)
+
+    def set(self, value):
+        self.state = bool(value)
+        self.draw()

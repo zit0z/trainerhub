@@ -1,133 +1,133 @@
-"""
-Pattern Learner: Allows users to discover memory patterns themselves.
-No copyrighted content - just a tool for scanning the user's own game memory.
-"""
-import time
-import struct
-from collections import defaultdict
+"""Pattern learning system for TrainerHub.
 
+Helps discover AOB (Array-of-Byte) patterns for any game by:
+1. Reading memory at a found address.
+2. Scanning for surrounding bytes and wildcarding offsets.
+3. Storing candidate patterns to the cloud via the API.
+
+Works on Windows with pymem. On Linux the module only provides stub helpers.
+"""
+import struct
+from typing import List, Tuple, Optional
+
+PYMEM_OK = False
 try:
     import pymem
-    from pymem import Pymem
-    WINDOWS = True
-except ImportError:
-    WINDOWS = False
+    import pymem.process
+    PYMEM_OK = True
+except Exception:
+    pass
 
-VALUE_SIZES = {'int8': 1, 'int16': 2, 'int32': 4, 'int64': 8, 'float': 4, 'double': 8}
-VALUE_PACK = {
-    'int8': 'b', 'int16': 'h', 'int32': 'i', 'int64': 'q',
-    'float': 'f', 'double': 'd',
-    'uint8': 'B', 'uint16': 'H', 'uint32': 'I', 'uint64': 'Q'
-}
 
-class PatternLearner:
-    def __init__(self, pid):
-        if not WINDOWS:
-            raise RuntimeError("Pattern learning requires Windows + pymem")
-        self.pm = Pymem(pid)
-        self.scan_history = []
-    
-    def _read_value(self, addr, value_type):
-        size = VALUE_SIZES.get(value_type, 4)
-        try:
-            data = self.pm.read_bytes(addr, size)
-            return struct.unpack(VALUE_PACK.get(value_type, 'i'), data)[0]
-        except Exception:
-            return None
-    
-    def _write_value(self, addr, value, value_type):
-        size = VALUE_SIZES.get(value_type, 4)
-        try:
-            packed = struct.pack(VALUE_PACK.get(value_type, 'i'), value)
-            self.pm.write_bytes(addr, packed, size)
-            return True
-        except Exception:
-            return False
-    
-    def _get_readable_regions(self):
-        regions = []
-        addr = 0
-        while addr < 0x7FFF00000000:
-            try:
-                mbi = pymem.memory.virtual_query(self.pm.process_handle, addr)
-                if mbi.State == 0x1000 and mbi.Protect in (0x04, 0x20, 0x40, 0x02):
-                    regions.append((mbi.BaseAddress, mbi.BaseAddress + mbi.RegionSize))
-                addr = mbi.BaseAddress + mbi.RegionSize
-                if mbi.RegionSize == 0:
-                    break
-            except Exception:
+def read_bytes(handle, address: int, size: int) -> bytes:
+    if PYMEM_OK:
+        return pymem.memory.read_bytes(handle, address, size)
+    return b''
+
+
+def hexdump(data: bytes) -> str:
+    return ' '.join(f'{b:02x}' for b in data)
+
+
+def make_pattern(data: bytes, wildcard_positions: List[int]) -> str:
+    """Build AOB pattern with ?? at wildcard positions."""
+    out = []
+    for i, b in enumerate(data):
+        if i in wildcard_positions:
+            out.append('??')
+        else:
+            out.append(f'{b:02x}')
+    return ' '.join(out)
+
+
+def generate_candidates(data: bytes, min_stable: int = 6, max_wildcards: int = 8) -> List[str]:
+    """Generate candidate AOB patterns by wildcarding high/low bytes likely to change."""
+    if len(data) < min_stable:
+        return []
+    candidates = []
+    n = len(data)
+    # Strategy: try wildcards around middle region, keep first/last bytes stable
+    for wildcard_count in range(1, min(max_wildcards, n - min_stable) + 1):
+        for start in range(min_stable, n - min_stable - wildcard_count + 1):
+            positions = list(range(start, start + wildcard_count))
+            cand = make_pattern(data, positions)
+            if cand not in candidates:
+                candidates.append(cand)
+    return candidates
+
+
+def find_pattern_in_process(handle, module_base: int, module_size: int, pattern: str) -> List[int]:
+    if not PYMEM_OK:
+        return []
+    pattern_bytes = []
+    mask = []
+    for token in pattern.split():
+        if token == '??':
+            pattern_bytes.append(0)
+            mask.append(False)
+        else:
+            pattern_bytes.append(int(token, 16))
+            mask.append(True)
+
+    results = []
+    region = read_bytes(handle, module_base, min(module_size, 50_000_000))
+    m = len(pattern_bytes)
+    for i in range(len(region) - m + 1):
+        match = True
+        for j in range(m):
+            if mask[j] and region[i + j] != pattern_bytes[j]:
+                match = False
                 break
-        return regions
-    
-    def first_scan(self, value, value_type='int32'):
-        """Find all addresses matching the value."""
-        results = []
-        regions = self._get_readable_regions()
-        for start, end in regions:
-            size = end - start
-            if size > 100_000_000:
-                continue
-            try:
-                data = self.pm.read_bytes(start, size)
-            except Exception:
-                continue
-            
-            fmt = VALUE_PACK.get(value_type, 'i')
-            step = VALUE_SIZES.get(value_type, 4)
-            
-            for i in range(0, len(data) - step, step):
-                try:
-                    v = struct.unpack(fmt, data[i:i+step])[0]
-                    if v == value:
-                        results.append(start + i)
-                except Exception:
-                    pass
-        self.scan_history.append(results)
-        return results
-    
-    def next_scan(self, value):
-        """Filter previous results by new value."""
-        if not self.scan_history:
-            return []
-        prev = self.scan_history[-1]
-        results = []
-        for addr in prev:
-            v = self._read_value_from_any_type(addr)
-            if v is not None and v == value:
-                results.append(addr)
-        self.scan_history.append(results)
-        return results
-    
-    def _read_value_from_any_type(self, addr):
-        for vt in ['int32', 'float', 'int64', 'int16', 'int8']:
-            v = self._read_value(addr, vt)
-            if v is not None:
-                return v
-        return None
-    
-    def generate_pattern(self, addr, radius=16):
-        """Generate AOB pattern around address for future scans."""
-        try:
-            data = self.pm.read_bytes(addr - radius, radius * 2 + 8)
-            # Convert to bytes with wildcards for dynamic bytes
-            # Simple: output first 16 bytes as hex with optional wildcards
-            pattern_bytes = data[:24]
-            return ' '.join(f'{b:02X}' for b in pattern_bytes)
-        except Exception as e:
-            return f"error:{e}"
-    
-    def write_and_freeze(self, addr, value, value_type='int32', freeze=False):
-        success = self._write_value(addr, value, value_type)
-        if freeze and success:
-            import threading
-            def freeze_loop():
-                while getattr(self, f'_freeze_{addr}', False):
-                    self._write_value(addr, value, value_type)
-                    time.sleep(0.5)
-            setattr(self, f'_freeze_{addr}', True)
-            threading.Thread(target=freeze_loop, daemon=True).start()
-        return success
-    
-    def stop_freeze(self, addr):
-        setattr(self, f'_freeze_{addr}', False)
+        if match:
+            results.append(module_base + i)
+    return results
 
+
+def learn_pattern(handle, pid: int, address: int, region_size: int = 64) -> dict:
+    """Read bytes around address and propose patterns."""
+    data = read_bytes(handle, address, region_size)
+    if not data:
+        return {'success': False, 'message': 'Konnte Speicher nicht lesen.'}
+    candidates = generate_candidates(data)
+    return {
+        'success': True,
+        'hex': hexdump(data),
+        'candidates': candidates[:20],
+        'address': hex(address),
+    }
+
+
+def test_pattern(handle, module_base: int, module_size: int, pattern: str) -> dict:
+    addrs = find_pattern_in_process(handle, module_base, module_size, pattern)
+    return {
+        'success': len(addrs) == 1,
+        'matches': len(addrs),
+        'addresses': [hex(a) for a in addrs[:5]],
+    }
+
+
+def save_pattern_to_db(api_base: str, api_key: str, game_id: int, trainer_id: int,
+                       game_version: str, pattern: str, offset: int, value_type: str, value: int) -> bool:
+    """Send new pattern to the backend trainer_patterns endpoint."""
+    import json
+    try:
+        import urllib.request
+        url = f"{api_base}/trainer-patterns.php"
+        body = json.dumps({
+            'game_id': game_id,
+            'trainer_id': trainer_id,
+            'game_version': game_version,
+            'pattern': pattern,
+            'offset': offset,
+            'value_type': value_type,
+            'value': value,
+        }).encode('utf-8')
+        req = urllib.request.Request(url, data=body, method='POST',
+                                     headers={'Content-Type': 'application/json'})
+        if api_key:
+            req.add_header('Authorization', f'Bearer {api_key}')
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return data.get('success', False)
+    except Exception:
+        return False
