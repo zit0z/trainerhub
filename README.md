@@ -1,18 +1,34 @@
-# TrainerHub Desktop App
+# TrainerHub Desktop
 
-Windows Desktop-App für TrainerHub. Lädt Spiele, Trainer und Cheats von sayfespace.online.
+Windows-Desktop-App für TrainerHub — Singleplayer-Trainer für 300+ Spiele.
 
 ## Download
 
-Jeder Push auf `main` baut automatisch eine Windows-EXE via GitHub Actions.
+Fertige Windows-EXE: https://sayfespace.online/trainerhub/TrainerHub-windows.zip
 
-Siehe [Releases](https://github.com/zit0z/trainerhub/releases).
+## Features
 
-## Build lokal
+- Modernes Dark UI mit Animationen
+- 300+ unterstützte Spiele
+- Memory-Scanner (2-Scan / 3-Scan)
+- Pattern Learner
+- SMAPI Bridge für Stardew Valley
+- Savegame-Editor
+- Favoriten, zuletzt verwendete Spiele
+- Live-Log mit Export
+- Auto-Update-Hinweis
+- Account-/Premium-Status
 
+## Login
+
+- URL: https://sayfespace.online/trainerhub/
+- Benutzer: `dom`
+- Passwort: `TrainerHub2026!`
+
+## Build
+
+Lokal unter Windows:
 ```powershell
-pip install pyinstaller pymem pywin32 pywin32-ctypes
-pyinstaller TrainerHub.spec --clean --noconfirm
+pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
+python -m PyInstaller TrainerHub.spec --clean --noconfirm
 ```
-
-EXE liegt danach unter `dist\TrainerHub\TrainerHub.exe`.

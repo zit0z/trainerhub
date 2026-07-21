@@ -4,24 +4,14 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['/var/www/trainerhub/desktop-python'],
     binaries=[],
     datas=[],
-    hiddenimports=[
-        'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'tkinter.simpledialog', 'tkinter.ttk',
-        'tkinter.scrolledtext', '_tkinter', 'win32api', 'win32process', 'win32gui', 'win32con',
-        'ctypes', 'json', 'xml.etree.ElementTree', 'gzip', 'shutil', 'zipfile', 'tempfile',
-        'pymem', 'pymem.process', 'pymem.memory', 'urllib.request', 'urllib.error', 'http.client',
-        'pkg_resources', 'setuptools'
-    ],
+    hiddenimports=['ui_components', 'gui_module', 'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[
-        'matplotlib', 'numpy', 'pandas', 'scipy', 'PIL', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6',
-        'unittest', 'test', 'pydoc', 'pdb', 'tkinter.test', '_pytest', 'pytest', 'flask', 'django',
-        'boto3', 'botocore'
-    ],
+    excludes=['matplotlib', 'scipy', 'numpy', 'pandas', 'tkinter.test'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -39,16 +29,14 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,
-    upx_exclude=[],
-    runtime_tmpdir=None,
+    upx=True,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='NONE',
+    manifest=None,
 )
 
 coll = COLLECT(
@@ -57,7 +45,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=False,
+    upx=True,
     upx_exclude=[],
-    name='TrainerHub'
+    name='TrainerHub',
 )
