@@ -7,7 +7,7 @@ import threading
 import urllib.request
 import urllib.error
 
-APP_VERSION = '0.6.6'
+APP_VERSION = '0.6.7'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -21,7 +21,7 @@ except ImportError:
     print("tkinter fehlt")
     sys.exit(1)
 
-from ui_components import ModernStyle, StatusBadge, AnimatedButton
+from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch
 
 WINDOWS = sys.platform == 'win32'
 
