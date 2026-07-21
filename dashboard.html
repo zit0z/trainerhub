@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainerHub Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg:#050507; --bg-card:#111118; --bg-elevated:#181825; --border:#232333; --border-active:#334155;
+            --text:#f8fafc; --muted:#94a3b8; --accent:#2563eb; --accent-hover:#3b82f6; --gold:#fbbf24;
+            --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:2rem; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
+        .header h1 { font-size:2rem; font-weight:800; }
+        .header h1 span { color:var(--accent); }
+        .header-actions { display:flex; gap:0.75rem; }
+        .btn {
+            display:inline-flex; align-items:center; gap:0.5rem; padding:10px 18px; border-radius:10px;
+            font-weight:700; border:none; cursor:pointer; transition:all 0.2s; font-size:0.9rem; text-decoration:none;
+        }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px); }
+        .btn-secondary { background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); }
+        .btn-gold { background:rgba(251,191,36,0.15); color:var(--gold); border:1px solid rgba(251,191,36,0.3); }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .stat-card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
+            position:relative; overflow:hidden;
+        }
+        .stat-card i { font-size:1.5rem; color:var(--accent); margin-bottom:1rem; }
+        .stat-card h3 { font-size:2rem; font-weight:800; margin-bottom:0.25rem; }
+        .stat-card p { color:var(--muted); font-size:0.9rem; }
+        .card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem;
+            margin-bottom:1.5rem;
+        }
+        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+        .card-header h2 { font-size:1.25rem; font-weight:700; }
+        .status-badge {
+            display:inline-flex; align-items:center; gap:0.4rem; padding:6px 12px; border-radius:8px;
+            font-size:0.8rem; font-weight:700;
+        }
+        .status-premium { background:rgba(251,191,36,0.12); color:var(--gold); }
+        .status-free { background:rgba(148,163,184,0.12); color:var(--muted); }
+        .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:12px 16px; text-align:left; border-bottom:1px solid var(--border); }
+        th { background:var(--bg-elevated); color:var(--muted); font-size:0.75rem; text-transform:uppercase; }
+        tbody tr:hover { background:rgba(37,99,235,0.05); }
+        .login { max-width:420px; margin:5rem auto; background:var(--bg-card); border:1px solid var(--border); padding:2.5rem; border-radius:20px; }
+        .login h2 { margin-bottom:1rem; }
+        input { width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px; margin-bottom:1rem; }
+        .hidden { display:none !important; }
+        .chart { display:flex; align-items:flex-end; gap:8px; height:120px; padding:1rem 0; }
+        .bar-col { flex:1; text-align:center; }
+        .bar { background:var(--accent); border-radius:6px 6px 0 0; min-height:4px; transition:height 0.5s; }
+        .bar-col span { font-size:0.7rem; color:var(--muted); display:block; margin-top:4px; }
+        @media(max-width:768px){ .header{flex-direction:column; gap:1rem; align-items:flex-start;} .container{padding:1rem;} }
+    </style>
+</head>
+<body>
+    <div id="login" class="login">
+        <h2><i class="fas fa-user-circle" style="color:var(--accent);"></i> TrainerHub Dashboard</h2>
+        <p style="color:var(--muted); margin-bottom:1.5rem;">Logge dich mit deinem TrainerHub-Account ein.</p>
+        <input type="text" id="email" placeholder="E-Mail oder Benutzername" onkeypress="if(event.key==='Enter')login()">
+        <input type="password" id="password" placeholder="Passwort" onkeypress="if(event.key==='Enter')login()">
+        <button class="btn btn-primary" style="width:100%;" onclick="login()">Einloggen</button>
+        <div id="error" style="color:var(--danger); margin-top:1rem;"></div>
+    </div>
+
+    <div id="dashboard" class="container hidden">
+        <div class="header">
+            <div>
+                <h1>Willkommen, <span id="userName">User</span> 👋</h1>
+                <p style="color:var(--muted);">Dein persönliches TrainerHub Dashboard.</p>
+            </div>
+            <div class="header-actions">
+                <a href="/trainerhub/setup" class="btn btn-secondary"><i class="fas fa-download"></i> Download App</a>
+                <button class="btn btn-primary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-crown"></i>
+                <h3 id="userStatus">Free</h3>
+                <p>Account Status</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-bolt"></i>
+                <h3 id="totalActivations">0</h3>
+                <p>Trainer-Aktivierungen</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-star"></i>
+                <h3 id="favCount">0</h3>
+                <p>Favoriten</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-trophy"></i>
+                <h3 id="reputation">0</h3>
+                <p>Reputation</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-bar"></i> Aktivierungen der letzten 14 Tage</h2>
+                <span id="successRate" class="status-badge status-active">0% Erfolgsrate</span>
+            </div>
+            <div class="chart" id="activityChart">
+                <!-- Bars filled by JS -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-history"></i> Letzte Aktivitäten</h2>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Datum</th><th>Spiel</th><th>Trainer</th><th>Aktion</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="activityTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-key"></i> API-Key</h2>
+            </div>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+                <input type="text" id="apiKey" readonly style="font-family:monospace; flex:1;">
+                <button class="btn btn-secondary" onclick="copyApiKey()">Kopieren</button>
+            </div>
+            <p style="color:var(--muted); font-size:0.85rem; margin-top:0.75rem;">Dieser Key verbindet die Desktop-App mit deinem Account.</p>
+        </div>
+    </div>
+
+    <script>
+        const API = '/trainerhub/api';
+        let apiKey = '';
+
+        async function api(endpoint, method='GET', body=null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (apiKey) opts.headers['Authorization'] = `Bearer ${apiKey}`;
+            if (body) opts.body = JSON.stringify(body);
+            try {
+                const r = await fetch(`${API}/${endpoint}`, opts);
+                if (r.status === 401) { logout(); }
+                return r.json();
+            } catch (e) {
+                return { success:false, error:e.message };
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const data = await api('auth.php?action=login', 'POST', { email, password });
+            if (data.success) {
+                apiKey = data.api_key;
+                localStorage.setItem('trainerhub_api_key', apiKey);
+                showDashboard();
+            } else {
+                document.getElementById('error').textContent = data.error || 'Login fehlgeschlagen';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('trainerhub_api_key');
+            apiKey = '';
+            location.reload();
+        }
+
+        async function showDashboard() {
+            document.getElementById('login').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            // Load account status
+            const status = await api('billing.php?action=status');
+            if (status.success) {
+                document.getElementById('userName').textContent = status.username || status.email?.split('@')[0] || 'User';
+                const isPremium = status.subscription === 'premium';
+                document.getElementById('userStatus').textContent = isPremium ? 'Premium' : 'Free';
+                document.getElementById('userStatus').style.color = isPremium ? 'var(--gold)' : 'var(--muted)';
+                document.getElementById('apiKey').value = apiKey;
+            }
+
+            // Load stats
+            const stats = await api('trainer-logs.php?action=stats');
+            if (stats.success) {
+                document.getElementById('totalActivations').textContent = stats.total_activations || 0;
+                const total = stats.total_activations || 1;
+                const rate = Math.round(((stats.successful || 0) / total) * 100);
+                document.getElementById('successRate').textContent = `${rate}% Erfolgsrate`;
+            }
+
+            // Load favorites
+            const cfg = await api('config-sync.php?action=download');
+            if (cfg.success) {
+                const favs = cfg.config?.favorites || [];
+                document.getElementById('favCount').textContent = favs.length;
+            }
+
+            // Load reputation
+            const lb = await api('premium.php?action=leaderboard');
+            if (lb.success) {
+                const me = lb.leaderboard?.find(x => x.email === status.email);
+                document.getElementById('reputation').textContent = me?.reputation || 0;
+            }
+
+            // Load logs and chart
+            const logs = await api('trainer-logs.php?action=list&limit=100');
+            if (logs.success) {
+                renderChart(logs.logs || []);
+                renderTable(logs.logs || []);
+            }
+        }
+
+        function renderChart(logs) {
+            const days = {};
+            for (const l of logs) {
+                const d = new Date(l.created_at * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+                days[d] = (days[d] || 0) + 1;
+            }
+            const sorted = Object.entries(days).sort((a,b) => a[0].localeCompare(b[0])).slice(-14);
+            const max = Math.max(...sorted.map(x => x[1]), 1);
+            document.getElementById('activityChart').innerHTML = sorted.map(([d,v]) => `
+                <div class="bar-col">
+                    <div class="bar" style="height:${Math.max(4, (v/max)*100)}px;"></div>
+                    <span>${v}</span>
+                    <span>${d}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTable(logs) {
+            document.getElementById('activityTable').innerHTML = logs.slice(0,20).map(l => `
+                <tr>
+                    <td>${new Date(l.created_at * 1000).toLocaleString('de-DE')}</td>
+                    <td>${escape(l.game_name || '-')}</td>
+                    <td>${escape(l.trainer_name || '-')}</td>
+                    <td>${escape(l.action || '-')}</td>
+                    <td><span class="status-badge ${l.success ? 'status-active' : 'status-rejected'}">${l.success ? 'Erfolg' : 'Fehler'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function escape(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function copyApiKey() {
+            const input = document.getElementById('apiKey');
+            input.select();
+            document.execCommand('copy');
+            alert('API-Key kopiert!');
+        }
+
+        // Auto-login if key stored
+        if (localStorage.getItem('trainerhub_api_key')) {
+            apiKey = localStorage.getItem('trainerhub_api_key');
+            showDashboard();
+        }
+    </script>
+</body>
+</html>
