@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 # Constants
-APP_VERSION = '0.5.2'
+APP_VERSION = '0.5.3'
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
