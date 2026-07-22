@@ -1,6 +1,6 @@
 ; TrainerHub Inno Setup Installer Script
 #define MyAppName "TrainerHub"
-#define MyAppVersion "0.5.1"
+#define MyAppVersion "0.6.7"
 #define MyAppPublisher "TrainerHub"
 #define MyAppURL "https://sayfespace.online/trainerhub/"
 #define MyAppExeName "TrainerHub.exe"

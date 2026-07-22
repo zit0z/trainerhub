@@ -9,7 +9,9 @@ a = Analysis(
     datas=[],
     hiddenimports=[
         'ui_components', 'gui_module', 'updater', 'cheat_engine',
-        'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32'
+        'stardew_savegame', 'pattern_learner', 'savegame_trainers', 'sdv_savegame',
+        'pymem', 'pymem.process', 'pymem.memory', 'pymem.ressources.structure', 'pymem.ressources.kernel32',
+        'requests', 'requests.adapters', 'urllib3', 'urllib3.util.retry'
     ],
     hookspath=[],
     hooksconfig={},
