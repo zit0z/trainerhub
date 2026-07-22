@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared-modern.css">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg);">
+    <div style="text-align:center; max-width:500px; padding:40px;">
+        <div style="font-size:4rem; margin-bottom:20px;"><span id="statusIcon"></span></div>
+        <h1 id="statusTitle" style="font-family:'Rajdhani',sans-serif;">Status prüfen...</h1>
+        <p id="statusText" style="color:var(--text-muted); margin-bottom:24px;">Einen Moment...</p>
+        <div id="regions" style="text-align:left;"></div>
+        <a href="/trainerhub/" class="btn btn-primary" style="margin-top:24px;">Zurück zur Startseite</a>
+    </div>
+
+    <script>
+        async function loadStatus() {
+            try {
+                const res = await fetch('api/status.php');
+                const data = await res.json();
+                const healthy = data.database === 'ok';
+                document.getElementById('statusIcon').textContent = healthy ? '✅' : '❌';
+                document.getElementById('statusTitle').textContent = healthy ? 'Alle Systeme operational' : 'Probleme erkannt';
+                document.getElementById('statusText').textContent = `Version ${data.version} • ${new Date(data.timestamp * 1000).toLocaleString('de-DE')}`;
+                document.getElementById('regions').innerHTML = (data.regions || []).map(r => `
+                    <div style="background:var(--bg-card); border:1px solid var(--border); padding:14px; border-radius:var(--radius); margin-bottom:10px; display:flex; justify-content:space-between;">
+                        <span>${r.name}</span>
+                        <span style="color:var(--success);">${r.status}</span>
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('statusIcon').textContent = '❌';
+                document.getElementById('statusTitle').textContent = 'Status nicht erreichbar';
+            }
+        }
+        loadStatus();
+    </script>
+</body>
+</html>

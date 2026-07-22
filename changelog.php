@@ -3,45 +3,25 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 $versions = [
-    [
-        'version' => '0.5.0',
-        'date' => '2026-07-21',
-        'title' => 'Das Mega-Update',
-        'changes' => [
-            'In-App Changelog beim Start',
-            'SMAPI Live-Werte-Anzeige für Stardew Valley',
-            'Trainer-Verlauf mit Diagramm im Dashboard',
-            'Multi-Game Freeze-Manager',
-            'Cloud-Sync für Favoriten',
-            'Neues Midnight & Neon Theme',
-            'Globale Hotkeys (F9 Prozess prüfen)',
-            'Game Launcher im Settings-Menü'
-        ]
-    ],
-    [
-        'version' => '0.4.1',
-        'date' => '2026-07-21',
-        'title' => 'Settings & Hotkeys',
-        'changes' => [
-            'Einstellungen-Menü hinzugefügt',
-            'Theme-Switcher (Dark, Midnight, Neon)',
-            'Globale Hotkeys für Windows',
-            'Game Launcher im Settings',
-            'Trainer-Aktivierungs-Logging'
-        ]
-    ],
-    [
-        'version' => '0.4.0',
-        'date' => '2026-07-21',
-        'title' => 'Premium UI Redesign',
-        'changes' => [
-            'Modernes Dark UI mit Gradienten',
-            'Dashboard mit Statistik-Karten',
-            'Favoriten und zuletzt verwendete Spiele',
-            'Pattern Learner für selbst gefundene Adressen',
-            'Verbesserter Memory-Scanner'
-        ]
-    ]
+    '0.8.4' => 'Desktop: Auto-Updater, In-App-Changelog, System-Tray, Hotkeys, Prozess-Watcher. Web: Discord-Webhook, Status-Seite, Admin-Mass-Mail, 2FA, Landingpage v2 mit Video-Hero.',
+    '0.8.3' => 'Hotfix: Logger-Import-Fehler in der EXE behoben.',
+    '0.8.2' => 'Newsletter, Support-Widget, Blog, Game-Detail, User-Settings, Desktop-Sync.',
+    '0.8.1' => 'Rebrand TrainerHub → SweetCheat.',
+    '0.8.0' => 'Initiales SweetCheat-Release.',
 ];
 
-echo json_encode(['success' => true, 'versions' => $versions]);
+$ver = '0.8.4';
+$vf = __DIR__ . '/version.php';
+if (file_exists($vf)) {
+    $content = file_get_contents($vf);
+    if (preg_match('/[\'\"](version)[\'\"]\s*\=\s*[\'\"]([0-9.]+)[\'\"]/', $content, $m)) {
+        $ver = $m[2];
+    }
+}
+
+echo json_encode([
+    'version' => $ver,
+    'title' => 'SweetCheat v' . $ver,
+    'body' => $versions[$ver] ?? 'Verbesserungen und Bugfixes.',
+    'history' => $versions
+], JSON_PRETTY_PRINT);
