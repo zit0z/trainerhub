@@ -6,7 +6,7 @@ a fully working Windows EXE. Use this simple script.
 
 Step 1: Get the source
 ----------------------
-Download: https://sayfespace.online/sweetcheat/desktop-python.zip
+Download: https://sayfespace.online/trainerhub/desktop-python.zip
 Extract to a folder, e.g. C:\SweetCheat-Build
 
 Step 2: Build
@@ -28,4 +28,4 @@ Or click "More info" → "Run anyway" on first launch.
 
 Need help?
 ----------
-Visit: https://sayfespace.online/sweetcheat/setup
+Visit: https://sayfespace.online/trainerhub/setup

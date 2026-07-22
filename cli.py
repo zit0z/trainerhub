@@ -3,7 +3,7 @@ import json
 import urllib.request
 import urllib.error
 
-API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/sweetcheat/api')
+API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
 CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.sweetcheat', 'config.json')
 
 class SweetCheatApp:

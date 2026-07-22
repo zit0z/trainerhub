@@ -8,11 +8,11 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.8.4'
+APP_VERSION = '0.8.5'
 logger = logging.getLogger('SweetCheat.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
-API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/sweetcheat/api')
+API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
 
 os.makedirs(CONFIG_DIR, exist_ok=True)
 

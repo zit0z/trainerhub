@@ -3,7 +3,7 @@ import sqlite3
 import re
 from pathlib import Path
 
-DB = Path('/var/www/sweetcheat/database/sweetcheat.db')
+DB = Path('/var/www/trainerhub/database/sweetcheat.db')
 
 GENERIC_CHEATS = {
     'rpg': [

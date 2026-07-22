@@ -9,7 +9,7 @@ import ssl
 logger = logging.getLogger('SweetCheat.API')
 
 class SweetCheatAPI:
-    def __init__(self, base_url='https://sayfespace.online/sweetcheat/api', api_key=None):
+    def __init__(self, base_url='https://sayfespace.online/trainerhub/api', api_key=None):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.user = None

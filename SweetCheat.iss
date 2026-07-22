@@ -1,8 +1,8 @@
 ; SweetCheat Inno Setup Installer Script
 #define MyAppName "SweetCheat"
-#define MyAppVersion "0.8.4"
+#define MyAppVersion "0.8.5"
 #define MyAppPublisher "SweetCheat"
-#define MyAppURL "https://sayfespace.online/sweetcheat/"
+#define MyAppURL "https://sayfespace.online/trainerhub/"
 #define MyAppExeName "SweetCheat.exe"
 
 [Setup]
