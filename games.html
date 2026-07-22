@@ -39,16 +39,19 @@
     <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
     <aside class="nav-sidebar">
         <div class="nav-main">
-            <div style="padding:0 8px 24px;">
-                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+
+            <a href="dashboard" class="nav-item active"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
+            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
+            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
+            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
+            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
+            <a href="inbox" class="nav-item"><span class="icon"><i class="fas fa-bell"></i></span> Benachrichtigungen</a>
+            <a href="blog" class="nav-item"><span class="icon"><i class="fas fa-newspaper"></i></span> Blog</a>
+            <a href="profile" class="nav-item"><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
+            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+
             </div>
-            <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
-            <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
-            <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
-            <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
-            <a href="profile" class="nav-item" id="navProfile"><span class="icon"><i class="fas fa-user-circle"></i></span> Profil</a>
-            <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
-        </div>
         <div style="padding:18px; border-top:1px solid var(--border);">
             <div id="userMini" style="display:flex; align-items:center; gap:12px;">
                 <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
@@ -69,7 +72,7 @@
             </div>
             <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Theme wechseln" style="width:38px; height:38px; padding:0;"><i class="fas fa-moon" id="themeIcon"></i></button>
             <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.8.1</span>
+                <span id="versionBadge" class="badge badge-free">v0.8.2</span>
                 <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
             </div>
         </div>

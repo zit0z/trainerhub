@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benachrichtigungen — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .inbox-list { max-width:700px; margin:0 auto; }
+        .note-item { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:10px; transition:all .2s; }
+        .note-item.unread { border-left:3px solid var(--accent); }
+        .note-title { font-weight:600; margin-bottom:4px; }
+        .note-msg { color:var(--text-muted); font-size:14px; }
+        .note-time { font-size:12px; color:var(--text-muted); margin-top:8px; }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+        </div>
+    </header>
+
+    <div style="max-width:1000px; margin:0 auto; padding:40px 20px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:8px;">Benachrichtigungen</h1>
+        <div style="display:flex; gap:12px; margin-bottom:24px;">
+            <button class="btn btn-secondary btn-sm" onclick="markAllRead()">Alle als gelesen markieren</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadInbox()">Aktualisieren</button>
+        </div>
+        <div id="inboxList" class="inbox-list">Lade...</div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login?redirect=inbox';
+        
+        async function loadInbox() {
+            try {
+                const res = await fetch('api/notifications.php?action=list', {headers: {'Authorization':'Bearer '+key}});
+                const data = await res.json();
+                const list = document.getElementById('inboxList');
+                if (!data.success || !data.notifications.length) {
+                    list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Keine Benachrichtigungen.</div>';
+                    return;
+                }
+                list.innerHTML = data.notifications.map(n => `
+                    <div class="note-item ${n.read ? '' : 'unread'}" onclick="markRead(${n.id})">
+                        <div class="note-title">${escapeHtml(n.title)}</div>
+                        <div class="note-msg">${escapeHtml(n.message)}</div>
+                        <div class="note-time">${new Date(n.created_at * 1000).toLocaleString('de-DE')}</div>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        async function markRead(id) {
+            await fetch('api/notifications.php?action=mark_read&id=' + id, {headers: {'Authorization':'Bearer '+key}});
+            loadInbox();
+        }
+        async function markAllRead() {
+            await fetch('api/notifications.php?action=mark_all_read', {headers: {'Authorization':'Bearer '+key}});
+            loadInbox();
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadInbox();
+    </script>
+</body>
+</html>

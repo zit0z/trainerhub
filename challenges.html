@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .challenge-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; }
+        .challenge-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .challenge-title { font-family:'Rajdhani',sans-serif; font-size:1.3rem; font-weight:600; }
+        .challenge-desc { color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:16px; }
+        .progress-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+        .progress-fill { height:100%; background:var(--accent); border-radius:4px; transition:width .3s; }
+        .challenge-meta { display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-muted); }
+        .badge-complete { background:var(--success); color:#fff; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700; }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+        </div>
+    </header>
+
+    <div style="max-width:1000px; margin:0 auto; padding:40px 20px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:8px;">Challenges</h1>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Schließe Aufgaben ab und verdiene Premium-Tage.</p>
+        <div id="challengesList">Lade...</div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        async function loadChallenges() {
+            const key = localStorage.getItem('trainerhub_api_key');
+            const headers = key ? {'Authorization':'Bearer '+key} : {};
+            try {
+                const res = await fetch('api/challenges.php?action=my', {headers});
+                const data = await res.json();
+                const list = document.getElementById('challengesList');
+                if (!data.success || !data.challenges.length) {
+                    list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Keine aktiven Challenges.</div>';
+                    return;
+                }
+                list.innerHTML = data.challenges.map(c => {
+                    const pct = Math.min(100, (c.progress || 0) / c.target * 100);
+                    const done = c.completed;
+                    return `
+                        <div class="challenge-card">
+                            <div class="challenge-header">
+                                <div class="challenge-title">${escapeHtml(c.title)}</div>
+                                ${done ? '<span class="badge-complete"><i class="fas fa-check"></i> Abgeschlossen</span>' : ''}
+                            </div>
+                            <div class="challenge-desc">${escapeHtml(c.description || '')}</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                            <div class="challenge-meta">
+                                <span>${c.progress || 0} / ${c.target}</span>
+                                <span>Belohnung: ${c.reward_days || 0} Premium-Tage</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) { console.error(e); }
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadChallenges();
+    </script>
+</body>
+</html>

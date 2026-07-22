@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.8.1'
+APP_VERSION = '0.8.2'
 logger = logging.getLogger('SweetCheat.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
@@ -309,6 +309,29 @@ class SweetCheatApp:
         except Exception as e:
             self.root.after(0, lambda err=str(e): self.login_msg.config(
                 text=f"Netzwerkfehler: {err[:80]}", fg=ModernStyle.DANGER))
+
+    def show_window(self):
+        self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
+
+    def on_close(self):
+        try:
+            if hasattr(self, 'tray') and self.tray:
+                self.tray.stop()
+        except Exception:
+            pass
+        try:
+            if hasattr(self, 'watcher') and self.watcher:
+                self.watcher.stop()
+        except Exception:
+            pass
+        try:
+            if hasattr(self, 'hotkeys') and self.hotkeys:
+                self.hotkeys.stop()
+        except Exception:
+            pass
+        self.root.destroy()
 
     def _on_login_success(self):
         data = self.api_call('billing.php?action=status')
@@ -1110,20 +1133,49 @@ class SweetCheatApp:
         self.clear_content()
         self.set_title("Einstellungen")
         self._set_active_nav(self.nav_buttons[4])
-        card = self._card(self.content)
-        card.pack(fill='both', expand=True)
-        inner = tk.Frame(card, bg=ModernStyle.BG_CARD, padx=40, pady=40)
-        inner.pack(fill='both', expand=True)
-        tk.Label(inner, text="Einstellungen", font=('Rajdhani', 20, 'bold'),
-                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 20))
-        tk.Label(inner, text="API-Key", font=('Segoe UI', 10),
-                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(anchor='w')
-        key_entry = tk.Entry(inner, width=60, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT,
-                             insertbackground=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 10))
-        key_entry.insert(0, self.api_key or '')
-        key_entry.pack(anchor='w', pady=(5, 20), ipady=6)
-        AnimatedButton(inner, text="Speichern", command=lambda: self._save_settings(key_entry.get()),
-                       width=120, height=36).pack(anchor='w')
+
+        container = tk.Frame(self.content, bg=ModernStyle.BG)
+        container.pack(fill='both', expand=True)
+
+        # Account
+        card = tk.Frame(container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER, highlightthickness=1, padx=20, pady=20)
+        card.pack(fill='x', pady=(0, 16))
+        tk.Label(card, text="Account", font=('Rajdhani', 16, 'bold'), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
+        tk.Label(card, text=f"E-Mail: {self.api.user_email if hasattr(self, 'api') and self.api else '-'}", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w', pady=(8, 4))
+        tk.Label(card, text="Version: " + APP_VERSION, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
+
+        # Desktop
+        card2 = tk.Frame(container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER, highlightthickness=1, padx=20, pady=20)
+        card2.pack(fill='x', pady=(0, 16))
+        tk.Label(card2, text="Desktop-App", font=('Rajdhani', 16, 'bold'), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
+        
+        auto_var = tk.BooleanVar(value=is_autostart_enabled())
+        def toggle_autostart():
+            set_autostart(auto_var.get())
+            self.show_toast('Autostart ' + ('aktiviert' if auto_var.get() else 'deaktiviert'))
+        tk.Checkbutton(card2, text="Mit Windows starten", variable=auto_var, command=toggle_autostart,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD,
+                       activeforeground=ModernStyle.ACCENT).pack(anchor='w', pady=(12, 4))
+        hotkey_text = "Hotkeys:\nSTRG+SHIFT+S = Fenster öffnen\nSTRG+SHIFT+G = Spiele-Bibliothek"
+        tk.Label(card2, text=hotkey_text, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9), justify='left').pack(anchor='w', pady=(8, 0))
+
+        # Theme
+        card3 = tk.Frame(container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER, highlightthickness=1, padx=20, pady=20)
+        card3.pack(fill='x')
+        tk.Label(card3, text="Erscheinungsbild", font=('Rajdhani', 16, 'bold'), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
+        theme_var = tk.StringVar(value=self.config.get('theme', 'dark'))
+        def save_theme():
+            self.config['theme'] = theme_var.get()
+            save_config(self.config)
+            self.show_toast('Theme gespeichert')
+            if self.api:
+                def sync():
+                    self.api.settings_update(self.api.user_username or '', theme_var.get())
+                threading.Thread(target=sync, daemon=True).start()
+        tk.Radiobutton(card3, text="Dark", variable=theme_var, value='dark', command=save_theme,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD).pack(anchor='w', pady=(12, 4))
+        tk.Radiobutton(card3, text="Light", variable=theme_var, value='light', command=save_theme,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD).pack(anchor='w')
 
     def _save_settings(self, key):
         self.api_key = key.strip() or None
@@ -1170,10 +1222,12 @@ class SweetCheatApp:
         self.show_login()
 
 
-def main():
+def main(minimized=False):
     root = tk.Tk()
     app = SweetCheatApp(root)
-    root.mainloop()
+    if minimized:
+        root.withdraw()
+    return app
 
 
 if __name__ == '__main__':
