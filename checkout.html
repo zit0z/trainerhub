@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium aktivieren — TrainerHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .checkout-page { max-width: 480px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+        .price-big { font-family: 'Rajdhani', sans-serif; font-size: 4rem; font-weight: 700; color: var(--accent); }
+        .price-big span { font-size: 1.2rem; color: var(--text-muted); font-weight: 400; }
+        .features { text-align: left; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 28px 0; }
+        .features li { list-style: none; padding: 10px 0; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        .features li:last-child { border-bottom: none; }
+        .features i { color: var(--accent); margin-right: 10px; }
+        .secure-note { color: var(--text-muted); font-size: 13px; margin-top: 16px; }
+        .test-banner { background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.4); color: #ffc107; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <header style="background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 14px 20px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+        </div>
+    </header>
+
+    <div class="checkout-page">
+        <div class="test-banner" id="testBanner" style="display:none;">
+            <i class="fas fa-flask"></i> Testmodus aktiviert — Zahlung wird simuliert.
+        </div>
+        <h1 style="font-family: 'Rajdhani', sans-serif; font-size: 2.2rem; margin-bottom: 8px;">TrainerHub Premium</h1>
+        <p style="color: var(--text-muted);">Schalte alle Cheats, Scanner und Editoren frei.</p>
+
+        <div class="price-big">9,99€ <span>/ Monat</span></div>
+
+        <ul class="features">
+            <li><i class="fas fa-check"></i> Alle Premium-Trainer</li>
+            <li><i class="fas fa-check"></i> Memory-Scanner</li>
+            <li><i class="fas fa-check"></i> Savegame-Editoren</li>
+            <li><i class="fas fa-check"></i> SMAPI-Bridge für Stardew Valley</li>
+            <li><i class="fas fa-check"></i> Prioritäts-Support</li>
+        </ul>
+
+        <button class="btn btn-primary btn-hero" id="checkoutBtn" onclick="startCheckout()" style="width: 100%;">
+            <i class="fas fa-lock"></i> Premium sichern
+        </button>
+        <button class="btn btn-secondary" id="testCheckoutBtn" onclick="startTestCheckout()" style="width: 100%; margin-top: 12px; display: none;">
+            <i class="fas fa-flask"></i> Test-Zahlung simulieren
+        </button>
+
+        <p class="secure-note"><i class="fas fa-shield-alt"></i> Zahlungen werden sicher über Stripe abgewickelt. Monatlich kündbar.</p>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login?redirect=checkout';
+
+        async function init() {
+            try {
+                const res = await fetch('api/stripe.php?action=status', {headers: {'Authorization': 'Bearer ' + key}});
+                const data = await res.json();
+                if (data.subscription === 'premium') {
+                    document.querySelector('.checkout-page').innerHTML = `
+                        <div style="padding: 40px 0;">
+                            <i class="fas fa-crown" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
+                            <h1 style="font-family: 'Rajdhani', sans-serif;">Du bist bereits Premium</h1>
+                            <p style="color: var(--text-muted);">Läuft ab am ${data.expires_at ? new Date(data.expires_at * 1000).toLocaleDateString('de-DE') : 'unbegrenzt'}.</p>
+                            <a href="dashboard" class="btn btn-primary" style="margin-top: 20px;">Zum Dashboard</a>
+                        </div>
+                    `;
+                    return;
+                }
+                // If stripe not configured, show test button
+                if (!data.stripe_configured) {
+                    document.getElementById('testBanner').style.display = 'block';
+                    document.getElementById('testCheckoutBtn').style.display = 'block';
+                    document.getElementById('checkoutBtn').textContent = 'Stripe später konfigurieren';
+                    document.getElementById('checkoutBtn').disabled = true;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function startCheckout() {
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Weiterleitung...';
+            try {
+                const res = await fetch('api/stripe.php?action=checkout', {
+                    method: 'POST',
+                    headers: {'Authorization': 'Bearer ' + key}
+                });
+                const data = await res.json();
+                if (data.success && data.checkout_url) {
+                    window.location.href = data.checkout_url;
+                } else {
+                    showToast(data.error || 'Checkout nicht verfügbar', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-lock"></i> Premium sichern';
+                }
+            } catch(e) {
+                showToast('Fehler beim Starten des Checkouts', 'error');
+                btn.disabled = false;
+            }
+        }
+
+        async function startTestCheckout() {
+            const btn = document.getElementById('testCheckoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simuliere...';
+            try {
+                const res = await fetch('api/stripe.php?action=test_checkout', {
+                    method: 'POST',
+                    headers: {'Authorization': 'Bearer ' + key}
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Premium aktiviert! Weiterleitung...', 'success');
+                    setTimeout(() => location.href = 'dashboard?premium=activated', 1500);
+                } else {
+                    showToast(data.error || 'Test-Checkout fehlgeschlagen', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-flask"></i> Test-Zahlung simulieren';
+                }
+            } catch(e) {
+                showToast('Fehler', 'error');
+                btn.disabled = false;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

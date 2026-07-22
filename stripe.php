@@ -17,17 +17,17 @@ if (isset($auth['error'])) {
 $user = $auth['user'];
 
 $cfgFile = __DIR__ . '/config/stripe.json';
-$cfg = json_decode(file_get_contents($cfgFile), true);
+$cfg = json_decode(@file_get_contents($cfgFile) ?: '{}', true);
 $secretKey = $cfg['secret_key'] ?? '';
 $priceId = $cfg['price_id'] ?? '';
 
-if (!$secretKey || !$priceId) {
-    jsonResponse(['success' => false, 'error' => 'Stripe not configured'], 500);
-}
-
 $action = $_GET['action'] ?? '';
+$pdo = getDB();
 
 if ($action === 'checkout') {
+    if (!$secretKey || !$priceId) {
+        jsonResponse(['success' => false, 'error' => 'Stripe not configured'], 500);
+    }
     $baseUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'sayfespace.online');
     $successUrl = $baseUrl . '/trainerhub/?checkout=success&session_id={CHECKOUT_SESSION_ID}';
     $cancelUrl = $baseUrl . '/trainerhub/?checkout=cancel';
@@ -62,8 +62,65 @@ if ($action === 'status') {
     jsonResponse([
         'success' => true,
         'subscription' => isPremium($user) ? 'premium' : 'free',
-        'expires_at' => $user['subscription_expires_at']
+        'expires_at' => $user['subscription_expires_at'],
+        'stripe_configured' => !empty($secretKey) && !empty($priceId)
     ]);
+}
+
+// Create a payment/subscription record table entry placeholder
+// Table: user_subscriptions could be added here for full history
+
+
+if ($action === 'test_checkout') {
+    // Simulate a successful subscription for 30 days
+    $expires = time() + 30 * 86400;
+    $stmt = $pdo->prepare("UPDATE users SET subscription_status = 'active', subscription_expires_at = ? WHERE id = ?");
+    $stmt->execute([$expires, $user['id']]);
+    $stmt = $pdo->prepare("INSERT INTO user_subscriptions (user_id, status, amount, currency, provider, expires_at) VALUES (?, 'active', 999, 'eur', 'test', ?)");
+    $stmt->execute([$user['id'], $expires]);
+    logAudit($user['id'], 'test_checkout', 'stripe.php', ['expires_at' => $expires]);
+    jsonResponse(['success' => true, 'message' => 'Premium für 30 Tage aktiviert (Test)']);
+}
+
+if ($action === 'webhook') {
+    $payload = file_get_contents('php://input');
+    $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
+    $event = null;
+    
+    $cfg = json_decode(file_get_contents(__DIR__ . '/config/stripe.json'), true);
+    $endpoint_secret = $cfg['webhook_secret'] ?? '';
+    
+    if ($endpoint_secret) {
+        // Simple signature verification (production should use Stripe SDK)
+        $timestamp = strtok($sig_header, ',');
+        $signature = substr(strtok(','), 4);
+        $signed_payload = sprintf('%s.%s', substr($timestamp, 2), $payload);
+        $expected = hash_hmac('sha256', $signed_payload, $endpoint_secret);
+        if (!hash_equals($expected, $signature)) {
+            jsonResponse(['success' => false, 'error' => 'Invalid signature'], 400);
+        }
+    }
+    
+    $event = json_decode($payload, true);
+    if (!$event) {
+        jsonResponse(['success' => false, 'error' => 'Invalid payload'], 400);
+    }
+    
+    if ($event['type'] === 'checkout.session.completed') {
+        $session = $event['data']['object'];
+        $userId = (int)($session['client_reference_id'] ?? $session['metadata']['user_id'] ?? 0);
+        $sessionId = $session['id'] ?? '';
+        if ($userId) {
+            $expires = time() + 30 * 86400;
+            $stmt = $pdo->prepare("UPDATE users SET subscription_status = 'active', subscription_expires_at = ? WHERE id = ?");
+            $stmt->execute([$expires, $userId]);
+            $stmt = $pdo->prepare("INSERT INTO user_subscriptions (user_id, status, amount, currency, provider, provider_session_id, expires_at) VALUES (?, 'active', 999, 'eur', 'stripe', ?, ?)");
+            $stmt->execute([$userId, $sessionId, $expires]);
+            logAudit($userId, 'stripe_checkout_completed', 'stripe.php', ['session_id' => $sessionId]);
+        }
+    }
+    
+    jsonResponse(['success' => true, 'received' => true]);
 }
 
 jsonResponse(['success' => false, 'error' => 'Invalid action'], 400);
