@@ -65,6 +65,25 @@ def _global_exception_handler(exc_type, exc_value, exc_tb):
         pass
 
 
+def show_notification(title, message, duration=3000):
+    try:
+        from tkinter import Toplevel, Label
+        import tkinter as tk
+        root = tk.Tk()
+        root.withdraw()
+        win = Toplevel(root)
+        win.overrideredirect(True)
+        win.configure(bg='#0f1016')
+        win.geometry('320x80+%d+%d' % (root.winfo_screenwidth() - 340, 20))
+        Label(win, text=title, font=('Rajdhani', 12, 'bold'), fg='#00f0ff', bg='#0f1016').pack(pady=(10, 4))
+        Label(win, text=message, font=('Segoe UI', 10), fg='#f8fafc', bg='#0f1016').pack()
+        root.after(duration, win.destroy)
+        root.after(duration + 100, root.destroy)
+        root.mainloop()
+    except Exception as e:
+        logger.error(f"Notification error: {e}")
+
+
 def main():
     sys.excepthook = _global_exception_handler
     logger.info(f"SweetCheat starting. Python {sys.version}. CWD: {os.getcwd()}")

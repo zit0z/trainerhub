@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog — SweetCheat</title>
+    <meta name="description" content="Neuigkeiten, Cheats, Guides und Updates rund um SweetCheat und Singleplayer-Trainer.">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .blog-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:24px; }
+        .blog-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; transition:all .2s; }
+        .blog-card:hover { border-color:var(--accent); transform:translateY(-4px); }
+        .blog-tag { display:inline-block; background:rgba(0,240,255,0.1); color:var(--accent); padding:3px 10px; border-radius:999px; font-size:12px; margin-right:6px; }
+        .blog-date { color:var(--text-muted); font-size:13px; margin-bottom:10px; }
+        .blog-title { font-family:'Rajdhani',sans-serif; font-size:1.4rem; font-weight:600; margin-bottom:10px; }
+        .blog-excerpt { color:var(--text-muted); font-size:14px; line-height:1.6; }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <div style="display:flex; gap:12px;">
+                <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+                <a href="login" class="btn btn-secondary btn-sm">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <div style="max-width:1200px; margin:0 auto; padding:40px 20px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:8px;">SweetCheat Blog</h1>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Guides, Neuigkeiten und Cheats rund um deine liebsten Singleplayer-Spiele.</p>
+
+        <div id="blogGrid" class="blog-grid">
+            <div class="card shimmer" style="height:220px;"></div>
+            <div class="card shimmer" style="height:220px;"></div>
+            <div class="card shimmer" style="height:220px;"></div>
+        </div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat — Singleplayer-Trainer für PC-Spiele.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        async function loadBlog() {
+            try {
+                const res = await fetch('api/blog.php?action=list&per_page=50');
+                const data = await res.json();
+                const grid = document.getElementById('blogGrid');
+                if (!data.success || !data.posts.length) {
+                    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Noch keine Beiträge.</div>';
+                    return;
+                }
+                grid.innerHTML = data.posts.map(p => `
+                    <a href="blog/${p.slug}" class="blog-card" style="text-decoration:none; color:inherit;">
+                        <div class="blog-date">${new Date(p.created_at * 1000).toLocaleDateString('de-DE')}</div>
+                        <div class="blog-title">${escapeHtml(p.title)}</div>
+                        <div style="margin-bottom:12px;">${(p.tags || '').split(',').filter(t=>t).map(t => `<span class="blog-tag">${escapeHtml(t.trim())}</span>`).join('')}</div>
+                        <div class="blog-excerpt">${escapeHtml(p.excerpt || p.content.slice(0, 150) + '...')}</div>
+                    </a>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadBlog();
+    </script>
+</body>
+</html>

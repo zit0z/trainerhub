@@ -4,7 +4,7 @@
  */
 
 if (!defined('DB_PATH')) {
-    define('DB_PATH', __DIR__ . '/../database/sweetcheat.db');
+    define('DB_PATH', __DIR__ . '/../database/trainerhub.db');
 }
 
 function getDB() {

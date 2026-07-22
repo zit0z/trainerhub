@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter bestätigt — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+</head>
+<body style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg);">
+    <div style="text-align:center; max-width:480px; padding:40px 20px;">
+        <i id="icon" class="fas fa-spinner fa-spin" style="font-size:3rem; color:var(--accent); margin-bottom:20px;"></i>
+        <h1 id="title" style="font-family:'Rajdhani',sans-serif;">Bestätigung...</h1>
+        <p id="message" style="color:var(--text-muted);">Bitte warte einen Moment.</p>
+        <a href="/trainerhub/" class="btn btn-primary" style="margin-top:20px;">Zur Startseite</a>
+    </div>
+
+    <script>
+        async function confirmNewsletter() {
+            const params = new URLSearchParams(location.search);
+            const token = params.get('token');
+            try {
+                const res = await fetch('api/newsletter.php?action=confirm&token=' + encodeURIComponent(token));
+                const data = await res.json();
+                document.getElementById('icon').className = data.success ? 'fas fa-check-circle' : 'fas fa-times-circle';
+                document.getElementById('icon').style.color = data.success ? 'var(--success)' : 'var(--danger)';
+                document.getElementById('title').textContent = data.success ? 'Newsletter bestätigt!' : 'Fehler';
+                document.getElementById('message').textContent = data.message || data.error;
+            } catch(e) {
+                document.getElementById('icon').className = 'fas fa-times-circle';
+                document.getElementById('icon').style.color = 'var(--danger)';
+                document.getElementById('title').textContent = 'Fehler';
+                document.getElementById('message').textContent = 'Netzwerkfehler';
+            }
+        }
+        confirmNewsletter();
+    </script>
+</body>
+</html>

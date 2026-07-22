@@ -24,7 +24,7 @@ function loadEnvConfig() {
         'app_url'     => $_ENV['APP_URL']     ?? 'https://sayfespace.online',
         'admin_email' => $_ENV['ADMIN_EMAIL'] ?? 'admin@sayfespace.online',
         'admin_pass'  => $_ENV['ADMIN_PASSWORD'] ?? 'sayfehub2026',
-        'db_path'     => $_ENV['DB_PATH']     ?? __DIR__ . '/../database/sweetcheat.db',
+        'db_path'     => $_ENV['DB_PATH']     ?? __DIR__ . '/../database/trainerhub.db',
         'jwt_secret'  => $_ENV['JWT_SECRET']  ?? bin2hex(random_bytes(32)),
         'stripe' => array(
             'secret_key'     => $_ENV['STRIPE_SECRET_KEY'] ?? '',

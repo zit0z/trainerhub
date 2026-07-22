@@ -30,7 +30,7 @@
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
-                <a href="/sweetcheat/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
             </div>
             <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
             <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
@@ -59,7 +59,7 @@
             </div>
             <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Theme wechseln" style="width:38px; height:38px; padding:0;"><i class="fas fa-moon" id="themeIcon"></i></button>
             <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.7.1</span>
+                <span id="versionBadge" class="badge badge-free">v0.8.1</span>
                 <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
             </div>
         </div>
@@ -178,6 +178,75 @@
             } catch(e) { console.error(e); showToast('Dashboard konnte nicht geladen werden', 'error'); }
         }
         loadDashboard();
+</script>
+
+<!-- Support Widget -->
+<div id="supportWidget" style="position:fixed; bottom:24px; right:24px; z-index:999;">
+    <button id="supportToggle" onclick="toggleSupport()" style="width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--bg); border:none; font-size:1.4rem; cursor:pointer; box-shadow:0 8px 32px rgba(0,240,255,0.3); transition:transform .2s;"><i class="fas fa-comment-dots"></i></button>
+    <div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:320px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.4);">
+        <h4 style="margin:0 0 12px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Support</h4>
+        <div id="supportForm">
+            <input type="email" id="supportEmail" placeholder="Deine E-Mail" style="margin-bottom:10px; width:100%;">
+            <input type="text" id="supportSubject" placeholder="Betreff" style="margin-bottom:10px; width:100%;">
+            <textarea id="supportMessage" placeholder="Wie können wir dir helfen?" rows="4" style="margin-bottom:10px; width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px;"></textarea>
+            <button class="btn btn-primary" onclick="sendSupport()" style="width:100%;">Absenden</button>
+        </div>
+        <div id="supportSuccess" style="display:none; text-align:center; color:var(--success); padding:20px 0;">
+            <i class="fas fa-check-circle" style="font-size:2rem;"></i>
+            <p>Ticket erstellt. Wir melden uns per E-Mail.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSupport() {
+    const panel = document.getElementById('supportPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendSupport() {
+    const btn = document.querySelector('#supportForm button');
+    const email = document.getElementById('supportEmail').value.trim();
+    const subject = document.getElementById('supportSubject').value.trim();
+    const message = document.getElementById('supportMessage').value.trim();
+    if (!email || !subject || !message) {
+        if (typeof showToast === 'function') showToast('Bitte alle Felder ausfüllen', 'error');
+        else alert('Bitte alle Felder ausfüllen');
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const res = await fetch('api/support.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({email, subject, message})
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('supportForm').style.display = 'none';
+            document.getElementById('supportSuccess').style.display = 'block';
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Fehler', 'error');
+            else alert(data.error || 'Fehler');
+            btn.disabled = false;
+            btn.textContent = 'Absenden';
+        }
+    } catch(e) {
+        if (typeof showToast === 'function') showToast('Netzwerkfehler', 'error');
+        else alert('Netzwerkfehler');
+        btn.disabled = false;
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const widget = document.getElementById('supportWidget');
+    if (widget && !widget.contains(e.target)) {
+        const panel = document.getElementById('supportPanel');
+        if (panel) panel.style.display = 'none';
+    }
+});
+
 </script>
 </body>
 </html>

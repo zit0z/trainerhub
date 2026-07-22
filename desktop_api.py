@@ -65,6 +65,20 @@ class SweetCheatAPI:
         return self._request('trainer-logs.php?action=add', method='POST',
                              data={'trainer_id': trainer_id, 'success': success, 'action': action})
 
+
+
+    def settings_get(self):
+        return self._request('GET', '/user-settings.php?action=get')
+
+    def settings_update(self, username, theme):
+        return self._request('POST', '/user-settings.php?action=update_profile', {'username': username, 'theme': theme})
+
+    def rotate_key(self):
+        return self._request('POST', '/user-settings.php?action=rotate_key', {})
+
+    def change_password(self, current, new):
+        return self._request('POST', '/user-settings.php?action=change_password', {'current_password': current, 'new_password': new})
+
     def favorites(self):
         return self._request('favorites.php')
 
