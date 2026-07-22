@@ -14,7 +14,7 @@ else:
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from logger import get_logger, LOG_FILE
+from logger import get_logger, LOG_FILE, setup_root_logging
 from autostart_module import is_autostart_enabled, set_autostart
 from tray_module import SweetCheatTray
 from hotkey_module import HotkeyManager
@@ -87,6 +87,7 @@ def _attach_background_services(app):
 
 
 def main():
+    setup_root_logging()
     sys.excepthook = _global_exception_handler
     logger.info(f"SweetCheat starting. Python {sys.version}. CWD: {os.getcwd()}. Minimized: {MINIMIZED}")
 

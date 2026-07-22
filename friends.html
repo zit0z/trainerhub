@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freunde — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .friend-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .friend-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, var(--accent), #8b5cf6); display:flex; align-items:center; justify-content:center; font-weight:700; color:#0a0a0f; margin-right:14px; }
+        .friend-info { display:flex; align-items:center; }
+        .friend-name { font-weight:600; }
+        .friend-rep { font-size:13px; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+        </div>
+    </header>
+
+    <div style="max-width:700px; margin:0 auto; padding:40px 20px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:30px;">Freunde</h1>
+        <div style="display:flex; gap:10px; margin-bottom:30px;">
+            <input type="text" id="searchUser" placeholder="Benutzer suchen..." style="flex:1; padding:12px 16px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg-card); color:var(--text);">
+            <button class="btn btn-primary" onclick="searchUser()">Suchen</button>
+        </div>
+        <h2 style="font-size:1.1rem; color:var(--text-muted); margin-bottom:16px;">Folge ich</h2>
+        <div id="followingList">Lade...</div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login?redirect=friends';
+
+        async function loadFollowing() {
+            try {
+                const res = await fetch('api/profile.php?action=following', {headers: {'Authorization':'Bearer '+key}});
+                const data = await res.json();
+                const list = document.getElementById('followingList');
+                if (!data.success || !data.following.length) {
+                    list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Du folgst noch niemandem.</div>';
+                    return;
+                }
+                list.innerHTML = data.following.map(u => `
+                    <div class="friend-card">
+                        <div class="friend-info">
+                            <div class="friend-avatar">${(u.username || 'U').charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="friend-name">${escapeHtml(u.username || 'Anonym')}</div>
+                                <div class="friend-rep">${u.reputation || 0} Reputation</div>
+                            </div>
+                        </div>
+                        <a href="user/${encodeURIComponent(u.username || u.id)}" class="btn btn-secondary btn-sm">Profil</a>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        async function searchUser() {
+            const q = document.getElementById('searchUser').value;
+            if (!q) return;
+            window.open(`user/${encodeURIComponent(q)}`, '_blank');
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadFollowing();
+    </script>
+</body>
+</html>
