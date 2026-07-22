@@ -93,7 +93,12 @@
             background: var(--warning);
             color: var(--bg);
         }
-        .btn-block { display: flex; width: 100%; justify-content: center; }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border-highlight);
+        }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
         .hero {
             padding: 9rem 2rem 3rem;
@@ -217,59 +222,77 @@
 
     <section class="hero">
         <h1>TrainerHub für <span>Windows</span> installieren</h1>
-        <p>Desktop-App für 300+ Singleplayer-Spiele. Version 0.5.0 mit neuem Gaming-Design.</p>
+        <p>Desktop-App für 300+ Singleplayer-Spiele. Version 0.5.1 mit Inno Setup-Installer und Auto-Updater.</p>
     </section>
 
     <div class="container">
         <div class="card download-card">
-            <div class="version-badge">Aktuell: v0.5.0</div>
-            <h2><i class="fas fa-download"></i> Windows-EXE herunterladen</h2>
+            <div class="version-badge" id="versionDisplay">Aktuell: v0.5.1</div>
+            <h2><i class="fas fa-cog"></i> Empfohlen: Windows-Installer</h2>
             <p style="color:var(--muted); margin-bottom:1.5rem;">
-                Fertig gebaut auf echtem Windows Server 2022 via GitHub Actions. 13 MB ZIP.
+                Professioneller Inno Setup-Installer mit Wizard, Startmenü-Eintrag, Lizenzvereinbarung und automatischem Updater.
             </p>
-            
+
             <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-                <a href="/trainerhub/TrainerHub-windows.zip" class="btn btn-primary" style="padding:16px 32px; font-size:1rem;">
-                    <i class="fas fa-download"></i> TrainerHub-windows.zip
+                <a href="/trainerhub/TrainerHub-Setup.exe" class="btn btn-primary" style="padding:16px 32px; font-size:1.05rem;">
+                    <i class="fas fa-download"></i> TrainerHub-Setup.exe
                 </a>
                 <a href="https://github.com/zit0z/trainerhub/actions/workflows/build-windows.yml" target="_blank" class="btn btn-gold" style="padding:16px 32px; font-size:1rem;">
                     <i class="fas fa-cogs"></i> GitHub Actions
                 </a>
             </div>
+            <p style="color:var(--muted); margin-top:1rem; font-size:0.85rem;">
+                Version 0.5.1 · 12 MB · Windows 10/11
+            </p>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-rocket"></i> Highlights in v0.5.0</h2>
+            <h2><i class="fas fa-file-archive"></i> Alternative: ZIP-Datei</h2>
+            <p style="color:var(--muted); margin-bottom:1.5rem;">
+                Für Nutzer, die den Installer nicht verwenden möchten. ZIP entpacken und TrainerHub.exe starten.
+            </p>
+            <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <a href="/trainerhub/TrainerHub-windows.zip" class="btn btn-secondary" style="padding:14px 28px;">
+                    <i class="fas fa-download"></i> TrainerHub-windows.zip
+                </a>
+                <a href="/trainerhub/desktop-python.zip" class="btn btn-gold" style="padding:14px 28px;">
+                    <i class="fas fa-file-code"></i> Source-Code (Python)
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-rocket"></i> Highlights in v0.5.1</h2>
             <div class="grid">
+                <div class="feature">
+                    <i class="fas fa-cog"></i>
+                    <h3>Inno Setup Installer</h3>
+                    <p>Professioneller Wizard mit Startmenü-Eintrag.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-sync"></i>
+                    <h3>Auto-Updater</h3>
+                    <p>Prüft bei jedem Start auf neue Versionen.</p>
+                </div>
                 <div class="feature">
                     <i class="fas fa-paint-brush"></i>
                     <h3>Neues Gaming-Design</h3>
-                    <p>Cyan-Akzente, Rajdhani-Typografie, animierte Karten.</p>
+                    <p>Cyan-Akzente, Rajdhani-Typografie.</p>
                 </div>
                 <div class="feature">
                     <i class="fas fa-tachometer-alt"></i>
-                    <h3>Dashboard mit Verlauf</h2>
-                    <p>Statistiken, Favoriten, Aktivierungs-Chart, Live-Log.</p>
+                    <h3>Dashboard mit Verlauf</h3>
+                    <p>Statistiken, Favoriten, Aktivierungs-Chart.</p>
                 </div>
                 <div class="feature">
                     <i class="fas fa-search"></i>
                     <h3>Memory Scanner</h3>
-                    <p>2-Scan-Dialog, Freeze-Manager, Adress-Liste.</p>
+                    <p>2-Scan-Dialog, Freeze-Manager.</p>
                 </div>
                 <div class="feature">
                     <i class="fas fa-brain"></i>
                     <h3>Pattern Learner</h3>
                     <p>Selbst stabile Memory-Adressen finden.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-plug"></i>
-                    <h3>SMAPI Live-Werte</h3>
-                    <p>Echtzeit-Anzeige für Stardew Valley.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-cloud"></i>
-                    <h3>Cloud-Sync</h3>
-                    <p>Favoriten und Settings synchronisieren.</p>
                 </div>
             </div>
         </div>
@@ -280,22 +303,22 @@
                 <div class="step">
                     <div class="step-num">1</div>
                     <div class="step-content">
-                        <h3>ZIP herunterladen</h3>
-                        <p>Lade <code>TrainerHub-windows.zip</code> von oben herunter und entpacke es.</p>
+                        <h3>Setup herunterladen</h3>
+                        <p>Lade <code>TrainerHub-Setup.exe</code> herunter und führe es aus.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-num">2</div>
                     <div class="step-content">
-                        <h3>SmartScreen umgehen</h3>
-                        <p>Windows zeigt "Unbekannte App". Klicke auf "Weitere Informationen" → "Trotzdem ausführen".</p>
+                        <h3>Wizard durchlaufen</h3>
+                        <p>Akzeptiere die Lizenz, wähle den Installationspfad und lasse den Startmenü-Eintrag erstellen.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-num">3</div>
                     <div class="step-content">
                         <h3>Einloggen &amp; loslegen</h3>
-                        <p>Starte <code>TrainerHub.exe</code>, logge dich mit deinem Account ein und wähle ein Spiel.</p>
+                        <p>Starte TrainerHub, logge dich ein und wähle ein Spiel. Die App prüft automatisch auf Updates.</p>
                     </div>
                 </div>
             </div>
@@ -304,8 +327,10 @@
         <div class="card warning" id="smartscreen">
             <h3><i class="fas fa-exclamation-triangle"></i> Warum warnt Windows?</h3>
             <p style="margin-top:0.5rem;">
-                Die App ist mit einem kostenlosen self-signed Zertifikat signiert. Das ist bei neuen Entwicklern normal.
-                Wir verzichten absichtlich auf teure EV-Zertifikate, um die App kostenlos anbieten zu können.
+                Der Installer ist Freeware und hat kein teures EV-Code-Signing-Zertifikat. SmartScreen erkennt den Herausgeber daher nicht.
+                Klicke auf <strong>„Weitere Informationen“ → „Trotzdem ausführen“</strong>.
+                Der Build läuft transparent auf GitHub Actions mit offiziellem Python + Inno Setup — der Code ist einsehbar.
+                Du kannst die Datei auch auf <a href="https://www.virustotal.com" target="_blank" style="color:var(--accent);">VirusTotal</a> prüfen.
             </p>
         </div>
 
@@ -314,20 +339,22 @@
             <strong>Nur Singleplayer:</strong> TrainerHub ist ausschließlich für Offline- &amp; Solo-Spiele gedacht.
             Keine Multiplayer-Cheats, keine Anti-Cheat-Umgehung.
         </div>
-
-        <div class="card">
-            <h2><i class="fas fa-code"></i> Alternativ: Aus dem Source-Code bauen</h2>
-            <p style="color:var(--muted); margin-bottom:1rem;">
-                Wenn du die App selbst prüfen oder anpassen willst, kannst du sie aus dem Source-ZIP bauen:
-            </p>
-            <a href="/trainerhub/desktop-python.zip" class="btn btn-gold">
-                <i class="fas fa-file-archive"></i> desktop-python.zip downloaden
-            </a>
-        </div>
     </div>
 
     <footer style="padding:2rem; text-align:center; color:var(--muted); border-top:1px solid var(--border);">
         <p>© 2026 TrainerHub. Für legale Singleplayer-Trainer. Nur für private Nutzung.</p>
     </footer>
+
+    <script>
+        fetch('/trainerhub/api/version.php')
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById('versionDisplay');
+                if (el && data.success) {
+                    el.textContent = 'Aktuell: ' + data.version;
+                }
+            })
+            .catch(() => {});
+    </script>
 </body>
 </html>

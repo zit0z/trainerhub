@@ -3,134 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerHub — Singleplayer Trainer & Mods</title>
-    <meta name="description" content="TrainerHub — 300+ legale Singleplayer-Trainer, Savegame-Editor, Memory-Scanner und SMAPI-Bridge für Windows.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>TrainerHub — Singleplayer Trainer, Cheats & Savegame-Tools</title>
+    <meta name="description" content="TrainerHub bietet moderne Singleplayer-Trainer, Savegame-Editoren und Cheats für PC-Spiele. Kein Viren-Scanner-Alarm, keine Third-Party-Cheat-Tables.">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
     <style>
-        :root { --bg: #050507; --bg-card: #0f1016; --bg-elevated: #16171f; --border: #232333; --text: #f8fafc; --muted: #94a3b8; --accent: #00f0ff; --magenta: #ff3864; }
-        .navbar { position: fixed; inset: 0 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2.5rem; background: rgba(5,5,7,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 1000; }
-        .brand { font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.6rem; text-transform: uppercase; }
-        .brand i { color: var(--accent); font-size: 1.5rem; }
-        .brand span { color: var(--accent); }
-        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 9rem 2rem 5rem; position: relative; background: radial-gradient(circle at 20% 30%, rgba(0,240,255,0.1) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(255,56,100,0.08) 0%, transparent 40%), var(--bg); }
-        .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300f0ff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); opacity: 0.4; pointer-events: none; }
+        :root { scroll-behavior: smooth; }
+        .landing-hero { min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; position: relative; overflow: hidden; }
+        .landing-hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(0,240,255,0.12), transparent 40%); animation: pulse-glow 8s ease-in-out infinite; }
+        @keyframes pulse-glow { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.2); opacity: 1; } }
         .hero-content { position: relative; z-index: 1; max-width: 900px; }
-        .hero-tag { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 999px; background: var(--bg-card); border: 1px solid var(--border); color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; }
-        .hero h1 { font-family: 'Rajdhani', sans-serif; font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 700; line-height: 1; margin-bottom: 1.5rem; text-transform: uppercase; }
-        .hero p { font-size: 1.2rem; color: var(--muted); max-width: 680px; margin: 0 auto 2.5rem; }
-        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-        .section { padding: 6rem 2.5rem; }
-        .section-header { text-align: center; max-width: 700px; margin: 0 auto 3.5rem; }
-        .section-header h2 { font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; text-transform: uppercase; margin-bottom: 0.75rem; }
-        .section-header p { color: var(--muted); }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
-        .feature { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; transition: all .2s; }
-        .feature:hover { border-color: var(--border-active); box-shadow: 0 0 30px rgba(0,240,255,0.08); transform: translateY(-4px); }
-        .feature i { font-size: 2rem; color: var(--accent); margin-bottom: 1rem; }
-        .feature h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-        .feature p { color: var(--muted); font-size: 0.95rem; }
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; max-width: 1200px; margin: 0 auto; }
-        .game-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: center; transition: all .2s; }
-        .game-tile:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,240,255,0.1); }
-        .game-tile i { font-size: 1.8rem; color: var(--accent); margin-bottom: 0.75rem; }
-        .game-tile .name { font-weight: 600; font-size: 0.95rem; }
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; max-width: 1000px; margin: 0 auto; }
-        .stat-box { text-align: center; padding: 1.5rem; }
-        .stat-box .num { font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--accent); }
-        .stat-box .label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .cta { background: var(--bg-card); border-top: 1px solid var(--border); text-align: center; }
-        footer { background: var(--bg-card); border-top: 1px solid var(--border); padding: 2.5rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
-        footer a { color: var(--accent); text-decoration: none; }
-        @media (max-width: 640px) { .navbar { padding: 1rem; } .hero-actions { flex-direction: column; } }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .hero-title { font-family: 'Rajdhani', sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 700; line-height: 1.05; margin-bottom: 20px; }
+        .hero-title span { color: var(--accent); }
+        .hero-subtitle { color: var(--text-muted); font-size: clamp(1rem, 2vw, 1.25rem); max-width: 640px; margin: 0 auto 32px; line-height: 1.6; }
+        .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero { padding: 16px 32px; font-size: 16px; font-weight: 700; border-radius: var(--radius); }
+        .section { padding: 80px 20px; }
+        .section-title { text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 2.2rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+        .section-subtitle { text-align: center; color: var(--text-muted); max-width: 600px; margin: 0 auto 48px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+        .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; transition: all .25s; }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,240,255,0.1); }
+        .feature-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(0,240,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.6rem; margin-bottom: 18px; }
+        .feature-title { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; }
+        .feature-desc { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; text-align: center; }
+        .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 700; color: var(--accent); }
+        .stat-label { color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+        .pricing-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; text-align: center; position: relative; }
+        .pricing-card.premium { border-color: var(--accent); box-shadow: 0 0 40px rgba(0,240,255,0.1); }
+        .price-tag { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 700; margin: 16px 0; }
+        .price-tag span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+        .pricing-features { text-align: left; color: var(--text-muted); font-size: 14px; line-height: 2; margin: 24px 0; }
+        .pricing-features i { color: var(--accent); margin-right: 10px; }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--bg); padding: 4px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .faq-item { max-width: 800px; margin: 0 auto 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .faq-question { padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+        .faq-answer { padding: 0 24px; max-height: 0; overflow: hidden; transition: all .3s; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .faq-item.open .faq-answer { padding: 0 24px 18px; max-height: 200px; }
+        .cta-banner { background: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,56,100,0.08)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: center; padding: 60px 20px; }
+        .footer { background: var(--bg-card); border-top: 1px solid var(--border); padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
+        @media (max-width: 768px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="#" class="brand"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
-        <div class="nav-links">
-            <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Download</a>
-            <a href="dashboard" class="btn btn-secondary btn-sm">Dashboard</a>
+    <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,18,32,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="#" class="brand" style="font-size: 1.5rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+            <nav style="display: flex; gap: 24px; align-items: center;">
+                <a href="#features" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Features</a>
+                <a href="#pricing" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Preise</a>
+                <a href="#faq" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">FAQ</a>
+                <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+                <a href="login" class="btn btn-secondary btn-sm">Login</a>
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <section class="hero">
+    <section class="landing-hero" style="padding-top: 120px;">
         <div class="hero-content">
-            <div class="hero-tag"><i class="fas fa-shield-alt"></i> 300+ legale Singleplayer-Trainer</div>
-            <h1>Dominieren. Nicht cheaten. <span class="gradient-text">Legal.</span></h1>
-            <p>TrainerHub ist dein All-in-One Tool für legale Singleplayer-Trainer, Savegame-Editoren, Memory-Scanner und SMAPI-Bridge-Unterstützung.</p>
-            <div class="hero-actions">
-                <a href="setup" class="btn btn-primary"><i class="fas fa-download"></i> Windows App herunterladen</a>
-                <a href="#features" class="btn btn-secondary"><i class="fas fa-gamepad"></i> Mehr erfahren</a>
-            </div>
-            <div class="stats-row" style="margin-top: 4rem;">
-                <div class="stat-box"><div class="num" id="statGames">299</div><div class="label">Spiele</div></div>
-                <div class="stat-box"><div class="num" id="statTrainers">1965</div><div class="label">Trainer</div></div>
-                <div class="stat-box"><div class="num">0.6.7</div><div class="label">Version</div></div>
+            <div class="hero-badge"><i class="fas fa-shield-alt"></i> Keine Third-Party Cheat-Tables — Nur legale Singleplayer-Methoden</div>
+            <h1 class="hero-title">Dominiere deine
+                <span>Singleplayer-Welt</span>
+            </h1>
+            <p class="hero-subtitle">Moderne Trainer, Savegame-Editoren und Memory-Tools für PC-Spiele. Sauber gebaut, RDP- und Streamer-freundlich, ohne Viren-Scanner-Alarm.</p>
+            <div class="hero-cta">
+                <a href="setup" class="btn btn-primary btn-hero"><i class="fas fa-download"></i> Windows-App herunterladen</a>
+                <a href="games" class="btn btn-secondary btn-hero">Spiele erkunden</a>
             </div>
         </div>
     </section>
 
-    <section class="section" id="features">
-        <div class="section-header">
-            <h2>Warum TrainerHub?</h2>
-            <p>Alles, was du brauchst, um dein Singleplayer-Erlebnis zu optimieren — in einer professionellen Windows-App.</p>
-        </div>
-        <div class="feature-grid">
-            <div class="feature"><i class="fas fa-bolt"></i><h3>One-Click Cheats</h3><p>Aktiviere Cheats per Knopfdruck. Kein manuelles Eintippen mehr im Spiel.</p></div>
-            <div class="feature"><i class="fas fa-memory"></i><h3>Memory Scanner</h3><p>2-Werte-Scan, AOB-Suche und Freeze — für jedes Spiel verwendbar.</p></div>
-            <div class="feature"><i class="fas fa-save"></i><h3>Savegame Editor</h3><p>Sichere XML-Editoren mit automatischem Backup, z.B. für Stardew Valley.</p></div>
-            <div class="feature"><i class="fas fa-robot"></i><h3>SMAPI Bridge</h3><p>Direkte Kommunikation mit SMAPI für Stardew Valley Cheats.</p></div>
-            <div class="feature"><i class="fas fa-sync"></i><h3>Auto-Updater</h3><p>Immer auf dem neuesten Stand — Updates werden automatisch installiert.</p></div>
-            <div class="feature"><i class="fas fa-shield-alt"></i><h3>100% Singleplayer</h3><p>Keine Multiplayer- oder Anti-Cheat-Risiken. Nur legale Singleplayer-Tools.</p></div>
+    <section class="section" style="background: var(--bg-card);">
+        <div class="section-title">Zahlen, die überzeugen</div>
+        <div class="stats-bar">
+            <div><div class="stat-value" id="statGames">299+</div><div class="stat-label">Spiele</div></div>
+            <div><div class="stat-value" id="statTrainers">3.700+</div><div class="stat-label">Trainer</div></div>
+            <div><div class="stat-value">0€</div><div class="stat-label">Startpreis</div></div>
+            <div><div class="stat-value">1 Klick</div><div class="stat-label">Aktivierung</div></div>
         </div>
     </section>
 
-    <section class="section" id="games" style="background: var(--bg-card);">
-        <div class="section-header">
-            <h2>Unterstützte Spiele</h2>
-            <p>Von RPGs bis Simulationen — wir fügen ständig neue Titel hinzu.</p>
-        </div>
-        <div class="games-grid" id="gamesGrid"></div>
-        <div style="text-align: center; margin-top: 2rem;">
-            <a href="dashboard" class="btn btn-secondary">Alle Spiele im Dashboard</a>
+    <section id="features" class="section">
+        <div class="section-title">Warum TrainerHub?</div>
+        <div class="section-subtitle">Alles, was du brauchst — nichts, was du nicht willst.</div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <div class="feature-title">One-Click Cheats</div>
+                <div class="feature-desc">Kein lästiges Eintippen im Spiel. Cheats aktivieren sich per Knopfdruck über SMAPI-Bridge, Savegame-Editoren oder Memory-Writes.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-save"></i></div>
+                <div class="feature-title">Savegame-Editor</div>
+                <div class="feature-desc">Ändere Werte direkt in deinen Savegames — mit automatischem Backup, bevor etwas kaputt geht.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-crosshairs"></i></div>
+                <div class="feature-title">Prozess-Scanner</div>
+                <div class="feature-desc">Die Desktop-App erkennt laufende Spiele automatisch und zeigt passende Trainer an — ohne manuelles Suchen.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-star"></i></div>
+                <div class="feature-title">Favoriten & Sync</div>
+                <div class="feature-desc">Merke dir Spiele und Trainer im Web und greife in der Desktop-App darauf zu. Alles synchron über dein Konto.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-moon"></i></div>
+                <div class="feature-title">Dark & Light Theme</div>
+                <div class="feature-desc">Modernes UI mit Cyan-Akzenten, Dark Mode und optional Light Mode für helle Umgebungen.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">>i class="fas fa-lock"></i></div>
+                <div class="feature-title">Singleplayer-Only</div>
+                <div class="feature-desc">Keine Multiplayer-Cheats, keine AOB-Patterns von Dritten, keine Spyware. Nur legale Singleplayer-Methoden.</div>
+            </div>
         </div>
     </section>
 
-    <section class="section cta">
-        <h2>Bereit, dein Spiel zu <span class="gradient-text">beherrschen</span>?</h2>
-        <p style="color: var(--muted); margin-bottom: 1.5rem;">Lade TrainerHub v0.6.7 jetzt herunter. Kostenlos starten, Premium für volle Power.</p>
-        <a href="setup" class="btn btn-primary" style="font-size: 1.1rem; padding: 14px 32px;"><i class="fas fa-download"></i> Jetzt downloaden</a>
+    <section id="pricing" class="section" style="background: var(--bg-card);">
+        <div class="section-title">Preise</div>
+        <div class="section-subtitle">Starte kostenlos. Upgrade, wenn du mehr willst.</div>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Free</div>
+                <div class="price-tag">0€</div>
+                <ul class="pricing-features" style="list-style: none; padding: 0;">
+                    <li><i class="fas fa-check"></i> Basis-Trainer nutzen</li>
+                    <li><i class="fas fa-check"></i> Favoriten speichern</li>
+                    <li><i class="fas fa-check"></i> Web-Dashboard</li>
+                    <li><i class="fas fa-check"></i> Community-Support</li>
+                </ul>
+                <a href="register" class="btn btn-secondary" style="width: 100%;">Kostenlos starten</a>
+            </div>
+            <div class="pricing-card premium">
+                <div class="popular-badge">EMPFOHLEN</div>
+                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Premium</div>
+                <div class="price-tag">9,99€<span> / Monat</span></div>
+                <ul class="pricing-features" style="list-style: none; padding: 0;">
+                    <li><i class="fas fa-check"></i> Alle Premium-Trainer</li>
+                    <li><i class="fas fa-check"></i> Memory-Scanner</li>
+                    <li><i class="fas fa-check"></i> Savegame-Editoren</li>
+                    <li>>i class="fas fa-check"></i> SMAPI-Bridge</li>
+                    <li><i class="fas fa-check"></i> Prioritäts-Support</li>
+                </ul>
+                <a href="dashboard" class="btn btn-primary" style="width: 100%;">Premium aktivieren</a>
+            </div>
+        </div>
     </section>
 
-    <footer>
-        <p>© 2026 TrainerHub. Alle Rechte vorbehalten. <a href="setup">Download</a> · <a href="dashboard">Dashboard</a> · <a href="admin/">Admin</a></p>
+    <section id="faq" class="section">
+        <div class="section-title">Häufige Fragen</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Ist TrainerHub sicher?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">Ja. Wir verwenden nur legale Singleplayer-Methoden wie Savegame-Editing, SMAPI-Bridge und Memory-Writes. Keine Third-Party-Cheat-Tables, keine AOB-Patterns, keine Multiplayer-Cheats.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Funktioniert das auf jedem PC?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">Die Windows-App läuft auf Windows 10/11. Einige Features benötigen Administrator-Rechte für Memory-Operationen. Für Stardew Valley reicht SMAPI oder Savegame-Editing.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich mein Abo jederzeit kündigen?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">Ja. Premium ist monatlich kündbar. Dein Account bleibt als Free-Account erhalten.</div>
+        </div>
+    </section>
+
+    <section class="cta-banner">
+        <div style="max-width: 700px; margin: 0 auto;">
+            <h2 style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; margin-bottom: 16px;">Bereit, dein Spielerlebnis zu verbessern?</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Lade die App herunter oder starte direkt im Browser.</p>
+            <a href="setup" class="btn btn-primary btn-hero"><i class="fas fa-download"></i> Jetzt herunterladen</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2026 TrainerHub. Singleplayer-Trainer für PC-Spiele.</p>
+        <div style="margin-top: 12px;">
+            <a href="login" style="color: var(--text-muted); margin: 0 10px;">Login</a>
+            <a href="register" style="color: var(--text-muted); margin: 0 10px;">Registrieren</a>
+            <a href="dashboard" style="color: var(--text-muted); margin: 0 10px;">Dashboard</a>
+        </div>
     </footer>
 
     <script>
-        async function loadGames() {
+        async function loadStats() {
             try {
-                const res = await fetch('api/games.php?per_page=12');
+                const res = await fetch('api/games.php?per_page=1');
                 const data = await res.json();
-                if (!data.success) return;
-                const grid = document.getElementById('gamesGrid');
-                grid.innerHTML = data.games.map(g => `
-                    <div class="game-tile">
-                        <i class="fas fa-gamepad"></i>
-                        <div class="name">${escapeHtml(g.name)}</div>
-                        <div style="color:var(--muted); font-size:0.75rem; margin-top:4px;">${escapeHtml(g.genre || '')}</div>
-                    </div>
-                `).join('');
-                document.getElementById('statGames').textContent = data.total || data.games.length;
-            } catch (e) { console.error(e); }
+                if (data.success) {
+                    document.getElementById('statGames').textContent = data.total + '+';
+                }
+                const res2 = await fetch('api/trainers.php?action=count');
+                const data2 = await res2.json();
+                if (data2.success) {
+                    document.getElementById('statTrainers').textContent = data2.count.toLocaleString('de-DE') + '+';
+                }
+            } catch(e) {}
         }
-        function escapeHtml(text) {
-            const div = document.createElement('div'); div.textContent = text; return div.innerHTML;
-        }
-        loadGames();
+        loadStats();
     </script>
 </body>
 </html>

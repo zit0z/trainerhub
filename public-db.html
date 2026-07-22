@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öffentliche Trainer-Datenbank — TrainerHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .games-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:18px; }
+        .game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:all .2s; }
+        .game-card:hover { border-color:var(--accent); transform:translateY(-4px); }
+        .game-cover { height:120px; background:linear-gradient(135deg, rgba(0,240,255,0.12), rgba(0,168,255,0.08)); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:2.5rem; position:relative; }
+        .trainer-badge { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.6); color:#fff; padding:3px 10px; border-radius:12px; font-size:12px; }
+        .game-card-body { padding:16px; }
+        .game-title { font-family:'Rajdhani',sans-serif; font-weight:600; font-size:1.15rem; margin-bottom:4px; }
+        .game-meta { font-size:13px; color:var(--text-muted); }
+        .trainer-list { display:none; padding:16px; border-top:1px solid var(--border); background:var(--bg-elevated); }
+        .trainer-list.open { display:block; }
+        .filter-bar { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+        @media (max-width:640px) { .games-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+            <div style="display:flex; gap:12px;">
+                <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+                <a href="login" class="btn btn-secondary btn-sm">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <div style="max-width:1200px; margin:0 auto; padding:28px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:8px;">Öffentliche Trainer-Datenbank</h1>
+        <p style="color:var(--text-muted); margin-bottom:24px;">Durchsuche alle verfügbaren Spiele und Trainer ohne Login.</p>
+
+        <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="Spiel oder Trainer suchen..." oninput="loadData()" style="max-width:320px;">
+            <select id="genreFilter" onchange="loadData()">
+                <option value="">Alle Genres</option>
+                <option value="RPG">RPG</option>
+                <option value="Action">Action</option>
+                <option value="Shooter">Shooter</option>
+                <option value="Strategy">Strategy</option>
+                <option value="Simulation">Simulation</option>
+                <option value="Puzzle">Puzzle</option>
+                <option value="Sports">Sports</option>
+            </select>
+        </div>
+
+        <div id="gamesGrid" class="games-grid">
+            <div class="card shimmer" style="height:200px;"></div>
+            <div class="card shimmer" style="height:200px;"></div>
+            <div class="card shimmer" style="height:200px;"></div>
+        </div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 TrainerHub — Singleplayer-Trainer für PC-Spiele.</p>
+    </footer>
+
+    <script>
+        let allGames = [];
+        async function loadData() {
+            const q = document.getElementById('searchInput').value.trim();
+            const genre = document.getElementById('genreFilter').value;
+            try {
+                const res = await fetch(`api/games.php?per_page=100${q ? '&search='+encodeURIComponent(q) : ''}${genre ? '&genre='+encodeURIComponent(genre) : ''}`);
+                const data = await res.json();
+                if (!data.success) return;
+                allGames = data.games;
+                renderGames(allGames);
+            } catch(e) { console.error(e); }
+        }
+
+        function renderGames(games) {
+            const grid = document.getElementById('gamesGrid');
+            if (!games.length) { grid.innerHTML = '<div class="card" style="padding:32px; text-align:center; color:var(--text-muted); grid-column:1/-1;">Keine Treffer.</div>'; return; }
+            grid.innerHTML = games.map(g => `
+                <div class="game-card">
+                    <div class="game-cover">
+                        <i class="fas ${g.cover_url || 'fa-gamepad'}"></i>
+                        <span class="trainer-badge">${g.trainer_count || 0} Trainer</span>
+                    </div>
+                    <div class="game-card-body">
+                        <div class="game-title">${escapeHtml(g.name)}</div>
+                        <div class="game-meta">${escapeHtml(g.genre || 'Unknown')} • ${g.release_year || '-'}</div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:12px; width:100%;" onclick="toggleTrainers(this, '${g.slug}')">Trainer anzeigen</button>
+                        <div class="trainer-list" id="list-${g.slug}">Lade...</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleTrainers(btn, slug) {
+            const list = document.getElementById('list-' + slug);
+            list.classList.toggle('open');
+            if (list.classList.contains('open') && list.textContent === 'Lade...') {
+                try {
+                    const res = await fetch('api/trainers.php?game=' + encodeURIComponent(slug));
+                    const data = await res.json();
+                    const trainers = data.trainers || [];
+                    list.innerHTML = trainers.length ? trainers.map(t => `
+                        <div style="padding:8px 0; border-bottom:1px solid var(--border);">
+                            <div style="font-weight:600;">${escapeHtml(t.name)} ${t.premium ? '<span style="color:#ff3864; font-size:11px;">PREMIUM</span>' : ''}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${escapeHtml(t.description || '')}</div>
+                        </div>
+                    `).join('') : '<div style="color:var(--text-muted); font-size:13px;">Keine öffentlichen Trainer.</div>';
+                    btn.textContent = 'Trainer verbergen';
+                } catch(e) { list.innerHTML = 'Fehler beim Laden.'; }
+            } else {
+                btn.textContent = list.classList.contains('open') ? 'Trainer verbergen' : 'Trainer anzeigen';
+            }
+        }
+
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadData();
+    </script>
+</body>
+</html>

@@ -145,10 +145,19 @@
         if (!key) location.href = 'login';
 
         async function loadProfile() {
-            const [statusRes, statsRes] = await Promise.all([
+            const [statusRes, statsRes, achRes, refRes] = await Promise.all([
                 fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}}),
-                fetch('api/trainer-logs.php?action=stats', {headers:{'Authorization':'Bearer '+key}})
+                fetch('api/trainer-logs.php?action=stats', {headers:{'Authorization':'Bearer '+key}}),
+                fetch('api/achievements.php', {headers:{'Authorization':'Bearer '+key}}),
+                fetch('api/referrals.php?action=info', {headers:{'Authorization':'Bearer '+key}})
             ]);
+            const achievements = await achRes.json();
+            const referral = await refRes.json();
+            if (achievements.success) renderAchievements(achievements.achievements || []);
+            if (referral.success) {
+                document.getElementById('refCode').value = referral.url || '';
+                document.getElementById('refStats').textContent = `${referral.referrals || 0} erfolgreiche Empfehlungen • ${referral.reward_per_referral || 0} Tage Premium pro Referral`;
+            }
             const status = await statusRes.json();
             const stats = await statsRes.json();
             if (!status.success) { location.href='login'; return; }
@@ -179,6 +188,22 @@
             `).join('');
             document.getElementById('chartStart').textContent = data[0]?.date || '-';
             document.getElementById('chartEnd').textContent = data[data.length-1]?.date || '-';
+        }
+
+        function renderAchievements(list) {
+            const container = document.getElementById('achievementsList');
+            container.innerHTML = list.map(a => `
+                <div class="card" style="padding:16px; text-align:center; opacity:${a.unlocked ? 1 : 0.5}; border-color:${a.unlocked ? 'var(--accent)' : 'var(--border)'};">
+                    <i class="fas ${a.icon}" style="font-size:1.6rem; color:${a.unlocked ? 'var(--accent)' : 'var(--text-muted)'}; margin-bottom:8px;"></i>
+                    <div style="font-weight:600; font-size:13px;">${a.name}</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${a.description}</div>
+                </div>
+            `).join('');
+        }
+
+        function copyRef() {
+            const input = document.getElementById('refCode');
+            navigator.clipboard.writeText(input.value).then(() => showToast('Link kopiert', 'success', 1500));
         }
 
         function renderActivity(items) {
