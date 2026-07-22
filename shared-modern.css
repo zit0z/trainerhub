@@ -100,3 +100,56 @@ tr:hover td { background:rgba(255,255,255,0.02); }
     animation: shimmer 1.5s infinite;
     border-radius: var(--radius);
 }
+
+/* Toast animation */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(120%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Light theme variables */
+:root[data-theme="light"] {
+    --bg: #f4f6f8;
+    --bg-card: #ffffff;
+    --bg-elevated: #eef1f5;
+    --text: #0b1220;
+    --text-muted: #5a6578;
+    --border: rgba(11, 18, 32, 0.10);
+    --accent: #0088cc;
+    --accent-glow: rgba(0, 136, 204, 0.20);
+}
+:root[data-theme="light"] .nav-sidebar { background: rgba(255,255,255,0.85); }
+:root[data-theme="light"] .page-content::before { opacity: 0.03; }
+
+/* Mobile sidebar */
+.mobile-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+@media (max-width: 900px) {
+    .mobile-toggle { display: block; }
+    .nav-sidebar { position: fixed; left: -260px; top: 0; bottom: 0; transition: left .25s ease; z-index: 200; }
+    .nav-sidebar.open { left: 0; }
+    .page-content { margin-left: 0; }
+    .topbar { left: 0; }
+    .games-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+}
+@media (max-width: 640px) {
+    .games-grid { grid-template-columns: 1fr; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Search dropdown */
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 50;
+}
+.search-dropdown.open { display: flex; }
+.search-dropdown a:hover { background: rgba(127,127,127,0.08); }

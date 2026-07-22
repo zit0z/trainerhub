@@ -35,24 +35,38 @@ $pdo = getDB();
 
 if ($action === 'list') {
     $slug = $_GET['game'] ?? 'stardew-valley';
+    $search = $_GET['search'] ?? null;
     $cache_key = 'trainers_' . preg_replace('/[^a-z0-9-]/', '', $slug);
     $cached = getCache($cache_key, 300);
     if ($cached) {
         jsonResponse(['success' => true] + $cached + ['cached' => true]);
     }
     
-    $stmt = $pdo->prepare("
-        SELECT t.*, g.name as game_name, g.process_name, g.slug as game_slug
+    $sql = "SELECT t.*, g.name as game_name, g.process_name, g.slug as game_slug
         FROM trainers t
         JOIN games g ON g.id = t.game_id
-        WHERE g.slug = ? AND t.is_active = 1
-        ORDER BY t.is_premium ASC, t.name ASC
-    ");
-    $stmt->execute([$slug]);
+        WHERE g.slug = ? AND t.is_active = 1";
+    $params = [$slug];
+    if ($search) {
+        $sql .= " AND (t.name LIKE ? OR t.description LIKE ? OR t.tags LIKE ?)";
+        $like = "%$search%";
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+    }
+    $sql .= " ORDER BY t.is_premium ASC, t.name ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $trainers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Fetch user's trainer favorites
+    $favStmt = $pdo->prepare("SELECT trainer_id FROM user_favorites WHERE user_id = ? AND game_id IS NULL");
+    $favStmt->execute([$user['id']]);
+    $favTrainers = array_flip($favStmt->fetchAll(PDO::FETCH_COLUMN));
+
     foreach ($trainers as &$t) {
         $t['locked'] = ($t['is_premium'] == 1 && !$isPremium);
+        $t['is_favorite'] = isset($favTrainers[$t['id']]) ? 1 : 0;
         $t['title'] = $t['name'];
         $t['premium'] = (int)$t['is_premium'];
         $t['tags'] = $t['tags'] ? explode(',', $t['tags']) : [];
@@ -121,6 +135,12 @@ if ($action === 'activate') {
         'process_name' => $trainer['process_name'],
         'patterns' => $patterns
     ]);
+}
+
+if ($action === 'count') {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM trainers WHERE is_active = 1");
+    $stmt->execute();
+    jsonResponse(['success' => true, 'count' => (int)$stmt->fetchColumn()]);
 }
 
 jsonResponse(['success' => false, 'error' => 'Invalid action'], 400);

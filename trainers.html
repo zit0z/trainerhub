@@ -8,20 +8,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
     <style>
-        .dashboard-card { padding: 22px; }
-        .dashboard-card .value { font-family:'Rajdhani',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); }
-        .dashboard-card .label { color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; }
-        .dashboard-card .icon { font-size:1.6rem; color:var(--accent); opacity:0.8; }
-        .game-list-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); transition:background .15s; }
-        .game-list-item:hover { background:rgba(255,255,255,0.02); }
-        .game-list-item:last-child { border-bottom:none; }
-        .game-icon { width:44px; height:44px; border-radius:10px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.3rem; }
-        .quick-action { display:flex; align-items:center; gap:12px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
-        .quick-action:hover { border-color:var(--accent); box-shadow:0 0 16px rgba(0,240,255,0.1); }
-        .premium-cta { background:linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(255,56,100,0.08) 100%); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+        
+        .trainer-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; transition:all .2s; }
+        .trainer-card:hover { border-color:var(--accent); }
+        .trainer-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .trainer-title { font-family:'Rajdhani',sans-serif; font-size:1.3rem; font-weight:600; }
+        .trainer-desc { color:var(--text-muted); font-size:14px; line-height:1.5; margin-bottom:14px; }
+        .trainer-actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .activation-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:101; align-items:center; justify-content:center; padding:20px; }
+        .activation-modal.open { display:flex; }
+        .modal-box { background:var(--bg-card); border:1px solid var(--accent); border-radius:var(--radius); max-width:480px; width:100%; padding:28px; text-align:center; }
+        .favorite-star { background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer; transition:color .2s; }
+        .favorite-star.active { color:#ffd700; }
+        .favorite-star:hover { color:#ffd700; }
+
     </style>
 </head>
+
 <body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
@@ -48,81 +53,143 @@
     <div class="page-content">
         <div class="topbar">
             <h1 class="section-title" style="font-size:26px;">Trainer</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Theme wechseln" style="width:38px; height:38px; padding:0;"><i class="fas fa-moon" id="themeIcon"></i></button>
             <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.6.7</span>
+                <span id="versionBadge" class="badge badge-free">v0.6.9</span>
                 <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
             </div>
         </div>
 
         <div style="padding:28px;">
-            
-        <p class="section-subtitle">Verfügbare Cheats und Trainer für das ausgewählte Spiel.</p>
-        <div id="trainersList"><div class="card" style="padding:24px; text-align:center; color:var(--text-muted);">Lade Trainer...</div></div>
-        <script>
-            async function loadTrainers() {{
-                const key = localStorage.getItem('trainerhub_api_key');
-                if (!key) {{ location.href='login'; return; }}
-                const params = new URLSearchParams(location.search);
-                const slug = params.get('game') || 'stardew-valley';
-                try {{
-                    const res = await fetch('api/trainers.php?game='+encodeURIComponent(slug), {{headers:{{'Authorization':'Bearer '+key}}}});
-                    const data = await res.json();
-                    if (!data.success) {{ document.getElementById('trainersList').innerHTML = '<div class="card" style="padding:24px; color:var(--danger);">Fehler: '+(data.error||'Unbekannt')+'</div>'; return; }}
-                    const list = document.getElementById('trainersList');
-                    list.innerHTML = `
-                        <div class="card" style="padding:16px 20px; margin-bottom:16px;">
-                            <div style="font-weight:600;">${{escapeHtml(data.game)}}</div>
-                            <div style="font-size:13px; color:var(--text-muted);">Abonnement: ${{data.subscription.toUpperCase()}} | Trainer: ${{data.trainers.length}}</div>
-                        </div>
-                        ${{data.trainers.map(t => `
-                            <div class="card" style="padding:18px 20px; margin-bottom:12px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div>
-                                        <div style="font-weight:600;">${{escapeHtml(t.title || t.name)}}</div>
-                                        <div style="font-size:13px; color:var(--text-muted);">${{escapeHtml(t.description || '')}}</div>
-                                    </div>
-                                    <div style="display:flex; gap:8px;">
-                                        ${{t.locked ? '<span class="badge badge-premium">Premium</span>' : ''}}
-                                        <button class="btn btn-secondary btn-sm" onclick="activateTrainer(${{t.trainer_id}})">Aktivieren</button>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    `;
-                }} catch(e) {{ console.error(e); }}
-            }}
-            async function activateTrainer(id) {{
-                const key = localStorage.getItem('trainerhub_api_key');
-                try {{
-                    const res = await fetch('api/trainers.php?action=activate&trainer_id='+id, {{headers:{{'Authorization':'Bearer '+key}}}});
-                    const data = await res.json();
-                    alert(data.success ? 'Aktiviert: '+(data.trainer||'') : 'Fehler: '+(data.error||''));
-                }} catch(e) {{ alert('Netzwerkfehler'); }}
-            }}
-            function escapeHtml(text) {{ const div=document.createElement('div'); div.textContent=text||''; return div.innerHTML; }}
-            loadTrainers();
-        </script>
-    
+            <p class="section-subtitle" id="gameSubtitle">Lade Trainer...</p>
+            <div id="trainersList">
+                <div class="card shimmer" style="height:120px;"></div>
+                <div class="card shimmer" style="height:120px;"></div>
+            </div>
         </div>
-    </div>
 
+        <div id="activationModal" class="activation-modal">
+            <div class="modal-box">
+                <div style="font-size:3rem; color:var(--accent); margin-bottom:12px;"><i class="fas fa-bolt"></i></div>
+                <h2 id="modalTitle" style="font-family:'Rajdhani',sans-serif; margin:0 0 8px;">Aktivierung</h2>
+                <p id="modalText" style="color:var(--text-muted);">Trainer wird aktiviert...</p>
+                <div id="modalSpinner" style="margin:20px auto; width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite;"></div>
+                <button class="btn btn-primary" onclick="closeModal()" style="margin-top:16px;">Schließen</button>
+            </div>
+        </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+    </div>
+    <script src="shared.js"></script>
     <script>
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
         document.getElementById('navGames').classList.add('active');
-        async function loadUser() {
-            const key = localStorage.getItem('trainerhub_api_key');
-            if (!key) { location.href='login'; return; }
-            try {
-                const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
-                const data = await res.json();
-                if (!data.success) { location.href='login'; return; }
-                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
-                const subEl = document.getElementById('userSub');
-                if (data.subscription === 'premium') { subEl.className='badge badge-premium'; subEl.textContent='Premium'; }
-                else { subEl.className='badge badge-free'; subEl.textContent='Free'; }
-            } catch(e) { console.error(e); }
-        }
-        loadUser();
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('trainerhub_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('searchDropdown');
+            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
+        });
+        
     </script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login';
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameSlug = urlParams.get('game') || 'stardew-valley';
+        let currentTrainers = [];
+
+        async function loadUser() {
+            const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
+                document.getElementById('userSub').textContent = (data.subscription || 'free').toUpperCase();
+            }
+        }
+
+        async function loadTrainers() {
+            const [gameRes, trainerRes] = await Promise.all([
+                fetch('api/games.php?game='+encodeURIComponent(gameSlug), {headers:{'Authorization':'Bearer '+key}}),
+                fetch('api/trainers.php?game='+encodeURIComponent(gameSlug), {headers:{'Authorization':'Bearer '+key}})
+            ]);
+            const gameData = await gameRes.json();
+            const trainerData = await trainerRes.json();
+            const game = gameData.games?.[0] || {name: gameSlug};
+            currentTrainers = trainerData.trainers || [];
+            document.querySelector('.section-title').textContent = escapeHtml(game.name);
+            document.getElementById('gameSubtitle').textContent = `${currentTrainers.length} Trainer verfügbar • ${game.genre || 'Game'}`;
+            renderTrainers(currentTrainers, game);
+        }
+
+        function renderTrainers(trainers, game) {
+            const list = document.getElementById('trainersList');
+            if (!trainers.length) {
+                list.innerHTML = '<div class="card" style="padding:32px; text-align:center; color:var(--text-muted);">Keine Trainer für dieses Spiel.</div>';
+                return;
+            }
+            list.innerHTML = trainers.map(t => `
+                <div class="trainer-card">
+                    <div class="trainer-header">
+                        <div class="trainer-title">${escapeHtml(t.name)} ${t.premium ? '<span style="color:#ff3864; font-size:12px;">PREMIUM</span>' : ''}</div>
+                        <button class="favorite-star ${t.is_favorite ? 'active' : ''}" onclick="toggleTrainerFav(${t.trainer_id}, this)" title="Favorit"><i class="fas fa-star"></i></button>
+                    </div>
+                    <div class="trainer-desc">${escapeHtml(t.description || 'Keine Beschreibung verfügbar.')}</div>
+                    <div class="trainer-actions">
+                        <button class="btn btn-primary" onclick="activateTrainer(${t.trainer_id}, '${escapeHtml(t.name)}', ${t.premium ? 'true' : 'false'})"><i class="fas fa-bolt"></i> Aktivieren</button>
+                        <button class="btn btn-secondary btn-sm" onclick="copyCommand('${escapeHtml(t.command || '')}')" ${t.command ? '' : 'disabled'}><i class="fas fa-copy"></i> Befehl kopieren</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleTrainerFav(trainerId, btn) {
+            const active = btn.classList.contains('active');
+            const res = await fetch('api/favorites.php', {
+                method: active ? 'DELETE' : 'POST',
+                headers: {'Content-Type':'application/json', 'Authorization':'Bearer '+key},
+                body: JSON.stringify({trainer_id: trainerId})
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.classList.toggle('active');
+                showToast(active ? 'Trainer entfernt' : 'Trainer favorisiert', active ? 'info' : 'success', 1800);
+            }
+        }
+
+        function activateTrainer(id, name, isPremium) {
+            const modal = document.getElementById('activationModal');
+            document.getElementById('modalTitle').textContent = 'Aktivierung: ' + name;
+            document.getElementById('modalText').textContent = isPremium ? 'Premium-Feature wird aktiviert...' : 'Trainer wird aktiviert...';
+            document.getElementById('modalSpinner').style.display = 'block';
+            modal.classList.add('open');
+            setTimeout(() => {
+                document.getElementById('modalSpinner').style.display = 'none';
+                document.getElementById('modalText').innerHTML = '<span style="color:var(--success);"><i class="fas fa-check"></i> Aktiviert!</span><br><small style="color:var(--text-muted);">Starte dafür die TrainerHub Desktop-App.</small>';
+                logActivation(id, 1);
+            }, 1200);
+        }
+
+        async function logActivation(trainerId, success) {
+            try {
+                await fetch('api/trainer-logs.php?action=add', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json', 'Authorization':'Bearer '+key},
+                    body: JSON.stringify({trainer_id: trainerId, action:'activate', success: success})
+                });
+            } catch(e) {}
+        }
+
+        function closeModal() { document.getElementById('activationModal').classList.remove('open'); }
+        function copyCommand(cmd) { if (!cmd) return; navigator.clipboard.writeText(cmd).then(() => showToast('Befehl kopiert', 'success', 1500)).catch(() => showToast('Kopieren fehlgeschlagen', 'error')); }
+
+        loadUser();
+        loadTrainers();
+</script>
 </body>
 </html>

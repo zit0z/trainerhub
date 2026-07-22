@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
     <style>
+        
         .chart-bar { display:flex; align-items:flex-end; gap:6px; height:120px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); }
         .bar { flex:1; background:linear-gradient(180deg, var(--accent), rgba(0,240,255,0.2)); border-radius:4px 4px 0 0; min-height:4px; transition:height .3s; }
         .bar-label { text-align:center; font-size:10px; color:var(--text-muted); margin-top:6px; }
@@ -15,9 +16,12 @@
         .activity-item:last-child { border-bottom:none; }
         .activity-icon { width:36px; height:36px; border-radius:8px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); }
         .empty-state { text-align:center; padding:48px; color:var(--text-muted); }
+
     </style>
 </head>
+
 <body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
@@ -27,16 +31,30 @@
             <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
             <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
             <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
-            <a href="profile" class="nav-item active" id="navProfile"><span class="icon"><i class="fas fa-user-circle"></i></span> Profil</a>
+            <a href="profile" class="nav-item" id="navProfile"><span class="icon"><i class="fas fa-user-circle"></i></span> Profil</a>
             <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </div>
+        <div style="padding:18px; border-top:1px solid var(--border);">
+            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
+                <div>
+                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
+                    <div id="userSub" class="badge badge-free">Free</div>
+                </div>
+            </div>
         </div>
     </aside>
 
     <div class="page-content">
         <div class="topbar">
             <h1 class="section-title" style="font-size:26px;">Profil & Aktivitäten</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Theme wechseln" style="width:38px; height:38px; padding:0;"><i class="fas fa-moon" id="themeIcon"></i></button>
             <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.6.8</span>
+                <span id="versionBadge" class="badge badge-free">v0.6.9</span>
                 <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
             </div>
         </div>
@@ -76,14 +94,14 @@
             <div class="grid-2" style="margin-bottom:24px;">
                 <div class="card" style="padding:24px;">
                     <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Aktivitäten der letzten 14 Tage</h3>
-                    <div id="chartContainer">
-                        <div class="chart-bar" id="chartBars">
-                            <!-- bars injected via JS -->
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-muted);">
-                            <span id="chartStart">-</span>
-                            <span id="chartEnd">-</span>
-                        </div>
+                    <div id="chartBars" class="chart-bar">
+                        <div class="bar" style="height:10%;"></div>
+                        <div class="bar" style="height:30%;"></div>
+                        <div class="bar" style="height:20%;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-muted);">
+                        <span id="chartStart">-</span>
+                        <span id="chartEnd">-</span>
                     </div>
                 </div>
 
@@ -107,36 +125,46 @@
                 </div>
             </div>
         </div>
-    </div>
 
+    </div>
+    <script src="shared.js"></script>
     <script>
+        document.getElementById('navProfile').classList.add('active');
         document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('trainerhub_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('searchDropdown');
+            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
+        });
+        
+    </script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login';
 
         async function loadProfile() {
-            const key = localStorage.getItem('trainerhub_api_key');
-            if (!key) { location.href='login'; return; }
-            try {
-                const [statusRes, statsRes] = await Promise.all([
-                    fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}}),
-                    fetch('api/trainer-logs.php?action=stats', {headers:{'Authorization':'Bearer '+key}})
-                ]);
-                const status = await statusRes.json();
-                const stats = await statsRes.json();
-                if (!status.success) { location.href='login'; return; }
-
-                document.getElementById('profileEmail').textContent = status.email || '-';
-                document.getElementById('profileSub').textContent = (status.subscription || 'free').toUpperCase();
-                document.getElementById('profileJoined').textContent = status.user?.created_at ? new Date(status.user.created_at * 1000).toLocaleDateString('de-DE') : '-';
-
-                if (stats.success) {
-                    document.getElementById('statTotal').textContent = stats.total_activations || 0;
-                    document.getElementById('statSuccess').textContent = stats.successful || 0;
-                    document.getElementById('statFailed').textContent = stats.failed || 0;
-                    document.getElementById('statRate').textContent = (stats.success_rate || 0) + '%';
-                    renderChart(stats.chart_data || []);
-                    renderActivity(stats.recent || []);
-                }
-            } catch(e) { console.error(e); }
+            const [statusRes, statsRes] = await Promise.all([
+                fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}}),
+                fetch('api/trainer-logs.php?action=stats', {headers:{'Authorization':'Bearer '+key}})
+            ]);
+            const status = await statusRes.json();
+            const stats = await statsRes.json();
+            if (!status.success) { location.href='login'; return; }
+            document.getElementById('userName').textContent = status.user?.username || status.email?.split('@')[0] || 'User';
+            document.getElementById('userSub').textContent = (status.subscription || 'free').toUpperCase();
+            document.getElementById('profileEmail').textContent = status.email || '-';
+            document.getElementById('profileSub').textContent = (status.subscription || 'free').toUpperCase();
+            document.getElementById('profileJoined').textContent = status.user?.created_at ? new Date(status.user.created_at * 1000).toLocaleDateString('de-DE') : '-';
+            if (stats.success) {
+                document.getElementById('statTotal').textContent = stats.total_activations || 0;
+                document.getElementById('statSuccess').textContent = stats.successful || 0;
+                document.getElementById('statFailed').textContent = stats.failed || 0;
+                document.getElementById('statRate').textContent = (stats.success_rate || 0) + '%';
+                renderChart(stats.chart_data || []);
+                renderActivity(stats.recent || []);
+            }
         }
 
         function renderChart(data) {
@@ -170,11 +198,7 @@
             `).join('');
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML;
-        }
-
         loadProfile();
-    </script>
+</script>
 </body>
 </html>

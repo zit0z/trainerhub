@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.6.8'
+APP_VERSION = '0.6.9'
 logger = logging.getLogger('TrainerHub.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')

@@ -8,20 +8,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
     <style>
-        .dashboard-card { padding: 22px; }
-        .dashboard-card .value { font-family:'Rajdhani',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); }
-        .dashboard-card .label { color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; }
-        .dashboard-card .icon { font-size:1.6rem; color:var(--accent); opacity:0.8; }
-        .game-list-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); transition:background .15s; }
-        .game-list-item:hover { background:rgba(255,255,255,0.02); }
-        .game-list-item:last-child { border-bottom:none; }
-        .game-icon { width:44px; height:44px; border-radius:10px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.3rem; }
-        .quick-action { display:flex; align-items:center; gap:12px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
-        .quick-action:hover { border-color:var(--accent); box-shadow:0 0 16px rgba(0,240,255,0.1); }
-        .premium-cta { background:linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(255,56,100,0.08) 100%); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+        
+        .games-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px; }
+        .game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:transform .2s, box-shadow .2s, border-color .2s; position:relative; }
+        .game-card:hover { transform:translateY(-4px); border-color:var(--accent); box-shadow:0 12px 40px rgba(0,240,255,0.12); }
+        .game-cover { height:140px; background:linear-gradient(135deg, rgba(0,240,255,0.12), rgba(0,168,255,0.08)); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:3rem; position:relative; }
+        .game-card-body { padding:18px; }
+        .game-title { font-family:'Rajdhani',sans-serif; font-weight:600; font-size:1.25rem; color:var(--text); margin-bottom:6px; }
+        .game-meta { font-size:13px; color:var(--text-muted); display:flex; gap:12px; align-items:center; }
+        .favorite-btn { position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; z-index:2; }
+        .favorite-btn:hover { background:rgba(0,0,0,0.8); color:#ffd700; transform:scale(1.1); }
+        .favorite-btn.active { color:#ffd700; background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.4); }
+        @media (max-width:640px) { .games-grid { grid-template-columns:1fr; } }
+
     </style>
 </head>
+
 <body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
@@ -48,42 +52,111 @@
     <div class="page-content">
         <div class="topbar">
             <h1 class="section-title" style="font-size:26px;">Favoriten</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleTheme()" title="Theme wechseln" style="width:38px; height:38px; padding:0;"><i class="fas fa-moon" id="themeIcon"></i></button>
             <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.6.7</span>
+                <span id="versionBadge" class="badge badge-free">v0.6.9</span>
                 <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
             </div>
         </div>
 
         <div style="padding:28px;">
-            
-        <p class="section-subtitle">Deine gespeicherten Spiele und Trainer.</p>
-        <div class="card" style="padding:40px; text-align:center;">
-            <i class="fas fa-star" style="font-size:3rem; color:var(--accent); margin-bottom:1rem;"></i>
-            <h3 style="margin:0 0 8px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Noch keine Favoriten</h3>
-            <p style="color:var(--text-muted);">Favoriten werden in der nächsten Version verfügbar sein.</p>
-            <a href="games" class="btn btn-secondary" style="margin-top:12px;">Spiele entdecken</a>
+            <p class="section-subtitle">Deine markierten Spiele und Trainer.</p>
+            <div id="favContainer">
+                <div class="games-grid" id="favGrid">
+                    <div class="card shimmer" style="height:220px;"></div>
+                    <div class="card shimmer" style="height:220px;"></div>
+                </div>
+            </div>
         </div>
-    
-        </div>
-    </div>
 
+    </div>
+    <script src="shared.js"></script>
     <script>
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
         document.getElementById('navFavorites').classList.add('active');
-        async function loadUser() {
-            const key = localStorage.getItem('trainerhub_api_key');
-            if (!key) { location.href='login'; return; }
-            try {
-                const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
-                const data = await res.json();
-                if (!data.success) { location.href='login'; return; }
-                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
-                const subEl = document.getElementById('userSub');
-                if (data.subscription === 'premium') { subEl.className='badge badge-premium'; subEl.textContent='Premium'; }
-                else { subEl.className='badge badge-free'; subEl.textContent='Free'; }
-            } catch(e) { console.error(e); }
-        }
-        loadUser();
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('trainerhub_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('searchDropdown');
+            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
+        });
+        
     </script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login';
+
+        async function loadUser() {
+            const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
+                document.getElementById('userSub').textContent = (data.subscription || 'free').toUpperCase();
+            }
+        }
+
+        async function loadFavorites() {
+            const res = await fetch('api/favorites.php', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) renderFavorites(data.favorites || []);
+        }
+
+        function renderFavorites(favs) {
+            const container = document.getElementById('favContainer');
+            if (!favs.length) {
+                container.innerHTML = '<div class="card" style="padding:48px; text-align:center; color:var(--text-muted);"><i class="fas fa-star" style="font-size:2rem; color:#ffd700; margin-bottom:12px;"></i><p>Noch keine Favoriten. Gehe zu <a href="games" style="color:var(--accent);">Meine Spiele</a> und markiere welche.</p></div>';
+                return;
+            }
+            const games = favs.filter(f => f.game_id && !f.trainer_id);
+            const trainers = favs.filter(f => f.trainer_id);
+            let html = '';
+            if (games.length) {
+                html += '<h3 style="font-family:\'Rajdhani\',sans-serif; text-transform:uppercase; margin:0 0 16px;">Spiele</h3><div class="games-grid">' + games.map(f => `
+                    <div class="game-card" onclick="location.href='trainers?game=${f.game_slug}'" style="cursor:pointer;">
+                        <div class="game-cover"><i class="fas ${f.game_icon || 'fa-gamepad'}"></i></div>
+                        <button class="favorite-btn active" onclick="event.stopPropagation(); removeGameFav(${f.game_id}, this)" title="Entfernen"><i class="fas fa-star"></i></button>
+                        <div class="game-card-body">
+                            <div class="game-title">${escapeHtml(f.game_name)}</div>
+                            <div class="game-meta"><span><i class="fas fa-gamepad"></i> Spiel</span></div>
+                        </div>
+                    </div>
+                `).join('') + '</div>';
+            }
+            if (trainers.length) {
+                html += '<h3 style="font-family:\'Rajdhani\',sans-serif; text-transform:uppercase; margin:32px 0 16px;">Trainer</h3><div class="games-grid">' + trainers.map(f => `
+                    <div class="game-card" onclick="location.href='trainers?game=${f.game_slug}'" style="cursor:pointer;">
+                        <div class="game-cover" style="background:linear-gradient(135deg, rgba(255,56,100,0.12), rgba(0,240,255,0.08));"><i class="fas fa-bolt"></i></div>
+                        <button class="favorite-btn active" onclick="event.stopPropagation(); removeTrainerFav(${f.trainer_id}, this)" title="Entfernen"><i class="fas fa-star"></i></button>
+                        <div class="game-card-body">
+                            <div class="game-title">${escapeHtml(f.trainer_name)}</div>
+                            <div class="game-meta"><span><i class="fas fa-crosshairs"></i> ${escapeHtml(f.game_name || 'Trainer')}</span></div>
+                            <div style="font-size:13px; color:var(--text-muted); margin-top:8px; line-height:1.5;">${escapeHtml(f.trainer_description || '')}</div>
+                        </div>
+                    </div>
+                `).join('') + '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        async function removeGameFav(gameId, btn) {
+            await fetch('api/favorites.php', {method:'DELETE', headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+key}, body: JSON.stringify({game_id: gameId})});
+            btn.closest('.game-card').style.opacity='0';
+            setTimeout(() => { showToast('Aus Favoriten entfernt', 'info', 1500); loadFavorites(); }, 250);
+        }
+
+        async function removeTrainerFav(trainerId, btn) {
+            await fetch('api/favorites.php', {method:'DELETE', headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+key}, body: JSON.stringify({trainer_id: trainerId})});
+            btn.closest('.game-card').style.opacity='0';
+            setTimeout(() => { showToast('Trainer entfernt', 'info', 1500); loadFavorites(); }, 250);
+        }
+
+        loadUser();
+        loadFavorites();
+</script>
 </body>
 </html>
