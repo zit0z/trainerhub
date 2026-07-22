@@ -1,28 +1,23 @@
-# TrainerHub Desktop
+# SweetCheat Desktop (Python)
 
-Windows-Desktop-App für TrainerHub — Singleplayer-Trainer für 300+ Spiele.
+Singleplayer trainer client for Stardew Valley.
 
-## Download
+## Run from source (Windows)
+```bash
+pip install -r requirements.txt
+python main.py
+```
 
-Fertige Windows-EXE: https://sayfespace.online/trainerhub/TrainerHub-windows.zip
+## Build .exe
+```bash
+build.bat
+```
+
+Output: `dist/SweetCheat.exe`
 
 ## Features
-
-- Modernes Dark UI mit Animationen
-- 300+ unterstützte Spiele
-- Memory-Scanner (2-Scan / 3-Scan)
-- Pattern Learner
-- SMAPI Bridge für Stardew Valley
-- Savegame-Editor
-- Favoriten, zuletzt verwendete Spiele
-- Live-Log mit Export
-- Auto-Update-Hinweis
-- Account-/Premium-Status
-
-## Build
-
-Lokal unter Windows:
-```powershell
-pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
-python -m PyInstaller TrainerHub.spec --clean --noconfirm
-```
+- Login with SayfeHub/SweetCheat account
+- Live trainer list from API
+- Process memory writing for Stardew Valley
+- Pattern scanning support
+- Free during beta

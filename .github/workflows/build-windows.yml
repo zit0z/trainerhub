@@ -28,15 +28,15 @@ jobs:
 
     - name: Build EXE
       run: |
-        python -m PyInstaller TrainerHub.spec --clean --noconfirm
-        Get-ChildItem dist\TrainerHub\TrainerHub.exe
-        $size = [math]::Round((Get-Item dist\TrainerHub\TrainerHub.exe).Length / 1MB, 2)
+        python -m PyInstaller SweetCheat.spec --clean --noconfirm
+        Get-ChildItem dist\SweetCheat\SweetCheat.exe
+        $size = [math]::Round((Get-Item dist\SweetCheat\SweetCheat.exe).Length / 1MB, 2)
         Write-Host "EXE size: $size MB"
 
     - name: Trim unused Tcl/Tk files
       run: |
-        $tcl = "dist\TrainerHub\tcl"
-        $tk = "dist\TrainerHub\tk"
+        $tcl = "dist\SweetCheat\tcl"
+        $tk = "dist\SweetCheat\tk"
         if (Test-Path $tcl) {
           Remove-Item -Path "$tcl\tzdata" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "$tcl\encoding" -Recurse -Force -ErrorAction SilentlyContinue
@@ -49,26 +49,26 @@ jobs:
     - name: Generate SHA256 manifest
       run: |
         $lines = @()
-        Get-ChildItem -Path dist\TrainerHub -Recurse -File | ForEach-Object {
+        Get-ChildItem -Path dist\SweetCheat -Recurse -File | ForEach-Object {
           $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
-          $rel = $_.FullName.Substring((Resolve-Path dist\TrainerHub).Path.Length + 1)
+          $rel = $_.FullName.Substring((Resolve-Path dist\SweetCheat).Path.Length + 1)
           $lines += "$hash  $rel"
         }
-        $lines | Out-File -FilePath dist\TrainerHub\SHA256SUMS.txt -Encoding utf8
-        Get-ChildItem dist\TrainerHub\SHA256SUMS.txt
+        $lines | Out-File -FilePath dist\SweetCheat\SHA256SUMS.txt -Encoding utf8
+        Get-ChildItem dist\SweetCheat\SHA256SUMS.txt
 
     - name: Self-sign EXE (optional, improves SmartScreen over time)
       run: |
-        $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=TrainerHub" -KeyUsage DigitalSignature -FriendlyName "TrainerHub Self-Sign" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(5)
-        $pwd = ConvertTo-SecureString -String "TrainerHub2026" -Force -AsPlainText
-        Export-PfxCertificate -Cert $cert -FilePath trainerhub-sign.pfx -Password $pwd
-        signtool.exe sign /f trainerhub-sign.pfx /p TrainerHub2026 /t http://timestamp.digicert.com /fd SHA256 /a "dist\TrainerHub\TrainerHub.exe"
-        signtool.exe verify /pa "dist\TrainerHub\TrainerHub.exe" || Write-Host "Self-sign verification optional"
+        $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=SweetCheat" -KeyUsage DigitalSignature -FriendlyName "SweetCheat Self-Sign" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(5)
+        $pwd = ConvertTo-SecureString -String "SweetCheat2026" -Force -AsPlainText
+        Export-PfxCertificate -Cert $cert -FilePath sweetcheat-sign.pfx -Password $pwd
+        signtool.exe sign /f sweetcheat-sign.pfx /p SweetCheat2026 /t http://timestamp.digicert.com /fd SHA256 /a "dist\SweetCheat\SweetCheat.exe"
+        signtool.exe verify /pa "dist\SweetCheat\SweetCheat.exe" || Write-Host "Self-sign verification optional"
       continue-on-error: true
 
     - name: Package as ZIP
       run: |
-        Compress-Archive -Path dist\TrainerHub\* -DestinationPath TrainerHub-windows.zip
+        Compress-Archive -Path dist\SweetCheat\* -DestinationPath SweetCheat-windows.zip
 
     - name: Install Inno Setup
       run: |
@@ -76,25 +76,25 @@ jobs:
 
     - name: Build Installer
       run: |
-        & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" TrainerHub.iss
-        signtool.exe sign /f trainerhub-sign.pfx /p TrainerHub2026 /t http://timestamp.digicert.com /fd SHA256 /a TrainerHub-Setup.exe
-        Get-ChildItem TrainerHub-Setup.exe
-        $size = [math]::Round((Get-Item TrainerHub-Setup.exe).Length / 1MB, 2)
+        & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" SweetCheat.iss
+        signtool.exe sign /f sweetcheat-sign.pfx /p SweetCheat2026 /t http://timestamp.digicert.com /fd SHA256 /a SweetCheat-Setup.exe
+        Get-ChildItem SweetCheat-Setup.exe
+        $size = [math]::Round((Get-Item SweetCheat-Setup.exe).Length / 1MB, 2)
         Write-Host "Setup size: $size MB"
       continue-on-error: true
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: TrainerHub-windows
-        path: TrainerHub-windows.zip
+        name: SweetCheat-windows
+        path: SweetCheat-windows.zip
         retention-days: 90
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
       with:
-        name: TrainerHub-Setup
-        path: TrainerHub-Setup.exe
+        name: SweetCheat-Setup
+        path: SweetCheat-Setup.exe
         retention-days: 90
 
     - name: Update server version file
