@@ -1,6 +1,6 @@
 <?php
 /**
- * TrainerHub Stripe Subscription Integration
+ * SweetCheat Stripe Subscription Integration
  * Requires STRIPE_SECRET_KEY in config/stripe.json
  */
 
@@ -15,6 +15,7 @@ if (isset($auth['error'])) {
     jsonResponse(['success' => false, 'error' => $auth['error']], $auth['code']);
 }
 $user = $auth['user'];
+requireVerified($user);
 
 $cfgFile = __DIR__ . '/config/stripe.json';
 $cfg = json_decode(@file_get_contents($cfgFile) ?: '{}', true);
@@ -29,8 +30,8 @@ if ($action === 'checkout') {
         jsonResponse(['success' => false, 'error' => 'Stripe not configured'], 500);
     }
     $baseUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'sayfespace.online');
-    $successUrl = $baseUrl . '/trainerhub/?checkout=success&session_id={CHECKOUT_SESSION_ID}';
-    $cancelUrl = $baseUrl . '/trainerhub/?checkout=cancel';
+    $successUrl = $baseUrl . '/sweetcheat/?checkout=success&session_id={CHECKOUT_SESSION_ID}';
+    $cancelUrl = $baseUrl . '/sweetcheat/?checkout=cancel';
     
     $payload = [
         'mode' => 'subscription',
@@ -39,7 +40,7 @@ if ($action === 'checkout') {
         'cancel_url' => $cancelUrl,
         'client_reference_id' => (string)$user['id'],
         'customer_email' => $user['email'],
-        'metadata' => ['user_id' => $user['id'], 'platform' => 'trainerhub']
+        'metadata' => ['user_id' => $user['id'], 'platform' => 'sweetcheat']
     ];
     
     $ch = curl_init('https://api.stripe.com/v1/checkout/sessions');

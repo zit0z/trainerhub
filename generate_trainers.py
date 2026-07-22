@@ -1,9 +1,9 @@
-"""Generate trainers for all active games in the TrainerHub database."""
+"""Generate trainers for all active games in the SweetCheat database."""
 import sqlite3
 import re
 from pathlib import Path
 
-DB = Path('/var/www/trainerhub/database/trainerhub.db')
+DB = Path('/var/www/sweetcheat/database/sweetcheat.db')
 
 GENERIC_CHEATS = {
     'rpg': [

@@ -11,7 +11,7 @@ try:
 except ImportError:
     PIPE_AVAILABLE = False
 
-PIPE_NAME = r'\\\\.\\pipe\\TrainerHubStardew'
+PIPE_NAME = r'\\\\.\\pipe\\SweetCheatStardew'
 
 class StardewBridgeClient:
     def __init__(self):

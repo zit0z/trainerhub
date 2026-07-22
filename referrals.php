@@ -29,7 +29,7 @@ if ($action === 'info') {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM referrals WHERE referrer_id = ? AND referred_id IS NOT NULL");
     $stmt->execute([$user['id']]);
     $count = (int)$stmt->fetchColumn();
-    jsonResponse(['success' => true, 'code' => $code, 'referrals' => $count, 'reward_per_referral' => 3, 'url' => 'https://sayfespace.online/trainerhub/register?ref=' . $code]);
+    jsonResponse(['success' => true, 'code' => $code, 'referrals' => $count, 'reward_per_referral' => 3, 'url' => 'https://sayfespace.online/sweetcheat/register?ref=' . $code]);
 }
 
 if ($action === 'claim') {

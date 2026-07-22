@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logout — TrainerHub</title>
+    <title>Logout — SweetCheat</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
@@ -25,7 +25,7 @@
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
-                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                <a href="/sweetcheat/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
             </div>
             <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
             <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
@@ -60,20 +60,20 @@
             <h2 style="margin:0 0 8px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Abgemeldet</h2>
             <p style="color:var(--text-muted);">Du wurdest erfolgreich abgemeldet.</p>
             <a href="login" class="btn btn-primary" style="margin-top:16px;">Erneut einloggen</a>
-            <a href="/trainerhub/" class="btn btn-secondary" style="margin-top:12px;">Zur Startseite</a>
+            <a href="/sweetcheat/" class="btn btn-secondary" style="margin-top:12px;">Zur Startseite</a>
         </div>
         <script>
-            localStorage.removeItem('trainerhub_api_key');
+            localStorage.removeItem('sweetcheat_api_key');
         </script>
     
         </div>
     </div>
 
     <script>
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
         document.getElementById('navLogout').classList.add('active');
         async function loadUser() {
-            const key = localStorage.getItem('trainerhub_api_key');
+            const key = localStorage.getItem('sweetcheat_api_key');
             if (!key) { location.href='login'; return; }
             try {
                 const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});

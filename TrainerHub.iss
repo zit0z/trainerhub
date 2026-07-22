@@ -1,9 +1,9 @@
-; TrainerHub Inno Setup Installer Script
-#define MyAppName "TrainerHub"
-#define MyAppVersion "0.7.1"
-#define MyAppPublisher "TrainerHub"
-#define MyAppURL "https://sayfespace.online/trainerhub/"
-#define MyAppExeName "TrainerHub.exe"
+; SweetCheat Inno Setup Installer Script
+#define MyAppName "SweetCheat"
+#define MyAppVersion "0.8.0"
+#define MyAppPublisher "SweetCheat"
+#define MyAppURL "https://sayfespace.online/sweetcheat/"
+#define MyAppExeName "SweetCheat.exe"
 
 [Setup]
 AppId={{A1B2C3D4-1234-5678-90AB-CDEF01234567}
@@ -13,11 +13,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}/setup
-DefaultDirName={autopf}\TrainerHub
+DefaultDirName={autopf}\SweetCheat
 DisableProgramGroupPage=no
 LicenseFile=license.txt
 OutputDir=.
-OutputBaseFilename=TrainerHub-Setup
+OutputBaseFilename=SweetCheat-Setup
 ;SetupIconFile=icon.ico
 Compression=lzma2
 SolidCompression=yes
@@ -35,8 +35,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-Source: "dist\TrainerHub\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "dist\TrainerHub\SHA256SUMS.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\SweetCheat\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\SweetCheat\SHA256SUMS.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

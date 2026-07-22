@@ -10,6 +10,7 @@ if (isset($auth['error'])) {
     jsonResponse(['success' => false, 'error' => $auth['error']], $auth['code']);
 }
 $user = $auth['user'];
+requireVerified($user);
 $pdo = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 

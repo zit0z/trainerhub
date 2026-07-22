@@ -3,10 +3,10 @@ import json
 import urllib.request
 import urllib.error
 
-API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
-CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.trainerhub', 'config.json')
+API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/sweetcheat/api')
+CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.sweetcheat', 'config.json')
 
-class TrainerHubApp:
+class SweetCheatApp:
     def __init__(self):
         self.api_key = None
         self.load_config()
@@ -57,7 +57,7 @@ class TrainerHubApp:
         return False
     
     def run_cli(self):
-        print('TrainerHub CLI')
+        print('SweetCheat CLI')
         if not self.api_key and not self.login():
             return
         while True:

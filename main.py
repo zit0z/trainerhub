@@ -1,4 +1,4 @@
-"""TrainerHub Desktop Application - Entry Point"""
+"""SweetCheat Desktop Application - Entry Point"""
 import sys
 import os
 import json
@@ -9,10 +9,10 @@ from tkinter import messagebox
 from datetime import datetime
 
 # Ensure config directory exists early
-CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
+CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 os.makedirs(CONFIG_DIR, exist_ok=True)
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
-LOG_FILE = os.path.join(CONFIG_DIR, 'trainerhub.log')
+LOG_FILE = os.path.join(CONFIG_DIR, 'sweetcheat.log')
 
 # Setup logging before anything else
 logging.basicConfig(
@@ -23,7 +23,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
-logger = logging.getLogger('TrainerHub')
+logger = logging.getLogger('SweetCheat')
 
 
 def load_config():
@@ -35,11 +35,11 @@ def load_config():
                 if not isinstance(cfg, dict):
                     raise ValueError('Config is not a dict')
                 cfg.setdefault('api_key', None)
-                cfg.setdefault('api_base', 'https://sayfespace.online/trainerhub/api')
+                cfg.setdefault('api_base', 'https://sayfespace.online/sweetcheat/api')
                 return cfg
     except Exception as e:
         logger.warning(f"Config load failed ({e}), using defaults")
-    return {'api_key': None, 'api_base': 'https://sayfespace.online/trainerhub/api'}
+    return {'api_key': None, 'api_base': 'https://sayfespace.online/sweetcheat/api'}
 
 
 def save_config(cfg):
@@ -67,7 +67,7 @@ def _global_exception_handler(exc_type, exc_value, exc_tb):
 
 def main():
     sys.excepthook = _global_exception_handler
-    logger.info(f"TrainerHub starting. Python {sys.version}. CWD: {os.getcwd()}")
+    logger.info(f"SweetCheat starting. Python {sys.version}. CWD: {os.getcwd()}")
     try:
         from gui_module import main as gui_main
         gui_main()

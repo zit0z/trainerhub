@@ -1,4 +1,4 @@
-"""TrainerHub Auto-Updater - delta updates, signature checks, rollback."""
+"""SweetCheat Auto-Updater - delta updates, signature checks, rollback."""
 import os
 import sys
 import json
@@ -11,10 +11,10 @@ import subprocess
 import time
 import hashlib
 
-APP_VERSION = '0.7.1'
-UPDATE_API = 'https://sayfespace.online/trainerhub/api/version.php'
-MANIFEST_URL = 'https://sayfespace.online/trainerhub/api/manifest.php'
-USER_AGENT = f'TrainerHub/{APP_VERSION}'
+APP_VERSION = '0.8.0'
+UPDATE_API = 'https://sayfespace.online/sweetcheat/api/version.php'
+MANIFEST_URL = 'https://sayfespace.online/sweetcheat/api/manifest.php'
+USER_AGENT = f'SweetCheat/{APP_VERSION}'
 
 
 def sha256_file(path, block=65536):
@@ -102,7 +102,7 @@ def apply_delta(zip_path, app_dir, delta_list, backup_dir):
         with zipfile.ZipFile(zip_path, 'r') as z:
             zip_names = z.namelist()
             for rel, expected_hash, _ in delta_list:
-                # Find file in zip (may be prefixed by TrainerHub/)
+                # Find file in zip (may be prefixed by SweetCheat/)
                 candidates = [n for n in zip_names if n.replace('\\', '/').endswith(rel)]
                 if not candidates:
                     print(f"Missing in zip: {rel}")
@@ -147,12 +147,12 @@ def rollback(backup_dir, app_dir):
 def install_update(zip_path, app_dir, exe_path, delta_list=None):
     """
     Windows-only: apply delta or full update, backup old files, then spawn helper
-    that waits for this process to exit and restarts TrainerHub.
+    that waits for this process to exit and restarts SweetCheat.
     """
     if sys.platform != 'win32':
         return False
 
-    backup_dir = os.path.join(tempfile.gettempdir(), 'trainerhub_backup')
+    backup_dir = os.path.join(tempfile.gettempdir(), 'sweetcheat_backup')
     if os.path.exists(backup_dir):
         shutil.rmtree(backup_dir, ignore_errors=True)
     os.makedirs(backup_dir, exist_ok=True)
@@ -170,9 +170,9 @@ def install_update(zip_path, app_dir, exe_path, delta_list=None):
         except Exception:
             return False
 
-    helper_bat = os.path.join(tempfile.gettempdir(), 'trainerhub_update_helper.bat')
+    helper_bat = os.path.join(tempfile.gettempdir(), 'sweetcheat_update_helper.bat')
     pid = os.getpid()
-    log = os.path.join(tempfile.gettempdir(), 'trainerhub_update.log')
+    log = os.path.join(tempfile.gettempdir(), 'sweetcheat_update.log')
 
     if success:
         # delta install: we already applied files, just restart
@@ -249,7 +249,7 @@ def check_and_install_update(parent_app=None, progress_callback=None, finished_c
                         finished_callback(True, msg)
                 return
 
-        zip_path = os.path.join(tempfile.gettempdir(), f'TrainerHub-update-{latest}.zip')
+        zip_path = os.path.join(tempfile.gettempdir(), f'SweetCheat-update-{latest}.zip')
 
         def cb(p):
             if progress_callback:
@@ -266,7 +266,7 @@ def check_and_install_update(parent_app=None, progress_callback=None, finished_c
         exe_path = sys.executable
 
         if install_update(zip_path, app_dir, exe_path, delta_list):
-            finish(True, 'Update bereit. TrainerHub wird neu gestartet.')
+            finish(True, 'Update bereit. SweetCheat wird neu gestartet.')
             time.sleep(1.5)
             sys.exit(0)
         else:

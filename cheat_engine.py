@@ -1,4 +1,4 @@
-"""TrainerHub - Real Cheat Engine v0.6.1
+"""SweetCheat - Real Cheat Engine v0.6.1
 
 Supports:
 - Memory scanning/writing/freezing (Stardew money/health/stamina)
@@ -518,7 +518,7 @@ class CheatEngine:
 
     def _activate_smapi(self, trainer):
         if not self.smapi.is_running():
-            return {'success': False, 'message': 'SMAPI Bridge nicht erreichbar. Installiere SMAPI + TrainerHub Bridge Mod.'}
+            return {'success': False, 'message': 'SMAPI Bridge nicht erreichbar. Installiere SMAPI + SweetCheat Bridge Mod.'}
         title = trainer.get('title', '').lower()
         if 'money' in title or 'geld' in title:
             self.smapi.set_value('money', 999999)

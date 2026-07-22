@@ -29,7 +29,7 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM users");
 $stmt->execute();
 $total_users = (int)$stmt->fetchColumn();
 
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE is_premium = 1");
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE subscription_status IN ('premium', 'active')");
 $stmt->execute();
 $premium_users = (int)$stmt->fetchColumn();
 

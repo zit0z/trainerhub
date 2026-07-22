@@ -4,7 +4,7 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=['/var/www/trainerhub/desktop-python'],
+    pathex=['/var/www/sweetcheat/desktop-python'],
     binaries=[],
     datas=[],
     hiddenimports=[
@@ -36,7 +36,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='TrainerHub',
+    name='SweetCheat',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -58,5 +58,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='TrainerHub',
+    name='SweetCheat',
 )

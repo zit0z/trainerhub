@@ -4,7 +4,7 @@ import threading
 import queue
 import logging
 
-logger = logging.getLogger('TrainerHub.ThreadUtils')
+logger = logging.getLogger('SweetCheat.ThreadUtils')
 
 
 class TkExecutor:

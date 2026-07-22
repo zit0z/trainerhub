@@ -1,4 +1,4 @@
-"""TrainerHub Desktop Application — Modern Cyan UI v0.6.0"""
+"""SweetCheat Desktop Application — Modern Cyan UI v0.6.0"""
 import sys
 import os
 import json
@@ -8,11 +8,11 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.7.1'
-logger = logging.getLogger('TrainerHub.GUI')
-CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
+APP_VERSION = '0.8.0'
+logger = logging.getLogger('SweetCheat.GUI')
+CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
-API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
+API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/sweetcheat/api')
 
 os.makedirs(CONFIG_DIR, exist_ok=True)
 
@@ -24,7 +24,7 @@ except ImportError:
     sys.exit(1)
 
 from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch
-from desktop_api import TrainerHubAPI
+from desktop_api import SweetCheatAPI
 from process_scanner import ProcessScanner
 from activation_engine import ActivationEngine
 
@@ -47,10 +47,10 @@ def save_config(cfg):
         logger.error(f"Config save error: {e}")
 
 
-class TrainerHubApp:
+class SweetCheatApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"TrainerHub {APP_VERSION}")
+        self.root.title(f"SweetCheat {APP_VERSION}")
         self.root.geometry("1366x900")
         self.root.minsize(1200, 750)
         self.root.configure(bg=ModernStyle.BG)
@@ -59,7 +59,7 @@ class TrainerHubApp:
         self.config = load_config()
         self.api_key = self.config.get('api_key')
         self.api_base = self.config.get('api_base', API_BASE)
-        self.api = TrainerHubAPI(self.api_base, self.api_key)
+        self.api = SweetCheatAPI(self.api_base, self.api_key)
         self.scanner = ProcessScanner()
         self.activation_engine = ActivationEngine(self.api)
         self.games = []
@@ -95,7 +95,7 @@ class TrainerHubApp:
         self.titlebar.pack(fill='x', side='top')
         self.titlebar.pack_propagate(False)
 
-        brand = tk.Label(self.titlebar, text="◆ TrainerHub", font=('Rajdhani', 22, 'bold'),
+        brand = tk.Label(self.titlebar, text="◆ SweetCheat", font=('Rajdhani', 22, 'bold'),
                          bg=ModernStyle.BG, fg=ModernStyle.TEXT)
         brand.pack(side='left', padx=(25, 0), pady=(10, 0))
         sub = tk.Label(self.titlebar, text="SINGLEPLAYER TRAINER", font=('Rajdhani', 10),
@@ -203,7 +203,7 @@ class TrainerHubApp:
         wrapper = tk.Frame(self.content, bg=ModernStyle.BG)
         wrapper.place(relx=0.5, rely=0.5, anchor='center')
 
-        tk.Label(wrapper, text="TrainerHub", font=('Rajdhani', 28, 'bold'),
+        tk.Label(wrapper, text="SweetCheat", font=('Rajdhani', 28, 'bold'),
                  bg=ModernStyle.BG, fg=ModernStyle.ACCENT).pack(pady=(0, 8))
         tk.Label(wrapper, text="Melde dich mit deinem Konto an", font=('Segoe UI', 11),
                  bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=(0, 25))
@@ -790,17 +790,17 @@ class TrainerHubApp:
             threading.Thread(target=lambda: self.load_trainers(self.current_game.get('slug')), daemon=True).start()
 
     def load_trainers(self, slug):
-        print(f"[TrainerHub] load_trainers started for {slug}")
+        print(f"[SweetCheat] load_trainers started for {slug}")
         try:
             data = self.api_call(f'trainers.php?game={slug}')
-            print(f"[TrainerHub] load_trainers API response: success={data.get('success')}, trainers={len(data.get('trainers', []))}")
+            print(f"[SweetCheat] load_trainers API response: success={data.get('success')}, trainers={len(data.get('trainers', []))}")
             self.trainers_data = data
             if hasattr(self, 'root') and self.root.winfo_exists():
                 self.root.after(0, self._on_trainers_loaded)
             else:
-                print("[TrainerHub] root destroyed, cannot schedule _on_trainers_loaded")
+                print("[SweetCheat] root destroyed, cannot schedule _on_trainers_loaded")
         except Exception as e:
-            print(f"[TrainerHub] load_trainers exception: {e}")
+            print(f"[SweetCheat] load_trainers exception: {e}")
             import traceback
             traceback.print_exc()
 
@@ -1172,7 +1172,7 @@ class TrainerHubApp:
 
 def main():
     root = tk.Tk()
-    app = TrainerHubApp(root)
+    app = SweetCheatApp(root)
     root.mainloop()
 
 

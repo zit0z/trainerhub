@@ -1,4 +1,4 @@
-"""Additional TrainerHub features: hotkeys, launcher, history, config sync."""
+"""Additional SweetCheat features: hotkeys, launcher, history, config sync."""
 import json
 import os
 import time
@@ -122,14 +122,14 @@ class GameLauncher:
 
 
 class ConfigSync:
-    """Sync user config and favorites with the TrainerHub API."""
+    """Sync user config and favorites with the SweetCheat API."""
     def __init__(self, api_base, api_key, log_callback=None):
         self.api_base = api_base
         self.api_key = api_key
         self.log = log_callback or print
 
     def api_call(self, endpoint, method='GET', data=None):
-        headers = {'User-Agent': 'TrainerHub-Desktop/0.4.0'}
+        headers = {'User-Agent': 'SweetCheat-Desktop/0.4.0'}
         if self.api_key:
             headers['Authorization'] = f'Bearer {self.api_key}'
         url = f'{self.api_base}/{endpoint}'
@@ -174,7 +174,7 @@ class UpdateNotifier:
 
     def check(self):
         try:
-            req = urllib.request.Request(f'{self.api_base}/version.php', headers={'User-Agent': 'TrainerHub-Desktop'})
+            req = urllib.request.Request(f'{self.api_base}/version.php', headers={'User-Agent': 'SweetCheat-Desktop'})
             with urllib.request.urlopen(req, timeout=10) as r:
                 data = json.loads(r.read().decode('utf-8'))
             if data.get('success') and data.get('version') != self.current_version:

@@ -18,7 +18,7 @@ if ($action === 'status') {
         'success' => true,
         'subscription' => isPremium($user) ? 'premium' : 'free',
         'features' => getPremiumFeatures($user),
-        'upgrade_url' => 'https://sayfespace.online/trainerhub/admin/' // manual admin upgrade
+        'upgrade_url' => 'https://sayfespace.online/sweetcheat/admin/' // manual admin upgrade
     ]);
 }
 

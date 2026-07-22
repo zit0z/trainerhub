@@ -21,7 +21,7 @@ if ($action === 'status') {
         'expires_at' => $user['subscription_expires_at'],
         'email' => $user['email'] ?? null,
         'username' => $user['username'] ?? null,
-        'message' => 'TrainerHub ist aktuell in Beta. Premium-Funktionen werden später verfügbar sein.'
+        'message' => 'SweetCheat ist aktuell in Beta. Premium-Funktionen werden später verfügbar sein.'
     ]);
 }
 

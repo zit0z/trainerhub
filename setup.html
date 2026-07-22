@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerHub — Setup &amp; Download</title>
+    <title>SweetCheat — Setup &amp; Download</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -213,15 +213,15 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/trainerhub/" class="brand">
+        <a href="/sweetcheat/" class="brand">
             <i class="fas fa-gamepad"></i>
             Trainer<span>Hub</span>
         </a>
-        <a href="/trainerhub/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Zurück</a>
+        <a href="/sweetcheat/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Zurück</a>
     </nav>
 
     <section class="hero">
-        <h1>TrainerHub für <span>Windows</span> installieren</h1>
+        <h1>SweetCheat für <span>Windows</span> installieren</h1>
         <p>Desktop-App für 300+ Singleplayer-Spiele. Version 0.5.1 mit Inno Setup-Installer und Auto-Updater.</p>
     </section>
 
@@ -234,10 +234,10 @@
             </p>
 
             <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-                <a href="/trainerhub/TrainerHub-Setup.exe" class="btn btn-primary" style="padding:16px 32px; font-size:1.05rem;">
-                    <i class="fas fa-download"></i> TrainerHub-Setup.exe
+                <a href="/sweetcheat/SweetCheat-Setup.exe" class="btn btn-primary" style="padding:16px 32px; font-size:1.05rem;">
+                    <i class="fas fa-download"></i> SweetCheat-Setup.exe
                 </a>
-                <a href="https://github.com/zit0z/trainerhub/actions/workflows/build-windows.yml" target="_blank" class="btn btn-gold" style="padding:16px 32px; font-size:1rem;">
+                <a href="https://github.com/zit0z/sweetcheat/actions/workflows/build-windows.yml" target="_blank" class="btn btn-gold" style="padding:16px 32px; font-size:1rem;">
                     <i class="fas fa-cogs"></i> GitHub Actions
                 </a>
             </div>
@@ -249,13 +249,13 @@
         <div class="card">
             <h2><i class="fas fa-file-archive"></i> Alternative: ZIP-Datei</h2>
             <p style="color:var(--muted); margin-bottom:1.5rem;">
-                Für Nutzer, die den Installer nicht verwenden möchten. ZIP entpacken und TrainerHub.exe starten.
+                Für Nutzer, die den Installer nicht verwenden möchten. ZIP entpacken und SweetCheat.exe starten.
             </p>
             <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-                <a href="/trainerhub/TrainerHub-windows.zip" class="btn btn-secondary" style="padding:14px 28px;">
-                    <i class="fas fa-download"></i> TrainerHub-windows.zip
+                <a href="/sweetcheat/SweetCheat-windows.zip" class="btn btn-secondary" style="padding:14px 28px;">
+                    <i class="fas fa-download"></i> SweetCheat-windows.zip
                 </a>
-                <a href="/trainerhub/desktop-python.zip" class="btn btn-gold" style="padding:14px 28px;">
+                <a href="/sweetcheat/desktop-python.zip" class="btn btn-gold" style="padding:14px 28px;">
                     <i class="fas fa-file-code"></i> Source-Code (Python)
                 </a>
             </div>
@@ -304,7 +304,7 @@
                     <div class="step-num">1</div>
                     <div class="step-content">
                         <h3>Setup herunterladen</h3>
-                        <p>Lade <code>TrainerHub-Setup.exe</code> herunter und führe es aus.</p>
+                        <p>Lade <code>SweetCheat-Setup.exe</code> herunter und führe es aus.</p>
                     </div>
                 </div>
                 <div class="step">
@@ -318,7 +318,7 @@
                     <div class="step-num">3</div>
                     <div class="step-content">
                         <h3>Einloggen &amp; loslegen</h3>
-                        <p>Starte TrainerHub, logge dich ein und wähle ein Spiel. Die App prüft automatisch auf Updates.</p>
+                        <p>Starte SweetCheat, logge dich ein und wähle ein Spiel. Die App prüft automatisch auf Updates.</p>
                     </div>
                 </div>
             </div>
@@ -336,17 +336,17 @@
 
         <div class="card note">
             <i class="fas fa-shield-alt"></i>
-            <strong>Nur Singleplayer:</strong> TrainerHub ist ausschließlich für Offline- &amp; Solo-Spiele gedacht.
+            <strong>Nur Singleplayer:</strong> SweetCheat ist ausschließlich für Offline- &amp; Solo-Spiele gedacht.
             Keine Multiplayer-Cheats, keine Anti-Cheat-Umgehung.
         </div>
     </div>
 
     <footer style="padding:2rem; text-align:center; color:var(--muted); border-top:1px solid var(--border);">
-        <p>© 2026 TrainerHub. Für legale Singleplayer-Trainer. Nur für private Nutzung.</p>
+        <p>© 2026 SweetCheat. Für legale Singleplayer-Trainer. Nur für private Nutzung.</p>
     </footer>
 
     <script>
-        fetch('/trainerhub/api/version.php')
+        fetch('/sweetcheat/api/version.php')
             .then(r => r.json())
             .then(data => {
                 const el = document.getElementById('versionDisplay');

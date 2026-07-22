@@ -1,6 +1,6 @@
 <?php
 /**
- * Stripe Webhook for TrainerHub
+ * Stripe Webhook for SweetCheat
  * Configure endpoint in Stripe Dashboard with events:
  * checkout.session.completed, invoice.payment_succeeded, customer.subscription.deleted
  */

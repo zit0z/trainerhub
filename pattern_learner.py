@@ -1,4 +1,4 @@
-"""Pattern learning system for TrainerHub.
+"""Pattern learning system for SweetCheat.
 
 Helps discover AOB (Array-of-Byte) patterns for any game by:
 1. Reading memory at a found address.

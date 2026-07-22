@@ -2,7 +2,7 @@
 require_once 'auth-lib.php';
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 $ADMIN_PASSWORD = $_ENV['TRAINERHUB_ADMIN_PASSWORD'] ?? 'sayfehub2026';
@@ -17,7 +17,7 @@ if ($action === 'stats') {
     $premium_users = $pdo->query("SELECT COUNT(*) FROM users WHERE subscription_status != 'free'")->fetchColumn();
     $community_patterns = $pdo->query("SELECT COUNT(*) FROM community_patterns")->fetchColumn();
     $downloads = 0;
-    $zip = '/var/www/trainerhub/TrainerHub-windows.zip';
+    $zip = '/var/www/sweetcheat/SweetCheat-windows.zip';
     if (file_exists($zip)) {
         $downloads = (int)(filesize($zip) / 1024 / 1024);
     }
@@ -38,7 +38,6 @@ if ($action === 'stats') {
 }
 
 if ($action === 'sync_stats') {
-    // Recalculate user reputation and approved pattern counts
     $pdo->exec("UPDATE users SET reputation = 0");
     $stmt = $pdo->query("
         SELECT cp.user_id, COUNT(*) as cnt FROM community_patterns cp WHERE cp.status = 'approved' GROUP BY cp.user_id
@@ -58,6 +57,154 @@ if ($action === 'purge_logs') {
     jsonResponse(['success' => true, 'message' => "$count alte Logs gelöscht"]);
 }
 
+if ($action === 'config' || $action === 'login') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $pass = $data['password'] ?? '';
+    if ($pass === $ADMIN_PASSWORD) {
+        // Find first admin user to attach token to
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE is_admin = 1 ORDER BY id LIMIT 1");
+        $stmt->execute();
+        $adminId = $stmt->fetchColumn();
+        if (!$adminId) {
+            jsonResponse(['success' => false, 'error' => 'No admin user configured'], 500);
+        }
+        $token = generateToken();
+        $stmt = $pdo->prepare("INSERT INTO api_keys (user_id, api_key) VALUES (?, ?)");
+        $stmt->execute([$adminId, $token]);
+        jsonResponse(['success' => true, 'token' => $token]);
+    }
+    jsonResponse(['success' => false, 'error' => 'Invalid password'], 401);
+}
+
+// Authenticated admin endpoints below
+$token = getBearerToken();
+$isAdmin = false;
+$adminUser = null;
+if ($token) {
+    $stmt = $pdo->prepare("
+        SELECT u.* FROM api_keys k
+        JOIN users u ON u.id = k.user_id
+        WHERE k.api_key = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$token]);
+    $adminUser = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($adminUser && !empty($adminUser['is_admin'])) {
+        $isAdmin = true;
+    }
+}
+
+if (!$isAdmin) {
+    jsonResponse(['success' => false, 'error' => 'Unauthorized'], 403);
+}
+
+if ($action === 'verify') {
+    jsonResponse(['success' => true, 'admin' => true, 'user' => $adminUser]);
+}
+
+if ($action === 'users') {
+    $stmt = $pdo->prepare("
+        SELECT id, email, username, subscription_status, subscription_expires_at, created_at
+        FROM users
+        ORDER BY created_at DESC
+    ");
+    $stmt->execute();
+    jsonResponse(['success' => true, 'users' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+if ($action === 'create_user') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (empty($data['email']) || empty($data['username'])) {
+        jsonResponse(['success' => false, 'error' => 'E-Mail und Username erforderlich'], 400);
+    }
+    $pass = password_hash($data['password'] ?? bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("
+        INSERT INTO users (email, username, password_hash, subscription_status, subscription_expires_at, created_at)
+        VALUES (?, ?, ?, ?, ?, strftime('%s','now'))
+    ");
+    $stmt->execute([
+        $data['email'],
+        $data['username'],
+        $pass,
+        $data['subscription_status'] ?? 'free',
+        !empty($data['subscription_expires_at']) ? (int)$data['subscription_expires_at'] : null
+    ]);
+    logAudit(0, 'admin_create_user', 'admin.php', ['target_user' => (int)$pdo->lastInsertId()]);
+    jsonResponse(['success' => true, 'user_id' => $pdo->lastInsertId()]);
+}
+
+if ($action === 'update_user') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (empty($data['id'])) {
+        jsonResponse(['success' => false, 'error' => 'User ID erforderlich'], 400);
+    }
+    $stmt = $pdo->prepare("
+        UPDATE users SET email = ?, username = ?, subscription_status = ?, subscription_expires_at = ?, is_premium = ?
+        WHERE id = ?
+    ");
+    $isPremium = ($data['subscription_status'] ?? '') === 'premium' ? 1 : 0;
+    $stmt->execute([
+        $data['email'] ?? '',
+        $data['username'] ?? '',
+        $data['subscription_status'] ?? 'free',
+        !empty($data['subscription_expires_at']) ? (int)$data['subscription_expires_at'] : null,
+        $isPremium,
+        (int)$data['id']
+    ]);
+    logAudit((int)$adminUser['id'], 'admin_update_user', 'admin.php', ['target_user' => (int)$data['id']]);
+    jsonResponse(['success' => true, 'message' => 'Benutzer aktualisiert']);
+}
+
+if ($action === 'delete_user') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = (int)($data['id'] ?? 0);
+    if (!$id) {
+        jsonResponse(['success' => false, 'error' => 'User ID erforderlich'], 400);
+    }
+    if ($id === (int)$adminUser['id']) {
+        jsonResponse(['success' => false, 'error' => 'Eigenes Konto nicht löschbar'], 400);
+    }
+    $pdo->prepare("DELETE FROM api_keys WHERE user_id = ?")->execute([$id]);
+    $pdo->prepare("DELETE FROM user_favorites WHERE user_id = ?")->execute([$id]);
+    $pdo->prepare("DELETE FROM trainer_logs WHERE user_id = ?")->execute([$id]);
+    $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+    logAudit((int)$adminUser['id'], 'admin_delete_user', 'admin.php', ['target_user' => $id]);
+    jsonResponse(['success' => true, 'message' => 'Benutzer gelöscht']);
+}
+
+if ($action === 'system') {
+    $dbSize = file_exists(DB_PATH) ? round(filesize(DB_PATH) / 1024 / 1024, 2) . ' MB' : 'N/A';
+    $zipSize = file_exists('/var/www/sweetcheat/SweetCheat-windows.zip') ? round(filesize('/var/www/sweetcheat/SweetCheat-windows.zip') / 1024 / 1024, 1) . ' MB' : 'N/A';
+    $setupSize = file_exists('/var/www/sweetcheat/SweetCheat-Setup.exe') ? round(filesize('/var/www/sweetcheat/SweetCheat-Setup.exe') / 1024 / 1024, 1) . ' MB' : 'N/A';
+    jsonResponse([
+        'success' => true,
+        'version' => '0.7.1',
+        'php_version' => PHP_VERSION,
+        'server_time' => date('Y-m-d H:i:s'),
+        'database_size' => $dbSize,
+        'zip_size' => $zipSize,
+        'setup_size' => $setupSize,
+        'disk_free' => round(disk_free_space('/') / 1024 / 1024 / 1024, 2) . ' GB'
+    ]);
+}
+
+if ($action === 'test_apis') {
+    $endpoints = ['auth.php?action=status', 'games.php?per_page=1', 'trainers.php?action=count', 'version.php'];
+    $results = [];
+    foreach ($endpoints as $ep) {
+        $url = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'sayfespace.online') . '/sweetcheat/api/' . $ep;
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        $resp = curl_exec($ch);
+        $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $results[$ep] = ['http' => $http, 'ok' => $http === 200];
+    }
+    jsonResponse(['success' => true, 'results' => $results]);
+}
+
+// Legacy trainer/game admin endpoints
 if ($action === 'add_game') {
     $data = json_decode(file_get_contents('php://input'), true);
     $stmt = $pdo->prepare("INSERT INTO games (name, slug, process_name, genre, steam_app_id, is_active) VALUES (?, ?, ?, ?, ?, 1)");
@@ -105,199 +252,4 @@ if ($action === 'delete_trainer') {
     jsonResponse(['success' => true, 'message' => 'Trainer gelöscht']);
 }
 
-if ($action === 'config' || $action === 'login') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $pass = $data['password'] ?? '';
-    if ($pass === $ADMIN_PASSWORD) {
-        $token = generateToken();
-        $stmt = $pdo->prepare("INSERT INTO api_keys (user_id, api_key) VALUES (0, ?)");
-        $stmt->execute([$token]);
-        jsonResponse(['success' => true, 'token' => $token]);
-    }
-    jsonResponse(['success' => false, 'error' => 'Invalid password'], 401);
-}
-
-$token = getBearerToken();
-$stmt = $pdo->prepare("SELECT 1 FROM api_keys WHERE api_key = ? AND user_id = 0 AND is_active = 1 LIMIT 1");
-$stmt->execute([$token]);
-if (!$stmt->fetch()) {
-    jsonResponse(['success' => false, 'error' => 'Unauthorized'], 401);
-}
-
-if ($action === 'list_users') {
-    $stmt = $pdo->query("SELECT id, email, username, subscription_status, subscription_expires_at, created_at FROM users ORDER BY id DESC");
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    jsonResponse(['success' => true, 'users' => $users]);
-}
-
-if ($action === 'grant_premium' || $action === 'revoke_premium') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $userId = (int)($data['user_id'] ?? 0);
-    $enable = $action === 'grant_premium';
-    $status = $enable ? 'active' : 'free';
-    $expires = $enable ? strtotime('+100 years') : null;
-    $stmt = $pdo->prepare("UPDATE users SET subscription_status=?, subscription_expires_at=? WHERE id=?");
-    $stmt->execute([$status, $expires, $userId]);
-    jsonResponse(['success' => true, 'message' => $enable ? 'Premium granted' : 'Premium revoked']);
-}
-
-if ($action === 'list_trainers') {
-    $stmt = $pdo->query("
-        SELECT t.*, g.name as game_name, g.process_name 
-        FROM trainers t 
-        JOIN games g ON g.id = t.game_id 
-        ORDER BY g.name, t.name
-    ");
-    $trainers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    foreach ($trainers as &$t) {
-        $stmt2 = $pdo->prepare("SELECT * FROM trainer_patterns WHERE trainer_id = ?");
-        $stmt2->execute([$t['id']]);
-        $t['patterns'] = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-    jsonResponse(['success' => true, 'trainers' => $trainers]);
-}
-
-if ($action === 'add_pattern') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("INSERT INTO trainer_patterns (trainer_id, game_version, pattern, offset, value_type, value, scan_module) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $data['trainer_id'] ?? 0,
-        $data['game_version'] ?? '*',
-        $data['pattern'] ?? '',
-        $data['offset'] ?? 0,
-        $data['value_type'] ?? 'int32',
-        $data['value'] ?? null,
-        $data['scan_module'] ?? null
-    ]);
-    jsonResponse(['success' => true, 'pattern_id' => $pdo->lastInsertId()]);
-}
-
-if ($action === 'delete_pattern') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("DELETE FROM trainer_patterns WHERE id = ?");
-    $stmt->execute([$data['pattern_id'] ?? 0]);
-    jsonResponse(['success' => true]);
-}
-
-if ($action === 'list_community_patterns') {
-    $stmt = $pdo->query("
-        SELECT cp.*, u.email as author, g.name as game_name, g.slug as game_slug, t.name as trainer_name
-        FROM community_patterns cp
-        JOIN users u ON u.id = cp.user_id
-        JOIN games g ON g.id = cp.game_id
-        LEFT JOIN trainers t ON t.id = cp.trainer_id
-        ORDER BY cp.status, cp.votes DESC, cp.created_at DESC
-    ");
-    jsonResponse(['success' => true, 'patterns' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
-}
-
-if ($action === 'approve_community_pattern') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("UPDATE community_patterns SET status = 'approved' WHERE id = ?");
-    $stmt->execute([$data['pattern_id'] ?? 0]);
-    jsonResponse(['success' => true, 'message' => 'Approved']);
-}
-
-if ($action === 'reject_community_pattern') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("UPDATE community_patterns SET status = 'rejected' WHERE id = ?");
-    $stmt->execute([$data['pattern_id'] ?? 0]);
-    jsonResponse(['success' => true, 'message' => 'Rejected']);
-}
-
-if ($action === 'system') {
-    $dbSize = '0 MB';
-    if (defined('DB_PATH') && file_exists(DB_PATH)) {
-        $dbSize = round(filesize(DB_PATH) / 1024 / 1024, 2) . ' MB';
-    }
-    $diskFree = round(disk_free_space('/') / 1024 / 1024 / 1024, 2) . ' GB';
-    $uptime = function_exists('shell_exec') ? trim(shell_exec('uptime -p') ?: 'unbekannt') : 'unbekannt';
-    jsonResponse([
-        'success' => true,
-        'db_size' => $dbSize,
-        'disk_free' => $diskFree,
-        'uptime' => $uptime
-    ]);
-}
-
-if ($action === 'create_user') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $email = $data['email'] ?? '';
-    $username = $data['username'] ?? '';
-    $password = $data['password'] ?? '';
-    $status = $data['subscription_status'] ?? 'free';
-    $days = (int)($data['premium_days'] ?? 30);
-    $expires = $status !== 'free' ? strtotime("+{$days} days") : null;
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (email, username, password_hash, subscription_status, subscription_expires_at) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$email, $username, $hash, $status, $expires]);
-    jsonResponse(['success' => true, 'user_id' => $pdo->lastInsertId()]);
-}
-
-if ($action === 'edit_user') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $id = (int)($_GET['id'] ?? 0);
-    $email = $data['email'] ?? '';
-    $username = $data['username'] ?? '';
-    $status = $data['subscription_status'] ?? 'free';
-    $days = (int)($data['premium_days'] ?? 30);
-    $expires = $status !== 'free' ? strtotime("+{$days} days") : null;
-    if (!empty($data['password'])) {
-        $hash = password_hash($data['password'], PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("UPDATE users SET email=?, username=?, subscription_status=?, subscription_expires_at=?, password_hash=? WHERE id=?");
-        $stmt->execute([$email, $username, $status, $expires, $hash, $id]);
-    } else {
-        $stmt = $pdo->prepare("UPDATE users SET email=?, username=?, subscription_status=?, subscription_expires_at=? WHERE id=?");
-        $stmt->execute([$email, $username, $status, $expires, $id]);
-    }
-    jsonResponse(['success' => true, 'message' => 'Benutzer aktualisiert']);
-}
-
-if ($action === 'create_trainer') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("INSERT INTO trainers (game_id, name, description, cheat_type, is_premium, is_active) VALUES (?, ?, ?, ?, 0, 1)");
-    $stmt->execute([
-        $data['game_id'] ?? 0,
-        $data['name'] ?? '',
-        $data['description'] ?? '',
-        $data['type'] ?? 'memory_scan'
-    ]);
-    jsonResponse(['success' => true, 'trainer_id' => $pdo->lastInsertId()]);
-}
-
-if ($action === 'edit_trainer') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $id = (int)($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("UPDATE trainers SET game_id=?, name=?, description=?, cheat_type=? WHERE id=?");
-    $stmt->execute([
-        $data['game_id'] ?? 0,
-        $data['name'] ?? '',
-        $data['description'] ?? '',
-        $data['type'] ?? 'memory_scan',
-        $id
-    ]);
-    jsonResponse(['success' => true, 'message' => 'Trainer aktualisiert']);
-}
-
-if ($action === 'list_patterns') {
-    $stmt = $pdo->query("
-        SELECT cp.*, u.email as author_name, g.name as game_name
-        FROM community_patterns cp
-        JOIN users u ON u.id = cp.user_id
-        JOIN games g ON g.id = cp.game_id
-        ORDER BY cp.created_at DESC
-    ");
-    jsonResponse(['success' => true, 'patterns' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
-}
-
-if ($action === 'approve_pattern') {
-    $id = (int)($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("UPDATE community_patterns SET status = CASE WHEN status = 'approved' THEN 'pending' ELSE 'approved' END WHERE id = ?");
-    $stmt->execute([$id]);
-    jsonResponse(['success' => true, 'message' => 'Pattern aktualisiert']);
-}
-
 jsonResponse(['success' => false, 'error' => 'Invalid action'], 400);
-?>

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, font as tkfont
 
 class ModernStyle:
-    """Centralized dark theme for TrainerHub desktop app."""
+    """Centralized dark theme for SweetCheat desktop app."""
     BG = "#050507"
     BG_CARD = "#111118"
     BG_ELEVATED = "#1a1a24"

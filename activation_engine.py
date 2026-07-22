@@ -6,7 +6,7 @@ import time
 import logging
 import threading
 
-logger = logging.getLogger('TrainerHub.Activation')
+logger = logging.getLogger('SweetCheat.Activation')
 WINDOWS = sys.platform == 'win32'
 
 class ActivationEngine:

@@ -1,4 +1,4 @@
-"""Stardew Valley savegame editor helpers for TrainerHub.
+"""Stardew Valley savegame editor helpers for SweetCheat.
 
 Works on standard Windows save location:
 %APPDATA%/StardewValley/Saves/<farmerName>_<id>/<farmerName>_<id>

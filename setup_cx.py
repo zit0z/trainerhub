@@ -13,13 +13,13 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 executables = [
-    Executable("main.py", base=base, target_name="TrainerHub.exe", icon=None)
+    Executable("main.py", base=base, target_name="SweetCheat.exe", icon=None)
 ]
 
 setup(
-    name="TrainerHub",
+    name="SweetCheat",
     version="0.3.5",
-    description="TrainerHub Desktop App",
+    description="SweetCheat Desktop App",
     options={"build_exe": build_exe_options},
     executables=executables,
 )

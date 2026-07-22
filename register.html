@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrieren — TrainerHub</title>
+    <title>Registrieren — SweetCheat</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
@@ -25,7 +25,7 @@
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
-                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                <a href="/sweetcheat/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
             </div>
             <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
             <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
@@ -58,10 +58,10 @@
         <div style="max-width:480px; margin:0 auto;">
             <div class="card" style="padding:32px;">
                 <div style="text-align:center; margin-bottom:24px;">
-                    <a href="/trainerhub/" class="brand" style="justify-content:center; font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                    <a href="/sweetcheat/" class="brand" style="justify-content:center; font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
                 </div>
                 <h2 style="margin:0 0 8px; font-family:'Rajdhani',sans-serif; text-transform:uppercase; text-align:center;">Registrieren</h2>
-                <p style="color:var(--text-muted); text-align:center; margin-bottom:24px;">Erstelle deinen TrainerHub-Account.</p>
+                <p style="color:var(--text-muted); text-align:center; margin-bottom:24px;">Erstelle deinen SweetCheat-Account.</p>
                 
                 <div style="margin-bottom:16px;">
                     <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">E-Mail</label>
@@ -95,7 +95,7 @@
                     }});
                     const data = await res.json();
                     if (!data.success) {{ err.textContent = data.error || 'Registrierung fehlgeschlagen'; return; }}
-                    localStorage.setItem('trainerhub_api_key', data.api_key);
+                    localStorage.setItem('sweetcheat_api_key', data.api_key);
                     location.href = 'dashboard';
                 }} catch(e) {{ err.textContent = 'Netzwerkfehler'; }}
             }}
@@ -106,10 +106,10 @@
     </div>
 
     <script>
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
         document.getElementById('navDashboard').classList.add('active');
         async function loadUser() {
-            const key = localStorage.getItem('trainerhub_api_key');
+            const key = localStorage.getItem('sweetcheat_api_key');
             if (!key) { location.href='login'; return; }
             try {
                 const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});

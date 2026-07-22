@@ -1,8 +1,8 @@
-// TrainerHub Shared Web UI Helpers
+// SweetCheat Shared Web UI Helpers
 (function() {
     const API_BASE = 'api';
 
-    function getKey() { return localStorage.getItem('trainerhub_api_key'); }
+    function getKey() { return localStorage.getItem('sweetcheat_api_key'); }
     function authHeaders() { const k = getKey(); return k ? {'Authorization': 'Bearer '+k} : {}; }
 
     // Toast notifications
@@ -25,13 +25,13 @@
 
     // Theme toggle
     function initTheme() {
-        const saved = localStorage.getItem('trainerhub_theme') || 'dark';
+        const saved = localStorage.getItem('sweetcheat_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', saved);
         window.toggleTheme = function() {
             const current = document.documentElement.getAttribute('data-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('trainerhub_theme', next);
+            localStorage.setItem('sweetcheat_theme', next);
             showToast(next === 'dark' ? 'Dark Mode aktiviert' : 'Light Mode aktiviert', 'info', 1500);
         };
     }

@@ -5,7 +5,7 @@ import subprocess
 import json
 import re
 
-logger = logging.getLogger('TrainerHub.ProcessScanner')
+logger = logging.getLogger('SweetCheat.ProcessScanner')
 WINDOWS = sys.platform == 'win32'
 
 if WINDOWS:

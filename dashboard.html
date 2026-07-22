@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — TrainerHub</title>
+    <title>Dashboard — SweetCheat</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
@@ -30,7 +30,7 @@
     <aside class="nav-sidebar">
         <div class="nav-main">
             <div style="padding:0 8px 24px;">
-                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                <a href="/sweetcheat/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
             </div>
             <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
             <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
@@ -103,7 +103,7 @@
                         <div class="quick-action" onclick="location.href='setup'"><i class="fas fa-download"></i><div><div style="font-weight:600;">App installieren</div><div style="font-size:12px; color:var(--text-muted);">Windows .exe</div></div></div>
                         <div class="quick-action" onclick="location.href='games'"><i class="fas fa-search"></i><div><div style="font-weight:600;">Spiele finden</div><div style="font-size:12px; color:var(--text-muted);">299 Titel</div></div></div>
                         <div class="quick-action" onclick="location.href='favorites'"><i class="fas fa-star"></i><div><div style="font-weight:600;">Favoriten</div><div style="font-size:12px; color:var(--text-muted);">Merken & Aufrufen</div></div></div>
-                        <div class="quick-action" onclick="startTour([{title:'Willkommen', text:'Dashboard zeigt deine Statistiken und schnelle Links.', icon:'fa-home'},{title:'Suche', text:'Drücke Ctrl+K um Spiele und Trainer zu suchen.', icon:'fa-search'},{title:'Fertig', text:'Viel Spaß mit TrainerHub!', icon:'fa-check'}])"><i class="fas fa-life-ring"></i><div><div style="font-weight:600;">Tour starten</div><div style="font-size:12px; color:var(--text-muted);">Onboarding</div></div></div>
+                        <div class="quick-action" onclick="startTour([{title:'Willkommen', text:'Dashboard zeigt deine Statistiken und schnelle Links.', icon:'fa-home'},{title:'Suche', text:'Drücke Ctrl+K um Spiele und Trainer zu suchen.', icon:'fa-search'},{title:'Fertig', text:'Viel Spaß mit SweetCheat!', icon:'fa-check'}])"><i class="fas fa-life-ring"></i><div><div style="font-weight:600;">Tour starten</div><div style="font-size:12px; color:var(--text-muted);">Onboarding</div></div></div>
                     </div>
                 </div>
 
@@ -128,8 +128,8 @@
     <script src="shared.js"></script>
     <script>
         document.getElementById('navDashboard').classList.add('active');
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
-        const savedTheme = localStorage.getItem('trainerhub_theme') || 'dark';
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('sweetcheat_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         document.addEventListener('click', e => {
@@ -140,7 +140,7 @@
     </script>
     <script>
         async function loadDashboard() {
-            const key = localStorage.getItem('trainerhub_api_key') || '';
+            const key = localStorage.getItem('sweetcheat_api_key') || '';
             if (!key) { location.href='login'; return; }
             try {
                 const [statusRes, logsRes, gamesRes] = await Promise.all([

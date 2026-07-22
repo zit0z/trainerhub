@@ -3,216 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerHub — Singleplayer Trainer, Cheats & Savegame-Tools</title>
-    <meta name="description" content="TrainerHub bietet moderne Singleplayer-Trainer, Savegame-Editoren und Cheats für PC-Spiele. Kein Viren-Scanner-Alarm, keine Third-Party-Cheat-Tables.">
+    <title>SweetCheat Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="shared-modern.css">
+    <link rel="stylesheet" href="../public/shared-modern.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { scroll-behavior: smooth; }
-        .landing-hero { min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; position: relative; overflow: hidden; }
-        .landing-hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(0,240,255,0.12), transparent 40%); animation: pulse-glow 8s ease-in-out infinite; }
-        @keyframes pulse-glow { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.2); opacity: 1; } }
-        .hero-content { position: relative; z-index: 1; max-width: 900px; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,240,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
-        .hero-title { font-family: 'Rajdhani', sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 700; line-height: 1.05; margin-bottom: 20px; }
-        .hero-title span { color: var(--accent); }
-        .hero-subtitle { color: var(--text-muted); font-size: clamp(1rem, 2vw, 1.25rem); max-width: 640px; margin: 0 auto 32px; line-height: 1.6; }
-        .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-        .btn-hero { padding: 16px 32px; font-size: 16px; font-weight: 700; border-radius: var(--radius); }
-        .section { padding: 80px 20px; }
-        .section-title { text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 2.2rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
-        .section-subtitle { text-align: center; color: var(--text-muted); max-width: 600px; margin: 0 auto 48px; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
-        .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; transition: all .25s; }
-        .feature-card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,240,255,0.1); }
-        .feature-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(0,240,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.6rem; margin-bottom: 18px; }
-        .feature-title { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; }
-        .feature-desc { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
-        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; text-align: center; }
-        .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 700; color: var(--accent); }
-        .stat-label { color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
-        .pricing-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; text-align: center; position: relative; }
-        .pricing-card.premium { border-color: var(--accent); box-shadow: 0 0 40px rgba(0,240,255,0.1); }
-        .price-tag { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 700; margin: 16px 0; }
-        .price-tag span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
-        .pricing-features { text-align: left; color: var(--text-muted); font-size: 14px; line-height: 2; margin: 24px 0; }
-        .pricing-features i { color: var(--accent); margin-right: 10px; }
-        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--bg); padding: 4px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-        .faq-item { max-width: 800px; margin: 0 auto 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-        .faq-question { padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
-        .faq-answer { padding: 0 24px; max-height: 0; overflow: hidden; transition: all .3s; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
-        .faq-item.open .faq-answer { padding: 0 24px 18px; max-height: 200px; }
-        .cta-banner { background: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,56,100,0.08)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: center; padding: 60px 20px; }
-        .footer { background: var(--bg-card); border-top: 1px solid var(--border); padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
-        @media (max-width: 768px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+        :root { color-scheme: dark; }
+        .login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .login-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; max-width: 420px; width: 90%; text-align: center; }
+        .login-box i { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
+        .login-box h2 { font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .login-box p { color: var(--text-muted); margin-bottom: 1.5rem; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-main { flex: 1; padding: 28px; }
+        .admin-section { display: none; animation: fadeIn .3s ease; }
+        .admin-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--accent); }
+        .stat-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+        .chart-container { position: relative; height: 260px; margin: 20px 0; }
+        .top-games { display: flex; flex-direction: column; gap: 10px; }
+        .top-game-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .top-game-name { font-weight: 600; font-size: 14px; }
+        .top-game-count { color: var(--accent); font-family: 'Rajdhani', sans-serif; font-weight: 700; }
+        .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+        .user-row td, .audit-row td { padding: 14px 12px; font-size: 13px; }
+        .hidden { display: none !important; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; width: 90%; max-width: 520px; max-height: 90vh; overflow: auto; }
     </style>
 </head>
 <body>
-    <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,18,32,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;">
-            <a href="#" class="brand" style="font-size: 1.5rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
-            <nav style="display: flex; gap: 24px; align-items: center;">
-                <a href="#features" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Features</a>
-                <a href="#pricing" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Preise</a>
-                <a href="#faq" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">FAQ</a>
-                <a href="dashboard" class="btn btn-primary btn-sm">Dashboard</a>
-                <a href="login" class="btn btn-secondary btn-sm">Login</a>
-            </nav>
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <i class="fas fa-shield-alt"></i>
+            <h2>Admin Login</h2>
+            <p>SweetCheat Verwaltungsbereich</p>
+            <input type="password" id="adminPass" placeholder="Admin-Passwort" onkeydown="if(event.key==='Enter') doLogin()">
+            <div id="loginError" style="color:var(--danger); font-size:13px; margin:12px 0; min-height:18px;"></div>
+            <button class="btn btn-primary" onclick="doLogin()" style="width:100%;"><i class="fas fa-lock"></i> Einloggen</button>
         </div>
-    </header>
+    </div>
 
-    <section class="landing-hero" style="padding-top: 120px;">
-        <div class="hero-content">
-            <div class="hero-badge"><i class="fas fa-shield-alt"></i> Keine Third-Party Cheat-Tables — Nur legale Singleplayer-Methoden</div>
-            <h1 class="hero-title">Dominiere deine
-                <span>Singleplayer-Welt</span>
-            </h1>
-            <p class="hero-subtitle">Moderne Trainer, Savegame-Editoren und Memory-Tools für PC-Spiele. Sauber gebaut, RDP- und Streamer-freundlich, ohne Viren-Scanner-Alarm.</p>
-            <div class="hero-cta">
-                <a href="setup" class="btn btn-primary btn-hero"><i class="fas fa-download"></i> Windows-App herunterladen</a>
-                <a href="games" class="btn btn-secondary btn-hero">Spiele erkunden</a>
+    <div id="adminLayout" class="admin-layout hidden">
+        <aside class="nav-sidebar">
+            <div class="nav-main">
+                <div style="padding:0 8px 24px;">
+                    <a href="/sweetcheat/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+                </div>
+                <button class="nav-item active" data-view="dashboard"><span class="icon"><i class="fas fa-chart-line"></i></span> Dashboard</button>
+                <button class="nav-item" data-view="users"><span class="icon"><i class="fas fa-users"></i></span> Benutzer</button>
+                <button class="nav-item" data-view="audit"><span class="icon"><i class="fas fa-clipboard-list"></i></span> Audit-Log</button>
+                <button class="nav-item" data-view="system"><span class="icon"><i class="fas fa-server"></i></span> System</button>
             </div>
-        </div>
-    </section>
+            <div style="padding:18px; border-top:1px solid var(--border);">
+                <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </aside>
 
-    <section class="section" style="background: var(--bg-card);">
-        <div class="section-title">Zahlen, die überzeugen</div>
-        <div class="stats-bar">
-            <div><div class="stat-value" id="statGames">299+</div><div class="stat-label">Spiele</div></div>
-            <div><div class="stat-value" id="statTrainers">3.700+</div><div class="stat-label">Trainer</div></div>
-            <div><div class="stat-value">0€</div><div class="stat-label">Startpreis</div></div>
-            <div><div class="stat-value">1 Klick</div><div class="stat-label">Aktivierung</div></div>
-        </div>
-    </section>
+        <div class="page-content">
+            <div class="topbar">
+                <h1 style="font-family:'Rajdhani',sans-serif; font-size:26px; margin:0;">Admin Dashboard</h1>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span class="badge badge-success"><i class="fas fa-circle" style="font-size:8px;"></i> Online</span>
+                    <span class="badge badge-premium">v0.7.1</span>
+                </div>
+            </div>
 
-    <section id="features" class="section">
-        <div class="section-title">Warum TrainerHub?</div>
-        <div class="section-subtitle">Alles, was du brauchst — nichts, was du nicht willst.</div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
-                <div class="feature-title">One-Click Cheats</div>
-                <div class="feature-desc">Kein lästiges Eintippen im Spiel. Cheats aktivieren sich per Knopfdruck über SMAPI-Bridge, Savegame-Editoren oder Memory-Writes.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-save"></i></div>
-                <div class="feature-title">Savegame-Editor</div>
-                <div class="feature-desc">Ändere Werte direkt in deinen Savegames — mit automatischem Backup, bevor etwas kaputt geht.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-crosshairs"></i></div>
-                <div class="feature-title">Prozess-Scanner</div>
-                <div class="feature-desc">Die Desktop-App erkennt laufende Spiele automatisch und zeigt passende Trainer an — ohne manuelles Suchen.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-star"></i></div>
-                <div class="feature-title">Favoriten & Sync</div>
-                <div class="feature-desc">Merke dir Spiele und Trainer im Web und greife in der Desktop-App darauf zu. Alles synchron über dein Konto.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-moon"></i></div>
-                <div class="feature-title">Dark & Light Theme</div>
-                <div class="feature-desc">Modernes UI mit Cyan-Akzenten, Dark Mode und optional Light Mode für helle Umgebungen.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">>i class="fas fa-lock"></i></div>
-                <div class="feature-title">Singleplayer-Only</div>
-                <div class="feature-desc">Keine Multiplayer-Cheats, keine AOB-Patterns von Dritten, keine Spyware. Nur legale Singleplayer-Methoden.</div>
-            </div>
-        </div>
-    </section>
+            <div class="admin-main">
+                <div id="view-dashboard" class="admin-section active">
+                    <p class="section-subtitle">Echtzeit-Übersicht über SweetCheat.</p>
+                    <div class="grid-4" style="margin-bottom:24px;">
+                        <div class="card" style="padding:22px;"><div class="stat-label">Benutzer gesamt</div><div class="stat-value" id="dashTotalUsers">0</div></div>
+                        <div class="card" style="padding:22px;"><div class="stat-label">Neue (7 Tage)</div><div class="stat-value" id="dashNewUsers">0</div></div>
+                        <div class="card" style="padding:22px;"><div class="stat-label">Premium</div><div class="stat-value" id="dashPremium">0</div></div>
+                        <div class="card" style="padding:22px;"><div class="stat-label">Aktivierungen (7 Tage)</div><div class="stat-value" id="dashActivations">0</div></div>
+                    </div>
 
-    <section id="pricing" class="section" style="background: var(--bg-card);">
-        <div class="section-title">Preise</div>
-        <div class="section-subtitle">Starte kostenlos. Upgrade, wenn du mehr willst.</div>
-        <div class="pricing-cards">
-            <div class="pricing-card">
-                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Free</div>
-                <div class="price-tag">0€</div>
-                <ul class="pricing-features" style="list-style: none; padding: 0;">
-                    <li><i class="fas fa-check"></i> Basis-Trainer nutzen</li>
-                    <li><i class="fas fa-check"></i> Favoriten speichern</li>
-                    <li><i class="fas fa-check"></i> Web-Dashboard</li>
-                    <li><i class="fas fa-check"></i> Community-Support</li>
-                </ul>
-                <a href="register" class="btn btn-secondary" style="width: 100%;">Kostenlos starten</a>
-            </div>
-            <div class="pricing-card premium">
-                <div class="popular-badge">EMPFOHLEN</div>
-                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Premium</div>
-                <div class="price-tag">9,99€<span> / Monat</span></div>
-                <ul class="pricing-features" style="list-style: none; padding: 0;">
-                    <li><i class="fas fa-check"></i> Alle Premium-Trainer</li>
-                    <li><i class="fas fa-check"></i> Memory-Scanner</li>
-                    <li><i class="fas fa-check"></i> Savegame-Editoren</li>
-                    <li>>i class="fas fa-check"></i> SMAPI-Bridge</li>
-                    <li><i class="fas fa-check"></i> Prioritäts-Support</li>
-                </ul>
-                <a href="checkout" class="btn btn-primary" style="width: 100%;">Premium aktivieren</a>
-            </div>
-        </div>
-    </section>
+                    <div class="grid-2" style="margin-bottom:24px;">
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Neue Benutzer & Aktivierungen</h3>
+                            <div class="chart-container"><canvas id="mainChart"></canvas></div>
+                        </div>
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Top Spiele (7 Tage)</h3>
+                            <div class="top-games" id="topGames">Lade...</div>
+                        </div>
+                    </div>
 
-    <section id="faq" class="section">
-        <div class="section-title">Häufige Fragen</div>
-        <div class="faq-item">
-            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                Ist TrainerHub sicher?
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">Ja. Wir verwenden nur legale Singleplayer-Methoden wie Savegame-Editing, SMAPI-Bridge und Memory-Writes. Keine Third-Party-Cheat-Tables, keine AOB-Patterns, keine Multiplayer-Cheats.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                Funktioniert das auf jedem PC?
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">Die Windows-App läuft auf Windows 10/11. Einige Features benötigen Administrator-Rechte für Memory-Operationen. Für Stardew Valley reicht SMAPI oder Savegame-Editing.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-                Kann ich mein Abo jederzeit kündigen?
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">Ja. Premium ist monatlich kündbar. Dein Account bleibt als Free-Account erhalten.</div>
-        </div>
-    </section>
+                    <div class="grid-2">
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Datenbestand</h3>
+                            <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border);">
+                                <span style="color:var(--text-muted);">Spiele</span><span id="dbGames" style="font-family:'Rajdhani',sans-serif; font-weight:700;">0</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border);">
+                                <span style="color:var(--text-muted);">Trainer</span><span id="dbTrainers" style="font-family:'Rajdhani',sans-serif; font-weight:700;">0</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border);">
+                                <span style="color:var(--text-muted);">Favoriten</span><span id="dbFavorites" style="font-family:'Rajdhani',sans-serif; font-weight:700;">0</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:12px 0;">
+                                <span style="color:var(--text-muted);">Audit-Einträge</span><span id="dbAudit" style="font-family:'Rajdhani',sans-serif; font-weight:700;">0</span>
+                            </div>
+                        </div>
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Wartung</h3>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" onclick="syncStats()"><i class="fas fa-sync"></i> Aktualisieren</button>
+                                <button class="btn btn-secondary btn-sm" onclick="clearCache()"><i class="fas fa-broom"></i> Cache leeren</button>
+                                <button class="btn btn-secondary btn-sm" onclick="downloadAudit()"><i class="fas fa-download"></i> Audit-CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <section class="cta-banner">
-        <div style="max-width: 700px; margin: 0 auto;">
-            <h2 style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; margin-bottom: 16px;">Bereit, dein Spielerlebnis zu verbessern?</h2>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Lade die App herunter oder starte direkt im Browser.</p>
-            <a href="checkout" class="btn btn-primary btn-hero"><i class="fas fa-crown"></i> Premium aktivieren</a>
-        </div>
-    </section>
+                <div id="view-users" class="admin-section">
+                    <p class="section-subtitle">Benutzerkonten verwalten.</p>
+                    <div style="display:flex; gap:12px; margin-bottom:20px;">
+                        <input type="text" id="userFilter" placeholder="Suchen..." oninput="renderUsers()" style="max-width:300px;">
+                        <select id="userStatusFilter" onchange="renderUsers()">
+                            <option value="">Alle</option>
+                            <option value="free">Free</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="openUserModal()"><i class="fas fa-plus"></i> Benutzer</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>ID</th><th>E-Mail</th><th>Username</th><th>Status</th><th>Läuft ab</th><th>Registriert</th><th>Aktionen</th></tr></thead>
+                            <tbody id="usersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-    <footer class="footer">
-        <p>© 2026 TrainerHub. Singleplayer-Trainer für PC-Spiele.</p>
-        <div style="margin-top: 12px;">
-            <a href="login" style="color: var(--text-muted); margin: 0 10px;">Login</a>
-            <a href="register" style="color: var(--text-muted); margin: 0 10px;">Registrieren</a>
-            <a href="dashboard" style="color: var(--text-muted); margin: 0 10px;">Dashboard</a>
-        </div>
-    </footer>
+                <div id="view-audit" class="admin-section">
+                    <p class="section-subtitle">Letzte Aktionen im System.</p>
+                    <div style="display:flex; gap:12px; margin-bottom:20px;">
+                        <input type="text" id="auditFilter" placeholder="Aktion oder Benutzer suchen..." oninput="renderAudit()" style="max-width:300px;">
+                        <button class="btn btn-secondary btn-sm" onclick="loadAudit()"><i class="fas fa-sync"></i> Aktualisieren</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Zeit</th><th>Benutzer</th><th>Aktion</th><th>Endpoint</th><th>IP</th><th>Details</th></tr></thead>
+                            <tbody id="auditTable"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-    <script>
-        async function loadStats() {
-            try {
-                const res = await fetch('api/games.php?per_page=1');
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('statGames').textContent = data.total + '+';
-                }
-                const res2 = await fetch('api/trainers.php?action=count');
-                const data2 = await res2.json();
-                if (data2.success) {
-                    document.getElementById('statTrainers').textContent = data2.count.toLocaleString('de-DE') + '+';
-                }
-            } catch(e) {}
-        }
-        loadStats();
-    </script>
+                <div id="view-system" class="admin-section">
+                    <p class="section-subtitle">Server-Status und Informationen.</p>
+                    <div class="grid-2">
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">System</h3>
+                            <pre id="systemInfo" style="color:var(--text-muted); font-size:13px; line-height:1.8;">Lade...</pre>
+                        </div>
+                        <div class="card" style="padding:24px;">
+                            <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Schnellaktionen</h3>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <button class="btn btn-secondary btn-sm" onclick="testAllAPIs()"><i class="fas fa-vial"></i> APIs testen</button>
+                                <button class="btn btn-danger btn-sm" onclick="purgeAudit()"><i class="fas fa-trash"></i> Audit-Log leeren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal-overlay" onclick="if(event.target===this) closeUserModal()">
+        <div class="modal-box">
+            <h3 id="userModalTitle" style="margin:0 0 20px; font-family:'Rajdhani',sans-serif;">Benutzer bearbeiten</h3>
+            <input type="hidden" id="editUserId">
+            <label style="color:var(--text-muted); font-size:13px;">E-Mail</label>
+            <input type="email" id="editUserEmail" style="margin-bottom:16px;">
+            <label style="color:var(--text-muted); font-size:13px;">Username</label>
+            <input type="text" id="editUserUsername" style="margin-bottom:16px;">
+            <label style="color:var(--text-muted); font-size:13px;">Status</label>
+            <select id="editUserStatus" style="margin-bottom:16px;">
+                <option value="free">Free</option>
+                <option value="premium">Premium</option>
+            </select>
+            <label style="color:var(--text-muted); font-size:13px;">Läuft ab (Unix-Timestamp, optional)</label>
+            <input type="number" id="editUserExpires" style="margin-bottom:20px;">
+            <div style="display:flex; gap:12px;">
+                <button class="btn btn-primary" onclick="saveUser()" style="flex:1;">Speichern</button>
+                <button class="btn btn-secondary" onclick="closeUserModal()" style="flex:1;">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
 </body>
 </html>

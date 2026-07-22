@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-$zipPath = '/var/www/trainerhub/TrainerHub-windows.zip';
+$zipPath = '/var/www/sweetcheat/SweetCheat-windows.zip';
 $files = [];
 
 if (file_exists($zipPath)) {

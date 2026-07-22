@@ -28,6 +28,7 @@ if (isset($auth['error'])) {
     jsonResponse(['success' => false, 'error' => $auth['error']], $auth['code']);
 }
 $user = $auth['user'];
+requireVerified($user);
 $isPremium = isPremium($user);
 
 $action = $_GET['action'] ?? 'list';

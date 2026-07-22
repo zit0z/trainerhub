@@ -1,10 +1,10 @@
 <?php
 /**
- * TrainerHub Auth Library
+ * SweetCheat Auth Library
  */
 
 if (!defined('DB_PATH')) {
-    define('DB_PATH', __DIR__ . '/../database/trainerhub.db');
+    define('DB_PATH', __DIR__ . '/../database/sweetcheat.db');
 }
 
 function getDB() {
@@ -158,6 +158,43 @@ function checkRateLimit($endpoint, $maxRequests = 100, $windowSeconds = 60) {
         error_log("Rate limit check failed: " . $e->getMessage());
         return true;
     }
+}
+
+
+function requireVerified($user) {
+    if (empty($user['email_verified'])) {
+        jsonResponse(['success' => false, 'error' => 'E-Mail nicht bestätigt', 'needs_verification' => true], 403);
+    }
+}
+
+function getRequestJson() {
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
+    if ($data === null && !empty($raw)) {
+        jsonResponse(['success' => false, 'error' => 'Ungültiges JSON'], 400);
+    }
+    return $data ?? [];
+}
+
+function validatePasswordStrength($password) {
+    if (strlen($password) < 8) return 'Passwort muss mindestens 8 Zeichen haben';
+    if (!preg_match('/[A-Z]/', $password)) return 'Passwort muss Großbuchstaben enthalten';
+    if (!preg_match('/[a-z]/', $password)) return 'Passwort muss Kleinbuchstaben enthalten';
+    if (!preg_match('/[0-9]/', $password)) return 'Passwort muss Ziffern enthalten';
+    return null;
+}
+
+function rotateApiKey($userId) {
+    $pdo = getDB();
+    // Deactivate old keys
+    $pdo->prepare("UPDATE api_keys SET is_active = 0 WHERE user_id = ?")->execute([$userId]);
+    $newKey = generateToken();
+    $pdo->prepare("INSERT INTO api_keys (user_id, api_key, created_at) VALUES (?, ?, strftime('%s','now'))")->execute([$userId, $newKey]);
+    return $newKey;
+}
+
+function sanitizeEmail($email) {
+    return strtolower(trim($email));
 }
 
 ?>
