@@ -6,8 +6,10 @@ import time
 import threading
 import urllib.request
 import urllib.error
+import logging
 
-APP_VERSION = '0.6.7'
+APP_VERSION = '0.6.8'
+logger = logging.getLogger('TrainerHub.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'TrainerHub')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
@@ -18,7 +20,7 @@ try:
     import tkinter as tk
     from tkinter import ttk, messagebox, scrolledtext, simpledialog
 except ImportError:
-    print("tkinter fehlt")
+    logger.error("tkinter fehlt")
     sys.exit(1)
 
 from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch
@@ -39,7 +41,7 @@ def save_config(cfg):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(cfg, f)
     except Exception as e:
-        print(f"Config save error: {e}")
+        logger.error(f"Config save error: {e}")
 
 
 class TrainerHubApp:
@@ -70,7 +72,7 @@ class TrainerHubApp:
             from cheat_engine import CheatEngine
             self.engine = CheatEngine()
         except Exception as e:
-            print(f"Cheat engine load error: {e}")
+            logger.exception("Cheat engine load error")
 
         self.build_ui()
         self.premium_badge = None

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil — TrainerHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .chart-bar { display:flex; align-items:flex-end; gap:6px; height:120px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); }
+        .bar { flex:1; background:linear-gradient(180deg, var(--accent), rgba(0,240,255,0.2)); border-radius:4px 4px 0 0; min-height:4px; transition:height .3s; }
+        .bar-label { text-align:center; font-size:10px; color:var(--text-muted); margin-top:6px; }
+        .activity-item { display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid var(--border); }
+        .activity-item:last-child { border-bottom:none; }
+        .activity-icon { width:36px; height:36px; border-radius:8px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); }
+        .empty-state { text-align:center; padding:48px; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+    <aside class="nav-sidebar">
+        <div class="nav-main">
+            <div style="padding:0 8px 24px;">
+                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Trainer<span>Hub</span></a>
+            </div>
+            <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+            <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
+            <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+            <a href="profile" class="nav-item active" id="navProfile"><span class="icon"><i class="fas fa-user-circle"></i></span> Profil</a>
+            <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Profil & Aktivitäten</h1>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <span id="versionBadge" class="badge badge-free">v0.6.8</span>
+                <a href="setup" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> App downloaden</a>
+            </div>
+        </div>
+
+        <div style="padding:28px;">
+            <div class="grid-4" style="margin-bottom:24px;">
+                <div class="card dashboard-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div class="label">Aktivierungen</div>
+                        <div class="icon"><i class="fas fa-bolt"></i></div>
+                    </div>
+                    <div class="value" id="statTotal">0</div>
+                </div>
+                <div class="card dashboard-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div class="label">Erfolgreich</div>
+                        <div class="icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="value" id="statSuccess">0</div>
+                </div>
+                <div class="card dashboard-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div class="label">Fehlgeschlagen</div>
+                        <div class="icon"><i class="fas fa-times"></i></div>
+                    </div>
+                    <div class="value" id="statFailed">0</div>
+                </div>
+                <div class="card dashboard-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div class="label">Erfolgsrate</div>
+                        <div class="icon"><i class="fas fa-percentage"></i></div>
+                    </div>
+                    <div class="value" id="statRate">0%</div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:24px;">
+                <div class="card" style="padding:24px;">
+                    <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Aktivitäten der letzten 14 Tage</h3>
+                    <div id="chartContainer">
+                        <div class="chart-bar" id="chartBars">
+                            <!-- bars injected via JS -->
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-muted);">
+                            <span id="chartStart">-</span>
+                            <span id="chartEnd">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:24px;">
+                    <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Konto</h3>
+                    <div style="color:var(--text-muted); line-height:1.8; font-size:14px;">
+                        <div>E-Mail: <span id="profileEmail" style="color:var(--text);">-</span></div>
+                        <div>Abonnement: <span id="profileSub" style="color:var(--text);">-</span></div>
+                        <div>Mitglied seit: <span id="profileJoined" style="color:var(--text);">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding:24px;">
+                <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Letzte Aktivierungen</h3>
+                <div id="activityList">
+                    <div class="empty-state">
+                        <i class="fas fa-bolt" style="font-size:2rem; color:var(--accent); margin-bottom:12px;"></i>
+                        <p>Noch keine Aktivierungen vorhanden.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('trainerhub_api_key'); location.href='login'; });
+
+        async function loadProfile() {
+            const key = localStorage.getItem('trainerhub_api_key');
+            if (!key) { location.href='login'; return; }
+            try {
+                const [statusRes, statsRes] = await Promise.all([
+                    fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}}),
+                    fetch('api/trainer-logs.php?action=stats', {headers:{'Authorization':'Bearer '+key}})
+                ]);
+                const status = await statusRes.json();
+                const stats = await statsRes.json();
+                if (!status.success) { location.href='login'; return; }
+
+                document.getElementById('profileEmail').textContent = status.email || '-';
+                document.getElementById('profileSub').textContent = (status.subscription || 'free').toUpperCase();
+                document.getElementById('profileJoined').textContent = status.user?.created_at ? new Date(status.user.created_at * 1000).toLocaleDateString('de-DE') : '-';
+
+                if (stats.success) {
+                    document.getElementById('statTotal').textContent = stats.total_activations || 0;
+                    document.getElementById('statSuccess').textContent = stats.successful || 0;
+                    document.getElementById('statFailed').textContent = stats.failed || 0;
+                    document.getElementById('statRate').textContent = (stats.success_rate || 0) + '%';
+                    renderChart(stats.chart_data || []);
+                    renderActivity(stats.recent || []);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderChart(data) {
+            const bars = document.getElementById('chartBars');
+            if (!data.length) { bars.innerHTML = ''; return; }
+            const max = Math.max(...data.map(d => d.count), 1);
+            bars.innerHTML = data.map(d => `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                    <div class="bar" style="height:${Math.max(4, (d.count / max) * 100)}%;"></div>
+                    <div class="bar-label">${d.date}</div>
+                </div>
+            `).join('');
+            document.getElementById('chartStart').textContent = data[0]?.date || '-';
+            document.getElementById('chartEnd').textContent = data[data.length-1]?.date || '-';
+        }
+
+        function renderActivity(items) {
+            const list = document.getElementById('activityList');
+            if (!items.length) return;
+            list.innerHTML = items.map(item => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas ${item.success ? 'fa-check' : 'fa-times'}"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:600;">${escapeHtml(item.trainer_name || 'Unbekannter Trainer')}</div>
+                        <div style="font-size:13px; color:var(--text-muted);">${escapeHtml(item.game_name || '')} • ${new Date(item.created_at * 1000).toLocaleString('de-DE')}</div>
+                    </div>
+                    <span class="badge ${item.success ? 'badge-success' : 'badge-danger'}">${item.success ? 'OK' : 'Fehler'}</span>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML;
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

@@ -66,3 +66,37 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 .toast.show { transform:translateY(0); opacity:1; }
 .toast.success { border-color:var(--success); color:var(--success); }
 .toast.error { border-color:var(--danger); color:var(--danger); }
+
+/* Scroll-reveal animation */
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Mobile hamburger menu */
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+@media (max-width: 640px) {
+    .mobile-toggle { display: block; }
+    .nav-links { display: none; position: absolute; top: 70px; left: 0; right: 0; background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 1rem; flex-direction: column; }
+    .nav-links.open { display: flex; }
+}
+
+/* Loading shimmer for cards */
+.shimmer {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius);
+}
