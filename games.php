@@ -18,7 +18,7 @@ $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 if ($authHeader && preg_match('/Bearer\s+(\S+)/', $authHeader, $m)) {
     $apiKey = $m[1];
-    $stmt_user = $pdo->prepare("SELECT id FROM users WHERE api_key = ? AND is_active = 1 LIMIT 1");
+    $stmt_user = $pdo->prepare("SELECT u.id FROM api_keys k JOIN users u ON u.id = k.user_id WHERE k.api_key = ? AND k.is_active = 1 LIMIT 1");
     $stmt_user->execute([$apiKey]);
     $userId = $stmt_user->fetchColumn();
 }

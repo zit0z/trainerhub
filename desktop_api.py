@@ -1,12 +1,19 @@
 """SweetCheat Desktop API Client"""
 import json
 import logging
+import ssl
 import urllib.request
 import urllib.error
 import urllib.parse
-import ssl
 
 logger = logging.getLogger('SweetCheat.API')
+
+# Try to use requests if available (more robust on Windows), fallback to urllib
+try:
+    import requests
+    HAS_REQUESTS = True
+except Exception:
+    HAS_REQUESTS = False
 
 class SweetCheatAPI:
     def __init__(self, base_url='https://sayfespace.online/trainerhub/api', api_key=None):
@@ -18,25 +25,46 @@ class SweetCheatAPI:
     def set_key(self, api_key):
         self.api_key = api_key
 
-    def _request(self, endpoint, method='GET', data=None, headers=None):
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        h = headers or {}
-        h['Accept'] = 'application/json'
+    def _headers(self):
+        h = {
+            'Accept': 'application/json',
+            'User-Agent': 'SweetCheat-Desktop/0.8.5',
+        }
         if self.api_key:
             h['Authorization'] = f'Bearer {self.api_key}'
+        return h
+
+    def _request(self, endpoint, method='GET', data=None):
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        logger.info(f"API {method} {url}")
+        headers = self._headers()
         body = None
         if data is not None:
             body = json.dumps(data).encode('utf-8')
-            h['Content-Type'] = 'application/json'
+            headers['Content-Type'] = 'application/json'
+
+        if HAS_REQUESTS:
+            try:
+                resp = requests.request(method, url, data=body, headers=headers, timeout=15)
+                logger.info(f"API response {resp.status_code}")
+                try:
+                    return resp.json()
+                except Exception:
+                    return {'success': False, 'error': resp.text, 'status': resp.status_code}
+            except Exception as e:
+                logger.error(f'requests error: {e}')
+                return {'success': False, 'error': str(e)}
+
+        # Fallback urllib
         try:
-            req = urllib.request.Request(url, data=body, method=method, headers=h)
+            req = urllib.request.Request(url, data=body, method=method, headers=headers)
             with urllib.request.urlopen(req, context=self._ctx, timeout=15) as resp:
                 return json.loads(resp.read().decode('utf-8'))
         except urllib.error.HTTPError as e:
             try:
                 return json.loads(e.read().decode('utf-8'))
             except Exception:
-                return {'success': False, 'error': f'HTTP {e.code}'}
+                return {'success': False, 'error': f'HTTP {e.code}', 'status': e.code}
         except Exception as e:
             logger.error(f'API request failed: {e}')
             return {'success': False, 'error': str(e)}
@@ -65,19 +93,19 @@ class SweetCheatAPI:
         return self._request('trainer-logs.php?action=add', method='POST',
                              data={'trainer_id': trainer_id, 'success': success, 'action': action})
 
-
-
     def settings_get(self):
-        return self._request('GET', '/user-settings.php?action=get')
+        return self._request('user-settings.php?action=get')
 
     def settings_update(self, username, theme):
-        return self._request('POST', '/user-settings.php?action=update_profile', {'username': username, 'theme': theme})
+        return self._request('user-settings.php?action=update_profile', method='POST',
+                             data={'username': username, 'theme': theme})
 
     def rotate_key(self):
-        return self._request('POST', '/user-settings.php?action=rotate_key', {})
+        return self._request('user-settings.php?action=rotate_key', method='POST', data={})
 
     def change_password(self, current, new):
-        return self._request('POST', '/user-settings.php?action=change_password', {'current_password': current, 'new_password': new})
+        return self._request('user-settings.php?action=change_password', method='POST',
+                             data={'current_password': current, 'new_password': new})
 
     def favorites(self):
         return self._request('favorites.php')
