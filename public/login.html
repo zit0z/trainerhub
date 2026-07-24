@@ -44,6 +44,7 @@
         </div>
     </div>
 
+    <script src="shared.js"></script>
     <script>
         async function doLogin() {
             const email = document.getElementById('email').value.trim();
@@ -62,6 +63,10 @@
                     return;
                 }
                 localStorage.setItem('trainerhub_api_key', data.api_key);
+                localStorage.setItem('sweetcheat_api_key', data.api_key);
+                if(data.user && (data.user.username || data.user.email)) {
+                    localStorage.setItem('sc_username', data.user.username || data.user.email);
+                }
                 const redirect = new URLSearchParams(location.search).get('redirect') || '/trainerhub/';
                 location.href = redirect;
             } catch (e) {

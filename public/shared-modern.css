@@ -153,3 +153,6 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 }
 .search-dropdown.open { display: flex; }
 .search-dropdown a:hover { background: rgba(127,127,127,0.08); }
+.header-dropdown-menu.open { display:block !important; }
+#headerUserMenu { align-items:center; }
+#headerAvatar { font-family:'Rajdhani',sans-serif; font-size:15px; }

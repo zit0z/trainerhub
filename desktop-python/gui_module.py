@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.9.1'
+APP_VERSION = '0.9.2'
 logger = logging.getLogger('SweetCheat.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
@@ -96,32 +96,55 @@ class SweetCheatApp:
             self.show_login()
         self.start_background_tasks()
 
-    # ----------------------------- UI BUILD -----------------------------
+    # ----------------------------- MODERN UI BUILD -----------------------------
     def build_ui(self):
-        # Top title bar
-        self.titlebar = tk.Frame(self.root, bg=ModernStyle.BG, height=70)
+        # Top title bar with logo
+        self.titlebar = tk.Frame(self.root, bg=ModernStyle.BG, height=72)
         self.titlebar.pack(fill='x', side='top')
         self.titlebar.pack_propagate(False)
 
-        brand = tk.Label(self.titlebar, text="◆ SweetCheat", font=('Rajdhani', 22, 'bold'),
-                         bg=ModernStyle.BG, fg=ModernStyle.TEXT)
-        brand.pack(side='left', padx=(25, 0), pady=(10, 0))
-        sub = tk.Label(self.titlebar, text="SINGLEPLAYER TRAINER", font=('Rajdhani', 10),
-                       bg=ModernStyle.BG, fg=ModernStyle.ACCENT)
-        sub.place(x=160, y=38)
+        logo_frame = tk.Frame(self.titlebar, bg=ModernStyle.BG)
+        logo_frame.pack(side='left', padx=22, pady=14)
+        try:
+            from PIL import Image, ImageTk
+            logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'logo.png')
+            if os.path.exists(logo_path):
+                logo_img = Image.open(logo_path).resize((170, 34), Image.Resampling.LANCZOS)
+                self.logo_tk = ImageTk.PhotoImage(logo_img)
+                logo_label = tk.Label(logo_frame, image=self.logo_tk, bg=ModernStyle.BG, cursor='hand2')
+                logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
+            else:
+                logo_label = tk.Label(logo_frame, text="SweetCheat", font=('Rajdhani', 24, 'bold'),
+                                      bg=ModernStyle.BG, fg=ModernStyle.ACCENT, cursor='hand2')
+                logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
+        except Exception:
+            logo_label = tk.Label(logo_frame, text="SweetCheat", font=('Rajdhani', 24, 'bold'),
+                                  bg=ModernStyle.BG, fg=ModernStyle.ACCENT, cursor='hand2')
+            logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
+        logo_label.pack(side='left')
 
-        self.status_frame = tk.Frame(self.titlebar, bg=ModernStyle.BG)
-        self.status_frame.pack(side='right', padx=25, pady=(15, 0))
-
-        self.page_title = tk.Label(self.titlebar, text="", font=('Rajdhani', 18, 'bold'),
+        # Center page title
+        self.page_title = tk.Label(self.titlebar, text="Dashboard", font=('Rajdhani', 17, 'bold'),
                                    bg=ModernStyle.BG, fg=ModernStyle.TEXT)
-        self.page_title.place(relx=0.5, y=35, anchor='center')
+        self.page_title.place(relx=0.5, y=36, anchor='center')
+
+        # Right status + user pill
+        self.status_frame = tk.Frame(self.titlebar, bg=ModernStyle.BG)
+        self.status_frame.pack(side='right', padx=22, pady=14)
+        self.user_pill = tk.Frame(self.status_frame, bg=ModernStyle.BG_ELEVATED,
+                                  highlightbackground=ModernStyle.BORDER, highlightthickness=1)
+        self.user_pill.pack(side='right')
+        self.user_menu_btn = tk.Label(self.user_pill, text="👤  Gast  ▾", font=('Segoe UI', 11),
+                                      bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT, padx=14, pady=7,
+                                      cursor='hand2')
+        self.user_menu_btn.pack()
+        self.user_menu_btn.bind('<Button-1>', self._show_user_menu)
 
         # Main frame
         self.main_frame = tk.Frame(self.root, bg=ModernStyle.BG)
         self.main_frame.pack(fill='both', expand=True)
 
-        # Sidebar
+        # Modern Sidebar
         self.sidebar = tk.Frame(self.main_frame, bg=ModernStyle.BG_CARD, width=260)
         self.sidebar.pack(side='left', fill='y')
         self.sidebar.pack_propagate(False)
@@ -129,15 +152,15 @@ class SweetCheatApp:
         self._sidebar_profile()
         self._sidebar_sep()
         self.nav_buttons = []
-        self._nav_btn("⌂ Dashboard", self.show_dashboard, active=True)
-        self._nav_btn("🎮 Spiele", self.show_games_library)
-        self._nav_btn("★ Favoriten", lambda: self.show_games_library(filter_favorites=True))
-        self._nav_btn("⎋ Account", self.show_account)
-        self._nav_btn("⚙ Einstellungen", self.show_settings)
+        self._nav_btn("⌂  Dashboard", self.show_dashboard, active=True)
+        self._nav_btn("🎮  Spiele", self.show_games_library)
+        self._nav_btn("⭐  Favoriten", lambda: self.show_games_library(filter_favorites=True))
+        self._nav_btn("⎋  Account", self.show_account)
+        self._nav_btn("⚙  Einstellungen", self.show_settings)
 
-        # Content
+        # Content area
         self.content = tk.Frame(self.main_frame, bg=ModernStyle.BG)
-        self.content.pack(side='left', fill='both', expand=True, padx=25, pady=20)
+        self.content.pack(side='left', fill='both', expand=True, padx=24, pady=18)
 
         # Toast
         self.toast = tk.Label(self.root, text="", font=('Segoe UI', 10, 'bold'),
@@ -153,6 +176,16 @@ class SweetCheatApp:
         self.version_label = tk.Label(self.statusbar, text=f"v{APP_VERSION}", bg=ModernStyle.BG_CARD,
                                       fg=ModernStyle.ACCENT, font=('Segoe UI', 9))
         self.version_label.pack(side='right', padx=20, pady=5)
+
+    def _show_user_menu(self, event=None):
+        menu = tk.Menu(self.root, tearoff=0, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+                       activebackground=ModernStyle.BORDER_ACTIVE, activeforeground=ModernStyle.TEXT,
+                       font=('Segoe UI', 10))
+        menu.add_command(label="Profil", command=self.show_account)
+        menu.add_command(label="Einstellungen", command=self.show_settings)
+        menu.add_separator()
+        menu.add_command(label="Abmelden", command=self.logout)
+        menu.post(self.user_menu_btn.winfo_rootx(), self.user_menu_btn.winfo_rooty() + self.user_menu_btn.winfo_height())
 
     def _sidebar_profile(self):
         self.profile_card = tk.Frame(self.sidebar, bg=ModernStyle.BG_ELEVATED, padx=20, pady=20)

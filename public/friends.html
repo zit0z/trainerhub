@@ -7,8 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared-modern.css">
-    <script defer src="components/header-menu.js"></script>
-    <script defer src="shared.js"></script>
+    
     <style>
         .friend-card { display:flex; align-items:center; gap:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; margin-bottom:12px; }
         .friend-avatar { width:50px; height:50px; border-radius:999px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.5rem; }
@@ -239,5 +238,7 @@
     }
     setInterval(() => { if (chatOpen) loadChat(); }, 15000);
 </script>
+    <script defer src="shared.js"></script>
+    <script defer src="components/header-menu.js"></script>
 </body>
 </html>

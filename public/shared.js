@@ -1,19 +1,4 @@
 
-// Unified API key helper (supports both legacy and new token keys)
-function getApiKey() {
-    return localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key') || '';
-}
-
-function setApiKey(key) {
-    localStorage.setItem('trainerhub_api_key', key);
-    localStorage.setItem('sweetcheat_api_key', key);
-}
-
-function clearApiKey() {
-    localStorage.removeItem('trainerhub_api_key');
-    localStorage.removeItem('sweetcheat_api_key');
-}
-
 // SweetCheat Shared Web UI Helpers
 (function() {
     const API_BASE = 'api';
@@ -151,3 +136,9 @@ function clearApiKey() {
     function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
     window.escapeHtml = escapeHtml;
 })();
+
+function logout() {
+    clearApiKey();
+    localStorage.removeItem('sc_username');
+    location.href = 'login';
+}
