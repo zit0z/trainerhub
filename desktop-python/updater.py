@@ -11,7 +11,7 @@ import subprocess
 import time
 import hashlib
 
-APP_VERSION = '0.8.8'
+APP_VERSION = '0.9.0'
 UPDATE_API = 'https://sayfespace.online/trainerhub/api/version.php'
 MANIFEST_URL = 'https://sayfespace.online/trainerhub/api/manifest.php'
 USER_AGENT = f'SweetCheat/{APP_VERSION}'

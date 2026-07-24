@@ -48,7 +48,7 @@
     <script src="shared.js"></script>
     <script>
         async function loadChallenges() {
-            const key = localStorage.getItem('trainerhub_api_key');
+            const key = getApiKey();
             const headers = key ? {'Authorization':'Bearer '+key} : {};
             try {
                 const res = await fetch('api/challenges.php?action=my', {headers});
@@ -99,7 +99,7 @@
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');

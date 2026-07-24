@@ -91,7 +91,7 @@
     <script src="shared.js"></script>
     <script>
         document.getElementById('navGames').classList.add('active');
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); clearApiKey(); location.href='login'; });
         const savedTheme = localStorage.getItem('sweetcheat_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
@@ -102,7 +102,7 @@
         
     </script>
     <script>
-        const key = localStorage.getItem('sweetcheat_api_key');
+        const key = getApiKey();
         if (!key) location.href = 'login';
         const urlParams = new URLSearchParams(window.location.search);
         const gameSlug = urlParams.get('game') || 'stardew-valley';
@@ -282,7 +282,7 @@ document.addEventListener('click', function(e) {
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');

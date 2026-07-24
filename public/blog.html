@@ -86,7 +86,7 @@
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');

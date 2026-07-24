@@ -148,7 +148,7 @@
         });
 
         function requireAuth(callback) {
-            const token = localStorage.getItem('trainerhub_api_key');
+            const token = getApiKey();
             if (!token) {
                 window.location.href = '/trainerhub/login?redirect=/trainerhub/forum';
                 return;
@@ -272,7 +272,7 @@
         }
 
         async function submitThread() {
-            const token = localStorage.getItem('trainerhub_api_key');
+            const token = getApiKey();
             const categoryId = parseInt(document.getElementById('newThreadCategory').value);
             const title = document.getElementById('newThreadTitle').value.trim();
             const content = document.getElementById('newThreadContent').value.trim();
@@ -296,7 +296,7 @@
         }
 
         async function submitReply() {
-            const token = localStorage.getItem('trainerhub_api_key');
+            const token = getApiKey();
             const content = document.getElementById('replyContent').value.trim();
             if (!content) return;
             const res = await fetch(API + '?action=create_post', {
@@ -313,7 +313,7 @@
         }
 
         async function react(postId, reaction) {
-            const token = localStorage.getItem('trainerhub_api_key');
+            const token = getApiKey();
             await fetch(API + '?action=react', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -352,7 +352,7 @@
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');

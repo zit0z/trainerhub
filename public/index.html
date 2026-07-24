@@ -340,7 +340,7 @@
 
     <script>
         (async () => {
-            const token = localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key');
+            const token = getApiKey();
             if (!token) return;
             const heroCTA = document.querySelector('.hero-cta');
             if (heroCTA) {

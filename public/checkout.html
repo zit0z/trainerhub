@@ -55,7 +55,7 @@
 
     <script src="shared.js"></script>
     <script>
-        const key = (localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key'));
+        const key = getApiKey();
         if (!key) location.href = 'login?redirect=checkout';
 
         async function init() {

@@ -80,7 +80,7 @@
 
     <script>
         const API = '/trainerhub/api/friends.php';
-        let token = localStorage.getItem('trainerhub_api_key');
+        let token = getApiKey();
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!token) { window.location.href = '/trainerhub/login?redirect=/trainerhub/friends'; return; }
@@ -200,7 +200,7 @@
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');

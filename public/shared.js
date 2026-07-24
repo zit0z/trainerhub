@@ -1,3 +1,19 @@
+
+// Unified API key helper (supports both legacy and new token keys)
+function getApiKey() {
+    return localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key') || '';
+}
+
+function setApiKey(key) {
+    localStorage.setItem('trainerhub_api_key', key);
+    localStorage.setItem('sweetcheat_api_key', key);
+}
+
+function clearApiKey() {
+    localStorage.removeItem('trainerhub_api_key');
+    localStorage.removeItem('sweetcheat_api_key');
+}
+
 // SweetCheat Shared Web UI Helpers
 (function() {
     const API_BASE = 'api';

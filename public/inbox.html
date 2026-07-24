@@ -48,7 +48,7 @@
     <script src="components/header-menu.js"></script>
     <script src="shared.js"></script>
     <script>
-        const key = localStorage.getItem('trainerhub_api_key');
+        const key = getApiKey();
         if (!key) location.href = 'login?redirect=inbox';
         
         async function loadInbox() {
@@ -98,7 +98,7 @@
 
 
 <script>
-    const token = localStorage.getItem('trainerhub_api_key');
+    const token = getApiKey();
     let chatOpen = false;
     function toggleChat() {
         const w = document.getElementById('chatWidget');
