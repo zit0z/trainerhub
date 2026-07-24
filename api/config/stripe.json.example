@@ -1,0 +1,5 @@
+{
+    "secret_key": "sk_test_...",
+    "price_id": "price_...",
+    "webhook_secret": "whsec_..."
+}
