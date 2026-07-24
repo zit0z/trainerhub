@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="postTitle">Blog — SweetCheat</title>
+    <meta id="postDesc" name="description" content="SweetCheat Blog">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .blog-content { max-width:800px; margin:0 auto; padding:40px 20px; }
+        .blog-content h1 { font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:16px; }
+        .blog-content .meta { color:var(--text-muted); margin-bottom:30px; }
+        .blog-content article { color:var(--text); line-height:1.8; font-size:16px; }
+        .blog-content article p { margin-bottom:16px; }
+        .blog-content article h2 { font-family:'Rajdhani',sans-serif; margin-top:32px; margin-bottom:12px; }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <a href="blog" class="btn btn-secondary btn-sm">← Zurück zum Blog</a>
+        </div>
+    </header>
+
+    <div class="blog-content">
+        <div id="postMeta" class="meta">Lade...</div>
+        <h1 id="postH1"></h1>
+        <article id="postBody"></article>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat — Singleplayer-Trainer für PC-Spiele.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        async function loadPost() {
+            const slug = location.pathname.split('/').pop();
+            try {
+                const res = await fetch('api/blog.php?action=get&slug=' + encodeURIComponent(slug));
+                const data = await res.json();
+                if (!data.success) {
+                    document.getElementById('postBody').innerHTML = '<p style="color:var(--text-muted);">Beitrag nicht gefunden.</p>';
+                    return;
+                }
+                const p = data.post;
+                document.getElementById('postTitle').textContent = p.title + ' — SweetCheat';
+                document.getElementById('postDesc').content = p.excerpt || p.content.slice(0, 160);
+                document.getElementById('postH1').textContent = p.title;
+                document.getElementById('postMeta').innerHTML = `
+                    ${new Date(p.created_at * 1000).toLocaleDateString('de-DE')} &bull; ${escapeHtml(p.author || 'SweetCheat Team')}
+                    <div style="margin-top:8px;">${(p.tags || '').split(',').filter(t=>t).map(t => `<span style="display:inline-block; background:rgba(0,240,255,0.1); color:var(--accent); padding:3px 10px; border-radius:999px; font-size:12px; margin-right:6px;">${escapeHtml(t.trim())}</span>`).join('')}</div>
+                `;
+                document.getElementById('postBody').innerHTML = p.content;
+            } catch(e) { console.error(e); }
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadPost();
+    </script>
+</body>
+</html>

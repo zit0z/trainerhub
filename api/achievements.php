@@ -1,38 +1,68 @@
 <?php
 require_once 'auth-lib.php';
-
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-$auth = checkAuth();
-if (isset($auth['error'])) {
-    jsonResponse(['success' => false, 'error' => $auth['error']], $auth['code']);
-}
-$user = $auth['user'];
+header('Content-Type: application/json');
+require_once 'config.php';
 $pdo = getDB();
+$action = $_GET['action'] ?? 'list';
 
-$achievements = [
-    ['id' => 'first_login', 'name' => 'Erster Login', 'description' => 'Melde dich zum ersten Mal an', 'icon' => 'fa-sign-in-alt'],
-    ['id' => 'first_favorite', 'name' => 'Erster Favorit', 'description' => 'Favorisiere ein Spiel oder einen Trainer', 'icon' => 'fa-star'],
-    ['id' => 'first_activation', 'name' => 'Erste Aktivierung', 'description' => 'Aktiviere deinen ersten Trainer', 'icon' => 'fa-bolt'],
-    ['id' => 'ten_activations', 'name' => 'Aktivierungs-Profi', 'description' => 'Aktiviere 10 Trainer', 'icon' => 'fa-fire'],
-    ['id' => 'premium_user', 'name' => 'Premium-Mitglied', 'description' => 'Werde Premium-Nutzer', 'icon' => 'fa-crown'],
-];
+try {
+    if ($action === 'list') {
+        $stmt = $pdo->prepare("SELECT * FROM achievements ORDER BY points");
+        $stmt->execute();
+        echo json_encode(['success'=>true,'achievements'=>$stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    } else {
+        $auth = checkAuth();
+        if (!empty($auth['error'])) { http_response_code(401); echo json_encode(['success'=>false,'error'=>$auth['error']]); exit; }
+        $user = $auth['user'];
+        if ($action === 'mine') {
+            $stmt = $pdo->prepare("
+                SELECT a.*, ua.unlocked_at
+                FROM achievements a
+                LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ?
+                ORDER BY a.points
+            ");
+            $stmt->execute([$user['id']]);
+            echo json_encode(['success'=>true,'achievements'=>$stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        } elseif ($action === 'check') {
+            checkAndUnlockAchievements($user['id']);
+            echo json_encode(['success'=>true]);
+        }
+    }
+} catch (Exception $e) { echo json_encode(['success'=>false,'error'=>$e->getMessage()]); }
 
-$stmt = $pdo->prepare("SELECT achievement_id FROM user_achievements WHERE user_id = ?");
-$stmt->execute([$user['id']]);
-$unlocked = array_flip($stmt->fetchAll(PDO::FETCH_COLUMN));
+function checkAndUnlockAchievements($user_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM achievements");
+    $stmt->execute();
+    $achievements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($achievements as &$a) {
-    $a['unlocked'] = isset($unlocked[$a['id']]) ? 1 : 0;
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_favorites WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $favorites = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM forum_threads WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $threads = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_challenges WHERE user_id = ? AND status = 'completed'");
+    $stmt->execute([$user_id]);
+    $challenges = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT created_at FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $memberDays = (time() - ($stmt->fetchColumn() ?: time())) / 86400;
+
+    foreach ($achievements as $a) {
+        $unlock = false;
+        switch ($a['condition_type']) {
+            case 'favorite': $unlock = $favorites >= $a['condition_value']; break;
+            case 'thread': $unlock = $threads >= $a['condition_value']; break;
+            case 'challenges': $unlock = $challenges >= $a['condition_value']; break;
+            case 'days_member': $unlock = $memberDays >= $a['condition_value']; break;
+        }
+        if ($unlock) {
+            $stmt = $pdo->prepare("INSERT OR IGNORE INTO user_achievements (user_id, achievement_id, unlocked_at) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $a['id'], time()]);
+        }
+    }
 }
-
-// Auto-unlock first_login if this is a real request
-if (!isset($unlocked['first_login'])) {
-    $stmt = $pdo->prepare("INSERT OR IGNORE INTO user_achievements (user_id, achievement_id) VALUES (?, 'first_login')");
-    $stmt->execute([$user['id']]);
-    foreach ($achievements as &$a) { if ($a['id'] === 'first_login') $a['unlocked'] = 1; }
-}
-
-jsonResponse(['success' => true, 'achievements' => $achievements]);

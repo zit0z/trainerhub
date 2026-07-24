@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /trainerhub/admin/
+Disallow: /trainerhub/api/
+Disallow: /trainerhub/dashboard
+Disallow: /trainerhub/profile
+Disallow: /trainerhub/settings
+Disallow: /trainerhub/checkout
+
+Sitemap: https://sayfespace.online/trainerhub/sitemap.xml

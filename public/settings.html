@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        
+        .setting-row { display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid var(--border); }
+        .setting-row:last-child { border-bottom:none; }
+        .setting-label { font-weight:600; }
+        .setting-desc { font-size:13px; color:var(--text-muted); margin-top:4px; }
+        .kbd { background:var(--bg-elevated); border:1px solid var(--border); border-radius:4px; padding:2px 8px; font-family:monospace; font-size:12px; }
+
+    </style>
+</head>
+
+<body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
+    <aside class="nav-sidebar">
+        <div class="nav-main">
+
+            <a href="dashboard" class="nav-item active"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
+            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
+            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
+            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
+            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
+            <a href="inbox" class="nav-item"><span class="icon"><i class="fas fa-bell"></i></span> Benachrichtigungen</a>
+            <a href="blog" class="nav-item"><span class="icon"><i class="fas fa-newspaper"></i></span> Blog</a>
+            <a href="forum" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-comments"></i></span> Forum</a>
+            ><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
+            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+
+            </div>
+        <div style="padding:18px; border-top:1px solid var(--border);">
+            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
+                <div>
+                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
+                    <div id="userSub" class="badge badge-free">Free</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Einstellungen</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+                <div id="headerUserMenu" style="display:flex; gap:10px;">
+                    <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                    <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+                </div>
+        </div>
+        </div>
+
+        <div style="padding:28px;">
+            <div class="grid-2">
+                <div class="card" style="padding:24px;">
+                    <h3 style="margin:0 0 20px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Darstellung</h3>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Theme</div>
+                            <div class="setting-desc">Wechsle zwischen Dark und Light Mode</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="toggleTheme()"><i class="fas fa-adjust"></i> Wechseln</button>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Animationen</div>
+                            <div class="setting-desc">Reduziere Bewegung im UI</div>
+                        </div>
+                        <label class="switch" style="position:relative; display:inline-block; width:48px; height:26px;">
+                            <input type="checkbox" id="animToggle" onchange="toggleAnimations(this)" style="opacity:0; width:0; height:0;">
+                            <span style="position:absolute; cursor:pointer; inset:0; background:var(--border); border-radius:26px; transition:.3s;"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:24px;">
+                    <h3 style="margin:0 0 20px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Tastenkürzel</h3>
+                    <div class="setting-row">
+                        <div class="setting-label">Schnellsuche</div>
+                        <span class="kbd">Ctrl + K</span>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label">Dashboard</div>
+                        <span class="kbd">Ctrl + D</span>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label">Spiele</div>
+                        <span class="kbd">Ctrl + G</span>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label">Favoriten</div>
+                        <span class="kbd">Ctrl + F</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="shared.js"></script>
+    <script>
+        document.getElementById('navSettings').classList.add('active');
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('sweetcheat_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('searchDropdown');
+            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
+        });
+        
+    </script>
+    <script>
+        const key = localStorage.getItem('sweetcheat_api_key');
+        if (!key) location.href = 'login';
+
+        async function loadUser() {
+            const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
+                document.getElementById('userSub').textContent = (data.subscription || 'free').toUpperCase();
+            }
+        }
+
+        function toggleAnimations(toggle) {
+            document.documentElement.setAttribute('data-reduce-motion', toggle.checked ? 'true' : 'false');
+            localStorage.setItem('sweetcheat_reduce_motion', toggle.checked ? 'true' : 'false');
+            showToast(toggle.checked ? 'Animationen reduziert' : 'Animationen aktiviert', 'info', 1500);
+        }
+
+        (function(){
+            const reduced = localStorage.getItem('sweetcheat_reduce_motion') === 'true';
+            const toggle = document.getElementById('animToggle');
+            if (toggle) { toggle.checked = reduced; document.documentElement.setAttribute('data-reduce-motion', reduced ? 'true' : 'false'); }
+        })();
+
+        loadUser();
+</script>
+
+<!-- Support Widget -->
+<div id="supportWidget" style="position:fixed; bottom:24px; right:24px; z-index:999;">
+    <button id="supportToggle" onclick="toggleSupport()" style="width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--bg); border:none; font-size:1.4rem; cursor:pointer; box-shadow:0 8px 32px rgba(0,240,255,0.3); transition:transform .2s;"><i class="fas fa-comment-dots"></i></button>
+    <div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:320px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.4);">
+        <h4 style="margin:0 0 12px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Support</h4>
+        <div id="supportForm">
+            <input type="email" id="supportEmail" placeholder="Deine E-Mail" style="margin-bottom:10px; width:100%;">
+            <input type="text" id="supportSubject" placeholder="Betreff" style="margin-bottom:10px; width:100%;">
+            <textarea id="supportMessage" placeholder="Wie können wir dir helfen?" rows="4" style="margin-bottom:10px; width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px;"></textarea>
+            <button class="btn btn-primary" onclick="sendSupport()" style="width:100%;">Absenden</button>
+        </div>
+        <div id="supportSuccess" style="display:none; text-align:center; color:var(--success); padding:20px 0;">
+            <i class="fas fa-check-circle" style="font-size:2rem;"></i>
+            <p>Ticket erstellt. Wir melden uns per E-Mail.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSupport() {
+    const panel = document.getElementById('supportPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendSupport() {
+    const btn = document.querySelector('#supportForm button');
+    const email = document.getElementById('supportEmail').value.trim();
+    const subject = document.getElementById('supportSubject').value.trim();
+    const message = document.getElementById('supportMessage').value.trim();
+    if (!email || !subject || !message) {
+        if (typeof showToast === 'function') showToast('Bitte alle Felder ausfüllen', 'error');
+        else alert('Bitte alle Felder ausfüllen');
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const res = await fetch('api/support.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({email, subject, message})
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('supportForm').style.display = 'none';
+            document.getElementById('supportSuccess').style.display = 'block';
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Fehler', 'error');
+            else alert(data.error || 'Fehler');
+            btn.disabled = false;
+            btn.textContent = 'Absenden';
+        }
+    } catch(e) {
+        if (typeof showToast === 'function') showToast('Netzwerkfehler', 'error');
+        else alert('Netzwerkfehler');
+        btn.disabled = false;
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const widget = document.getElementById('supportWidget');
+    if (widget && !widget.contains(e.target)) {
+        const panel = document.getElementById('supportPanel');
+        if (panel) panel.style.display = 'none';
+    }
+});
+
+</script>
+
+<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
+        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
+        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
+    </div>
+    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
+
+
+<script>
+    const token = localStorage.getItem('trainerhub_api_key');
+    let chatOpen = false;
+    function toggleChat() {
+        const w = document.getElementById('chatWidget');
+        chatOpen = !chatOpen;
+        w.style.display = chatOpen ? 'flex' : 'none';
+        if (chatOpen) loadChat();
+    }
+    async function loadChat() {
+        try {
+            const res = await fetch('/trainerhub/api/chat.php?action=history');
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
+            container.innerHTML = data.messages.map(m => `
+                <div style="margin-bottom:8px;">
+                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        } catch(e) { console.error(e); }
+    }
+    async function sendChat() {
+        if (!token) { showToast('Login erforderlich', 'warn'); return; }
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        await fetch('/trainerhub/api/chat.php?action=send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadChat();
+    }
+    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
+</script>
+</body>
+</html>

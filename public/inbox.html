@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benachrichtigungen — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .inbox-list { max-width:700px; margin:0 auto; }
+        .note-item { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:10px; transition:all .2s; }
+        .note-item.unread { border-left:3px solid var(--accent); }
+        .note-title { font-weight:600; margin-bottom:4px; }
+        .note-msg { color:var(--text-muted); font-size:14px; }
+        .note-time { font-size:12px; color:var(--text-muted); margin-top:8px; }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+    <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+        <a href="/trainerhub/"><img src="/trainerhub/logo-sweetcheat-header.png" alt="SweetCheat" style="height:40px; width:auto; max-width:200px; object-fit:contain; display:block;"></a>
+        <nav style="display:flex; gap:24px; align-items:center;">
+            <a href="/trainerhub/#features" style="color:var(--text-muted); text-decoration:none; font-size:14px;">Features</a>
+            <a href="/trainerhub/#pricing" style="color:var(--text-muted); text-decoration:none; font-size:14px;">Preise</a>
+            <a href="blog" style="color:var(--text-muted); text-decoration:none; font-size:14px;">Blog</a>
+            <div id="headerUserMenu" style="display:flex; gap:10px;">
+                <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+    <div style="max-width:1000px; margin:0 auto; padding:40px 20px;">
+        <h1 style="font-family:'Rajdhani',sans-serif; font-size:2.2rem; margin-bottom:8px;">Benachrichtigungen</h1>
+        <div style="display:flex; gap:12px; margin-bottom:24px;">
+            <button class="btn btn-secondary btn-sm" onclick="markAllRead()">Alle als gelesen markieren</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadInbox()">Aktualisieren</button>
+        </div>
+        <div id="inboxList" class="inbox-list">Lade...</div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat.</p>
+    </footer>
+
+    <script src="components/header-menu.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        const key = localStorage.getItem('trainerhub_api_key');
+        if (!key) location.href = 'login?redirect=inbox';
+        
+        async function loadInbox() {
+            try {
+                const res = await fetch('api/notifications.php?action=list', {headers: {'Authorization':'Bearer '+key}});
+                const data = await res.json();
+                const list = document.getElementById('inboxList');
+                if (!data.success || !data.notifications.length) {
+                    list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:40px;">Keine Benachrichtigungen.</div>';
+                    return;
+                }
+                list.innerHTML = data.notifications.map(n => `
+                    <div class="note-item ${n.read ? '' : 'unread'}" onclick="markRead(${n.id})">
+                        <div class="note-title">${escapeHtml(n.title)}</div>
+                        <div class="note-msg">${escapeHtml(n.message)}</div>
+                        <div class="note-time">${new Date(n.created_at * 1000).toLocaleString('de-DE')}</div>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+        async function markRead(id) {
+            await fetch('api/notifications.php?action=mark_read&id=' + id, {headers: {'Authorization':'Bearer '+key}});
+            loadInbox();
+        }
+        async function markAllRead() {
+            await fetch('api/notifications.php?action=mark_all_read', {headers: {'Authorization':'Bearer '+key}});
+            loadInbox();
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadInbox();
+    </script>
+
+<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
+        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
+        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
+    </div>
+    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
+
+
+<script>
+    const token = localStorage.getItem('trainerhub_api_key');
+    let chatOpen = false;
+    function toggleChat() {
+        const w = document.getElementById('chatWidget');
+        chatOpen = !chatOpen;
+        w.style.display = chatOpen ? 'flex' : 'none';
+        if (chatOpen) loadChat();
+    }
+    async function loadChat() {
+        try {
+            const res = await fetch('/trainerhub/api/chat.php?action=history');
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
+            container.innerHTML = data.messages.map(m => `
+                <div style="margin-bottom:8px;">
+                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        } catch(e) { console.error(e); }
+    }
+    async function sendChat() {
+        if (!token) { showToast('Login erforderlich', 'warn'); return; }
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        await fetch('/trainerhub/api/chat.php?action=send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadChat();
+    }
+    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
+</script>
+</body>
+</html>

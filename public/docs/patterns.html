@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>SweetCheat Pattern Guide</title>
+    <style>
+        body{font-family:Inter,sans-serif;background:#050507;color:#f8fafc;max-width:900px;margin:2rem auto;padding:1rem;line-height:1.6}
+        h1,h2{color:#2563eb}
+        code{background:#111118;padding:2px 6px;border-radius:4px;color:#10b981}
+        pre{background:#111118;padding:1rem;border-radius:8px;overflow-x:auto;border:1px solid #232333}
+        .warning{background:#451a03;border:1px solid #92400e;padding:1rem;border-radius:8px;color:#fbbf24}
+    </style>
+</head>
+<body>
+    <h1>SweetCheat Pattern-Guide</h1>
+    <p>SweetCheat nutzt ausschließlich selbst geschriebene Tools. Wir kopieren keine fremden Cheat-Engine-Tabellen.</p>
+    <div class="warning">
+        <strong>Wichtig:</strong> Alle Memory-Patterns werden vom Nutzer selbst im laufenden Spiel gelernt oder über offizielle Modding-APIs/Savegames angewendet. SweetCheat verzichtet bewusst auf kopierte Inhalte.
+    </div>
+    
+    <h2>Unterstützte legale Methoden</h2>
+    <ul>
+        <li><strong>SMAPI Bridge:</strong> Für Stardew Valley — offene Modding-API, eigener Mod.</li>
+        <li><strong>Savegame Editor:</strong> Für dokumentierte XML/JSON-Savegame-Formate.</li>
+        <li><strong>Pattern Learner:</strong> Nutzer findet selbst Adressen via 2-Scan/3-Scan.</li>
+        <li><strong>Offizielle Cheats:</strong> Konsolenbefehle, wenn das Spiel sie erlaubt.</li>
+    </ul>
+    
+    <h2>So funktioniert der Pattern Learner</h2>
+    <ol>
+        <li>Wähle dein Spiel im SweetCheat.</li>
+        <li>Gib den aktuellen Wert ein (z.B. aktuelles Geld).</li>
+        <li>Ändere den Wert im Spiel.</li>
+        <li>Gib den neuen Wert ein — SweetCheat filtert die Adresskandidaten.</li>
+        <li>Optional: Generiere ein AOB-Pattern aus der gefundenen Adresse.</li>
+    </ol>
+    
+    <h2>Beispiel-Pattern-Syntax</h2>
+    <pre>89 45 FC 8B 4D ?? 50 E8 ?? ?? ?? ?? 83 C4 04</pre>
+    <p><code>??</code> steht für ein beliebiges Byte. So kannst du stabile Patterns für deine Spielversion erstellen.</p>
+    
+    <p><a href="/trainerhub/setup" style="color:#2563eb">← Zurück zum Setup</a></p>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favoriten — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        
+        .games-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px; }
+        .game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:transform .2s, box-shadow .2s, border-color .2s; position:relative; }
+        .game-card:hover { transform:translateY(-4px); border-color:var(--accent); box-shadow:0 12px 40px rgba(0,240,255,0.12); }
+        .game-cover { height:140px; background:linear-gradient(135deg, rgba(0,240,255,0.12), rgba(0,168,255,0.08)); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:3rem; position:relative; }
+        .game-card-body { padding:18px; }
+        .game-title { font-family:'Rajdhani',sans-serif; font-weight:600; font-size:1.25rem; color:var(--text); margin-bottom:6px; }
+        .game-meta { font-size:13px; color:var(--text-muted); display:flex; gap:12px; align-items:center; }
+        .favorite-btn { position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; z-index:2; }
+        .favorite-btn:hover { background:rgba(0,0,0,0.8); color:#ffd700; transform:scale(1.1); }
+        .favorite-btn.active { color:#ffd700; background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.4); }
+        @media (max-width:640px) { .games-grid { grid-template-columns:1fr; } }
+
+    </style>
+</head>
+
+<body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
+    <aside class="nav-sidebar">
+        <div class="nav-main">
+
+            <a href="dashboard" class="nav-item active"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
+            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
+            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
+            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
+            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
+            <a href="inbox" class="nav-item"><span class="icon"><i class="fas fa-bell"></i></span> Benachrichtigungen</a>
+            <a href="blog" class="nav-item"><span class="icon"><i class="fas fa-newspaper"></i></span> Blog</a>
+            <a href="forum" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-comments"></i></span> Forum</a>
+            ><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
+            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+
+            </div>
+        <div style="padding:18px; border-top:1px solid var(--border);">
+            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
+                <div>
+                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
+                    <div id="userSub" class="badge badge-free">Free</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Favoriten</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+                <div id="headerUserMenu" style="display:flex; gap:10px;">
+                    <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                    <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+                </div>
+        </div>
+        </div>
+
+        <div style="padding:28px;">
+            <p class="section-subtitle">Deine markierten Spiele und Trainer.</p>
+            <div id="favContainer">
+                <div class="games-grid" id="favGrid">
+                    <div class="card shimmer" style="height:220px;"></div>
+                    <div class="card shimmer" style="height:220px;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="shared.js"></script>
+    <script>
+        document.getElementById('navFavorites').classList.add('active');
+        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); localStorage.removeItem('sweetcheat_api_key'); location.href='login'; });
+        const savedTheme = localStorage.getItem('sweetcheat_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('searchDropdown');
+            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
+        });
+        
+    </script>
+    <script>
+        const key = (localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key'));
+        if (!key) location.href = 'login';
+
+        async function loadUser() {
+            const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
+                document.getElementById('userSub').textContent = (data.subscription || 'free').toUpperCase();
+            }
+        }
+
+        async function loadFavorites() {
+            const res = await fetch('api/favorites.php', {headers:{'Authorization':'Bearer '+key}});
+            const data = await res.json();
+            if (data.success) renderFavorites(data.favorites || []);
+        }
+
+        function renderFavorites(favs) {
+            const container = document.getElementById('favContainer');
+            if (!favs.length) {
+                container.innerHTML = '<div class="card" style="padding:48px; text-align:center; color:var(--text-muted);"><i class="fas fa-star" style="font-size:2rem; color:#ffd700; margin-bottom:12px;"></i><p>Noch keine Favoriten. Gehe zu <a href="games" style="color:var(--accent);">Meine Spiele</a> und markiere welche.</p></div>';
+                return;
+            }
+            const games = favs.filter(f => f.game_id && !f.trainer_id);
+            const trainers = favs.filter(f => f.trainer_id);
+            let html = '';
+            if (games.length) {
+                html += '<h3 style="font-family:\'Rajdhani\',sans-serif; text-transform:uppercase; margin:0 0 16px;">Spiele</h3><div class="games-grid">' + games.map(f => `
+                    <div class="game-card" onclick="location.href='trainers?game=${f.game_slug}'" style="cursor:pointer;">
+                        <div class="game-cover"><i class="fas ${f.game_icon || 'fa-gamepad'}"></i></div>
+                        <button class="favorite-btn active" onclick="event.stopPropagation(); removeGameFav(${f.game_id}, this)" title="Entfernen"><i class="fas fa-star"></i></button>
+                        <div class="game-card-body">
+                            <div class="game-title">${escapeHtml(f.game_name)}</div>
+                            <div class="game-meta"><span><i class="fas fa-gamepad"></i> Spiel</span></div>
+                        </div>
+                    </div>
+                `).join('') + '</div>';
+            }
+            if (trainers.length) {
+                html += '<h3 style="font-family:\'Rajdhani\',sans-serif; text-transform:uppercase; margin:32px 0 16px;">Trainer</h3><div class="games-grid">' + trainers.map(f => `
+                    <div class="game-card" onclick="location.href='trainers?game=${f.game_slug}'" style="cursor:pointer;">
+                        <div class="game-cover" style="background:linear-gradient(135deg, rgba(255,56,100,0.12), rgba(0,240,255,0.08));"><i class="fas fa-bolt"></i></div>
+                        <button class="favorite-btn active" onclick="event.stopPropagation(); removeTrainerFav(${f.trainer_id}, this)" title="Entfernen"><i class="fas fa-star"></i></button>
+                        <div class="game-card-body">
+                            <div class="game-title">${escapeHtml(f.trainer_name)}</div>
+                            <div class="game-meta"><span><i class="fas fa-crosshairs"></i> ${escapeHtml(f.game_name || 'Trainer')}</span></div>
+                            <div style="font-size:13px; color:var(--text-muted); margin-top:8px; line-height:1.5;">${escapeHtml(f.trainer_description || '')}</div>
+                        </div>
+                    </div>
+                `).join('') + '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        async function removeGameFav(gameId, btn) {
+            await fetch('api/favorites.php', {method:'DELETE', headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+key}, body: JSON.stringify({game_id: gameId})});
+            btn.closest('.game-card').style.opacity='0';
+            setTimeout(() => { showToast('Aus Favoriten entfernt', 'info', 1500); loadFavorites(); }, 250);
+        }
+
+        async function removeTrainerFav(trainerId, btn) {
+            await fetch('api/favorites.php', {method:'DELETE', headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+key}, body: JSON.stringify({trainer_id: trainerId})});
+            btn.closest('.game-card').style.opacity='0';
+            setTimeout(() => { showToast('Trainer entfernt', 'info', 1500); loadFavorites(); }, 250);
+        }
+
+        loadUser();
+        loadFavorites();
+</script>
+
+<!-- Support Widget -->
+<div id="supportWidget" style="position:fixed; bottom:24px; right:24px; z-index:999;">
+    <button id="supportToggle" onclick="toggleSupport()" style="width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--bg); border:none; font-size:1.4rem; cursor:pointer; box-shadow:0 8px 32px rgba(0,240,255,0.3); transition:transform .2s;"><i class="fas fa-comment-dots"></i></button>
+    <div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:320px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.4);">
+        <h4 style="margin:0 0 12px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Support</h4>
+        <div id="supportForm">
+            <input type="email" id="supportEmail" placeholder="Deine E-Mail" style="margin-bottom:10px; width:100%;">
+            <input type="text" id="supportSubject" placeholder="Betreff" style="margin-bottom:10px; width:100%;">
+            <textarea id="supportMessage" placeholder="Wie können wir dir helfen?" rows="4" style="margin-bottom:10px; width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px;"></textarea>
+            <button class="btn btn-primary" onclick="sendSupport()" style="width:100%;">Absenden</button>
+        </div>
+        <div id="supportSuccess" style="display:none; text-align:center; color:var(--success); padding:20px 0;">
+            <i class="fas fa-check-circle" style="font-size:2rem;"></i>
+            <p>Ticket erstellt. Wir melden uns per E-Mail.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSupport() {
+    const panel = document.getElementById('supportPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendSupport() {
+    const btn = document.querySelector('#supportForm button');
+    const email = document.getElementById('supportEmail').value.trim();
+    const subject = document.getElementById('supportSubject').value.trim();
+    const message = document.getElementById('supportMessage').value.trim();
+    if (!email || !subject || !message) {
+        if (typeof showToast === 'function') showToast('Bitte alle Felder ausfüllen', 'error');
+        else alert('Bitte alle Felder ausfüllen');
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const res = await fetch('api/support.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({email, subject, message})
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('supportForm').style.display = 'none';
+            document.getElementById('supportSuccess').style.display = 'block';
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Fehler', 'error');
+            else alert(data.error || 'Fehler');
+            btn.disabled = false;
+            btn.textContent = 'Absenden';
+        }
+    } catch(e) {
+        if (typeof showToast === 'function') showToast('Netzwerkfehler', 'error');
+        else alert('Netzwerkfehler');
+        btn.disabled = false;
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const widget = document.getElementById('supportWidget');
+    if (widget && !widget.contains(e.target)) {
+        const panel = document.getElementById('supportPanel');
+        if (panel) panel.style.display = 'none';
+    }
+});
+
+</script>
+
+<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
+        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
+        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
+    </div>
+    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
+
+
+<script>
+    const token = localStorage.getItem('trainerhub_api_key');
+    let chatOpen = false;
+    function toggleChat() {
+        const w = document.getElementById('chatWidget');
+        chatOpen = !chatOpen;
+        w.style.display = chatOpen ? 'flex' : 'none';
+        if (chatOpen) loadChat();
+    }
+    async function loadChat() {
+        try {
+            const res = await fetch('/trainerhub/api/chat.php?action=history');
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
+            container.innerHTML = data.messages.map(m => `
+                <div style="margin-bottom:8px;">
+                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        } catch(e) { console.error(e); }
+    }
+    async function sendChat() {
+        if (!token) { showToast('Login erforderlich', 'warn'); return; }
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        await fetch('/trainerhub/api/chat.php?action=send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadChat();
+    }
+    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
+</script>
+</body>
+</html>

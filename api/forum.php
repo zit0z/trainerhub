@@ -79,6 +79,8 @@ try {
             $thread_id = $pdo->lastInsertId();
             $stmt = $pdo->prepare("INSERT INTO forum_posts (thread_id, user_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$thread_id, $user['id'], $content, $now, $now]);
+            $stmt = $pdo->prepare("INSERT OR IGNORE INTO forum_subscriptions (user_id, thread_id, created_at) VALUES (?, ?, ?)");
+            $stmt->execute([$user['id'], $thread_id, $now]);
             logAudit($user['id'], 'forum_create_thread', $_SERVER['REMOTE_ADDR'] ?? '', "thread_id=$thread_id");
             echo json_encode(['success' => true, 'thread_id' => $thread_id, 'slug' => $slug]);
             break;
@@ -102,8 +104,23 @@ try {
             $now = time();
             $stmt = $pdo->prepare("INSERT INTO forum_posts (thread_id, user_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$thread_id, $user['id'], $content, $now, $now]);
+            $stmt = $pdo->prepare("INSERT OR IGNORE INTO forum_subscriptions (user_id, thread_id, created_at) VALUES (?, ?, ?)");
+            $stmt->execute([$user['id'], $thread_id, $now]);
             $stmt = $pdo->prepare("UPDATE forum_threads SET updated_at = ? WHERE id = ?");
             $stmt->execute([$now, $thread_id]);
+
+            // Notify subscribers
+            $stmt = $pdo->prepare("SELECT DISTINCT user_id FROM forum_subscriptions WHERE thread_id = ? AND user_id != ?");
+            $stmt->execute([$thread_id, $user['id']]);
+            $subs = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            if ($subs) {
+                $msg = 'Neue Antwort im Thema: ' . $thread_title;
+                $stmt = $pdo->prepare("INSERT INTO inbox_messages (user_id, type, title, body, link, is_read, created_at) VALUES (?, 'forum_reply', ?, ?, ?, 0, ?)");
+                foreach ($subs as $uid) {
+                    $stmt->execute([$uid, 'Forum-Antwort', $msg, '/trainerhub/forum', $now]);
+                }
+            }
+
             logAudit($user['id'], 'forum_create_post', $_SERVER['REMOTE_ADDR'] ?? '', "thread_id=$thread_id");
             echo json_encode(['success' => true, 'post_id' => $pdo->lastInsertId()]);
             break;

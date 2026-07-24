@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SweetCheat — Singleplayer Trainer, Cheats & Savegame-Tools</title>
+    <meta name="description" content="SweetCheat bietet moderne Singleplayer-Trainer, Savegame-Editoren und Cheats für PC-Spiele. Kein Viren-Scanner-Alarm, keine Third-Party-Cheat-Tables.">
+    <meta property="og:title" content="SweetCheat — Dominiere deine Singleplayer-Welt">
+    <meta property="og:description" content="Moderne Trainer, Savegame-Tools und Cheats für PC-Spiele.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sayfespace.online/trainerhub/">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SweetCheat",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Windows",
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+      "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "127"}
+    }
+    </script>
+    <style>
+        :root { scroll-behavior: smooth; }
+        .landing-hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 120px 20px 80px; position: relative; overflow: hidden; }
+        .video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.12; z-index: 0; }
+        .video-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,15,0.4), var(--bg)); z-index: 1; }
+        .hero-content { position: relative; z-index: 2; max-width: 920px; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,240,255,0.12); border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 700; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hero-title { font-family: 'Rajdhani', sans-serif; font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 800; line-height: 1.0; margin-bottom: 24px; }
+        .hero-title span { color: var(--accent); }
+        .hero-subtitle { color: var(--text-muted); font-size: clamp(1rem, 2vw, 1.35rem); max-width: 680px; margin: 0 auto 36px; line-height: 1.65; }
+        .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+        .btn-hero { padding: 18px 36px; font-size: 17px; font-weight: 700; border-radius: var(--radius); }
+        .trust-row { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; align-items: center; color: var(--text-muted); font-size: 13px; }
+        .trust-row i { color: var(--accent); margin-right: 6px; }
+        .section { padding: 100px 20px; }
+        .section-title { text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 2.6rem; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; }
+        .section-subtitle { text-align: center; color: var(--text-muted); max-width: 620px; margin: 0 auto 56px; font-size: 1.05rem; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; max-width: 1200px; margin: 0 auto; }
+        .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; transition: all .25s; }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,240,255,0.12); }
+        .feature-icon { width: 60px; height: 60px; border-radius: 16px; background: rgba(0,240,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.8rem; margin-bottom: 20px; }
+        .feature-title { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+        .feature-desc { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 1100px; margin: 0 auto; text-align: center; }
+        .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 3.4rem; font-weight: 700; color: var(--accent); }
+        .stat-label { color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; }
+        .testimonial { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+        .stars { color: #fbbf24; margin-bottom: 14px; }
+        .testimonial-text { color: var(--text); font-size: 15px; line-height: 1.7; margin-bottom: 18px; }
+        .testimonial-author { display: flex; align-items: center; gap: 12px; }
+        .testimonial-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0a0a0f; }
+        .testimonial-name { font-weight: 600; }
+        .testimonial-role { font-size: 13px; color: var(--text-muted); }
+        .trust-logos { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; align-items: center; opacity: 0.7; }
+        .trust-logo { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
+        .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+        .pricing-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; text-align: center; position: relative; }
+        .pricing-card.premium { border-color: var(--accent); box-shadow: 0 0 50px rgba(0,240,255,0.12); }
+        .price-tag { font-family: 'Rajdhani', sans-serif; font-size: 3.2rem; font-weight: 700; margin: 16px 0; }
+        .price-tag span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+        .pricing-features { text-align: left; color: var(--text-muted); font-size: 15px; line-height: 2; margin: 28px 0; }
+        .pricing-features i { color: var(--accent); margin-right: 10px; }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--bg); padding: 5px 18px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+        .faq-item { max-width: 800px; margin: 0 auto 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .faq-question { padding: 20px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+        .faq-answer { padding: 0 24px; max-height: 0; overflow: hidden; transition: all .3s; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+        .faq-item.open .faq-answer { padding: 0 24px 20px; max-height: 220px; }
+        .cta-banner { background: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,56,100,0.08)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: center; padding: 80px 20px; }
+        .footer { background: var(--bg-card); border-top: 1px solid var(--border); padding: 50px 20px 30px; text-align: center; color: var(--text-muted); font-size: 14px; }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 20px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; }
+        .footer-links a:hover { color: var(--accent); }
+        @media (max-width: 768px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } .trust-row { gap: 16px; } }
+        .count-up { display: inline-block; }
+    </style>
+</head>
+<body>
+    <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="#" class="brand" style="font-size: 1.5rem; display:flex; align-items:center;"><img src="/trainerhub/logo-sweetcheat-header.png" alt="SweetCheat" style="height:42px; width:auto; max-width:220px; object-fit:contain; display:block;"></a>
+            <nav style="display: flex; gap: 24px; align-items: center;">
+                <a href="#features" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Features</a>
+                <a href="#testimonials" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Reviews</a>
+                <a href="#pricing" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Preise</a>
+                <a href="#faq" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">FAQ</a>
+                <a href="blog" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Blog</a>
+                <div id="headerUserMenu" style="display:flex; gap:10px;">
+                    <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                    <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="landing-hero">
+        <video class="video-bg" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920">
+            <source src="https://cdn.coverr.co/videos/coverr-a-gaming-setup-with-led-lights-4516/1080p.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge"><i class="fas fa-shield-alt"></i> Kein Third-Party-Rotz — Nur legale Singleplayer-Methoden</div>
+            <h1 class="hero-title">Dominiere deine
+                <span>Singleplayer-Welt</span>
+            </h1>
+            <p class="hero-subtitle">Moderne Trainer, Savegame-Editoren und Memory-Tools für PC-Spiele. Sauber gebaut, RDP- und Streamer-freundlich, ohne Viren-Scanner-Alarm.</p>
+            <div class="hero-cta">
+                <a href="setup" class="btn btn-primary btn-hero"><i class="fas fa-download"></i> Windows-App herunterladen</a>
+                <a href="games" class="btn btn-secondary btn-hero">Spiele erkunden</a>
+            </div>
+            <div class="trust-row">
+                <span><i class="fas fa-check-circle"></i> Keine Malware</span>
+                <span><i class="fas fa-check-circle"></i> Windows 10/11</span>
+                <span><i class="fas fa-check-circle"></i> Auto-Updates</span>
+                <span><i class="fas fa-check-circle"></i> 4.8/5 Community</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background: var(--bg-card);">
+        <div class="section-title">Zahlen, die überzeugen</div>
+        <div class="section-subtitle">Die Community wächst täglich.</div>
+        <div class="stats-bar">
+            <div><div class="stat-value"><span class="count-up" data-target="299">0</span>+</div><div class="stat-label">Spiele</div></div>
+            <div><div class="stat-value"><span class="count-up" data-target="3759">0</span>+</div><div class="stat-label">Trainer</div></div>
+            <div><div class="stat-value"><span class="count-up" data-target="12">0</span>K+</div><div class="stat-label">Nutzer</div></div>
+            <div><div class="stat-value">1</div><div class="stat-label">Klick Aktivierung</div></div>
+        </div>
+    </section>
+
+    <section id="features" class="section">
+        <div class="section-title">Warum SweetCheat?</div>
+        <div class="section-subtitle">Alles, was du brauchst — nichts, was du nicht willst.</div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <div class="feature-title">One-Click Cheats</div>
+                <div class="feature-desc">Kein lästiges Eintippen im Spiel. Cheats aktivieren sich per Knopfdruck über SMAPI-Bridge, Savegame-Editoren oder Memory-Writes.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-save"></i></div>
+                <div class="feature-title">Savegame-Editor</div>
+                <div class="feature-desc">Ändere Werte direkt in deinen Savegames — mit automatischem Backup, bevor etwas kaputt geht.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-crosshairs"></i></div>
+                <div class="feature-title">Prozess-Scanner</div>
+                <div class="feature-desc">Die Desktop-App erkennt laufende Spiele automatisch und zeigt passende Trainer an — ohne manuelles Suchen.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-star"></i></div>
+                <div class="feature-title">Favoriten & Sync</div>
+                <div class="feature-desc">Merke dir Spiele und Trainer im Web und greife in der Desktop-App darauf zu. Alles synchron über dein Konto.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-moon"></i></div>
+                <div class="feature-title">Dark & Light Theme</div>
+                <div class="feature-desc">Modernes UI mit Cyan-Akzenten, Dark Mode und optional Light Mode für helle Umgebungen.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-lock"></i></div>
+                <div class="feature-title">Sicher & Legal</div>
+                <div class="feature-desc">Nur legale Singleplayer-Methoden. Keine Third-Party-Cheat-Tables, keine Multiplayer-Hacks, keine Malware.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background: var(--bg-card);">
+        <div class="section-title">Wird vertraut von</div>
+        <div class="section-subtitle">Streamer, Casual-Gamer und Speedrunner nutzen SweetCheat täglich.</div>
+        <div class="trust-logos">
+            <div class="trust-logo"><i class="fab fa-twitch"></i> Twitch-Streamer</div>
+            <div class="trust-logo"><i class="fab fa-discord"></i> Discord-Communities</div>
+            <div class="trust-logo"><i class="fab fa-youtube"></i> YouTube-Creator</div>
+            <div class="trust-logo"><i class="fab fa-reddit"></i> Reddit-Guilds</div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="section">
+        <div class="section-title">Das sagen unsere User</div>
+        <div class="section-subtitle">Echte Stimmen aus der Community.</div>
+        <div class="testimonials">
+            <div class="testimonial">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <div class="testimonial-text">"Endlich eine Trainer-App, die aussieht wie 2026 und nicht wie 2008. One-Click Cheats für Stardew Valley sind ein Gamechanger."</div>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">D</div>
+                    <div>
+                        <div class="testimonial-name">Dom T.</div>
+                        <div class="testimonial-role">Streamer & Entwickler</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <div class="testimonial-text">"Ich nutze SweetCheat für Factorio und Terraria. Die Savegame-Backups machen mich immer sicher — und das Web-Dashboard ist clean."</div>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">M</div>
+                    <div>
+                        <div class="testimonial-name">Markus K.</div>
+                        <div class="testimonial-role">Casual Gamer</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                <div class="testimonial-text">"Premium lohnt sich. Mehr Slots, schnellere Aktivierung und die Favoriten-Sync zwischen Web und Desktop sind klasse."</div>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">J</div>
+                    <div>
+                        <div class="testimonial-name">Jessica R.</div>
+                        <div class="testimonial-role">Speedrunner</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="section" style="background: var(--bg-card);">
+        <div class="section-title">Preise</div>
+        <div class="section-subtitle">Starte kostenlos. Upgrade, wenn du mehr willst.</div>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Free</div>
+                <div class="price-tag">0€<span>/Monat</span></div>
+                <div class="pricing-features">
+                    <div><i class="fas fa-check"></i> 5 Trainer pro Tag</div>
+                    <div><i class="fas fa-check"></i> Basis Savegame-Editor</div>
+                    <div><i class="fas fa-check"></i> Favoriten synchronisieren</div>
+                    <div><i class="fas fa-check"></i> Community-Support</div>
+                </div>
+                <a href="register" class="btn btn-secondary" style="width: 100%;">Kostenlos starten</a>
+            </div>
+            <div class="pricing-card premium">
+                <div class="popular-badge">BELIEBT</div>
+                <div style="font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 600;">Premium</div>
+                <div class="price-tag">9,99€<span>/Monat</span></div>
+                <div class="pricing-features">
+                    <div><i class="fas fa-check"></i> Unbegrenzte Aktivierungen</div>
+                    <div><i class="fas fa-check"></i> Alle Premium-Trainer</div>
+                    <div><i class="fas fa-check"></i> Priorisierter Support</div>
+                    <div><i class="fas fa-check"></i> Early Access zu neuen Games</div>
+                    <div><i class="fas fa-check"></i> API-Zugriff für Creator</div>
+                </div>
+                <a href="checkout" class="btn btn-primary" style="width: 100%;">Premium aktivieren</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="section">
+        <div class="section-title">FAQ</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Ist SweetCheat legal?<span>+</span></div>
+            <div class="faq-answer">Ja. Wir nutzen ausschließlich Singleplayer-Methoden wie Savegame-Editing, Memory-Writes in lokalen Prozessen und offizielle Bridges wie SMAPI. Multiplayer-Cheats sind verboten.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Werden meine Daten gespeichert?<span>+</span></div>
+            <div class="faq-answer">Nur das Nötigste: E-Mail, verschlüsseltes Passwort, Favoriten und Aktivierungs-Logs. Wir verkaufen keine Daten und tracken dich nicht.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Wie aktiviere ich einen Cheat?<span>+</span></div>
+            <div class="faq-answer">Öffne die Windows-App, starte dein Spiel und wähle den gewünschten Trainer. Ein Klick auf "Aktivieren" genügt — kein Eintippen nötig.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Welche Spiele werden unterstützt?<span>+</span></div>
+            <div class="faq-answer">Wir unterstützen hunderte Singleplayer-PC-Spiele. Schau dir unsere öffentliche Trainer-Datenbank an oder nutze die Suche.</div>
+        </div>
+    </section>
+
+    <section class="cta-banner">
+        <h2 style="font-family: 'Rajdhani', sans-serif; font-size: 2.4rem; margin-bottom: 16px;">Bereit, dein Spielerlebnis zu verbessern?</h2>
+        <p style="color: var(--text-muted); margin-bottom: 28px;">Lade SweetCheat kostenlos herunter und aktiviere deinen ersten Trainer in unter 60 Sekunden.</p>
+        <a href="setup" class="btn btn-primary btn-hero"><i class="fas fa-download"></i> Jetzt downloaden v0.8.6</a>
+    </section>
+
+    <section class="section" style="background: var(--bg-card); border-top: 1px solid var(--border);">
+        <div class="section-title" style="font-size: 1.8rem;">Bleib auf dem Laufenden</div>
+        <div style="max-width: 500px; margin: 0 auto; text-align: center;">
+            <input type="email" id="newsletterEmail" placeholder="deine@email.de" style="width: 100%; padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-bottom: 12px;">
+            <button class="btn btn-primary" style="width: 100%;" onclick="subscribeNewsletter()">Newsletter abonnieren</button>
+            <p id="newsletterStatus" style="color: var(--text-muted); font-size: 13px; margin-top: 12px;"></p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="blog">Blog</a>
+            <a href="public-db">Trainer-DB</a>
+            <a href="leaderboard">Rangliste</a>
+            <a href="login">Login</a>
+            <a href="register">Registrieren</a>
+        </div>
+        <p>© 2026 SweetCheat — Singleplayer Trainer, Cheats & Savegame-Tools. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        // Animated counters
+        const counters = document.querySelectorAll('.count-up');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = +entry.target.dataset.target;
+                    let current = 0;
+                    const inc = Math.max(1, Math.floor(target / 60));
+                    const timer = setInterval(() => {
+                        current += inc;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        entry.target.textContent = current.toLocaleString('de-DE');
+                    }, 16);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        counters.forEach(c => observer.observe(c));
+
+        async function subscribeNewsletter() {
+            const email = document.getElementById('newsletterEmail').value;
+            const status = document.getElementById('newsletterStatus');
+            if (!email) { status.textContent = 'Bitte E-Mail eingeben.'; return; }
+            try {
+                const res = await fetch('api/newsletter.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                status.textContent = data.success ? 'Bestätigungs-Mail ist unterwegs.' : (data.error || 'Fehler');
+            } catch(e) { status.textContent = 'Netzwerkfehler'; }
+        }
+    </script>
+
+    <script>
+        (async () => {
+            const token = localStorage.getItem('trainerhub_api_key') || localStorage.getItem('sweetcheat_api_key');
+            if (!token) return;
+            const heroCTA = document.querySelector('.hero-cta');
+            if (heroCTA) {
+                heroCTA.innerHTML = `
+                    <a href="dashboard" class="btn btn-primary btn-hero"><i class="fas fa-th-large"></i> Zum Dashboard</a>
+                    <a href="forum" class="btn btn-secondary btn-hero"><i class="fas fa-comments"></i> Community Forum</a>
+                    <a href="https://sayfespace.online/ai-gen/" target="_blank" class="btn btn-secondary btn-hero"><i class="fas fa-robot"></i> AI Studio</a>
+                `;
+            }
+        })();
+    </script>
+</body>
+</html>

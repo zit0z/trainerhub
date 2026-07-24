@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erfolge — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <script defer src="components/header-menu.js"></script>
+    <script defer src="shared.js"></script>
+    <style>
+        .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+        .achievement-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: .2s; }
+        .achievement-card.unlocked { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+        .achievement-card.locked { opacity: 0.6; }
+        .achievement-icon { font-size: 2rem; color: var(--accent); margin-bottom: 12px; }
+        .achievement-card.locked .achievement-icon { color: var(--text-muted); }
+        .achievement-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 6px; }
+        .achievement-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px; }
+        .achievement-points { font-size: 0.8rem; color: var(--accent); }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()"><i class="fas fa-bars"></i></button>
+    <aside class="nav-sidebar">
+        <div style="padding:18px; border-bottom:1px solid var(--border);">
+            <a href="/trainerhub/"><img src="/trainerhub/logo-sweetcheat-header.png" alt="SweetCheat" style="height:40px; width:auto; max-width:200px; object-fit:contain; display:block;"></a>
+        </div>
+        <div class="nav-main">
+            <a href="dashboard" class="nav-item"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
+            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
+            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
+            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
+            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
+            <a href="friends" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-user-friends"></i></span> Freunde</a>
+            <a href="forum" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-comments"></i></span> Forum</a>
+            <a href="achievements" class="nav-item active logged-in-only"><span class="icon"><i class="fas fa-medal"></i></span> Erfolge</a>
+            <a href="marketplace" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-store"></i></span> Wunschliste</a>
+            <a href="profile" class="nav-item"><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
+            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Erfolge</h1>
+            <div id="headerUserMenu" style="display:flex; gap:10px;">
+                <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+            </div>
+        </div>
+
+        <div style="padding:28px;">
+            <div style="display:flex; gap:12px; margin-bottom:24px;">
+                <div class="card dashboard-card" style="min-width:140px;">
+                    <div class="label">Punkte</div>
+                    <div class="value" id="totalPoints">0</div>
+                </div>
+                <div class="card dashboard-card" style="min-width:140px;">
+                    <div class="label">Freigeschaltet</div>
+                    <div class="value" id="unlockedCount">0/0</div>
+                </div>
+            </div>
+            <div class="achievements-grid" id="achievementsList">
+                <div class="empty">Lade Erfolge...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('trainerhub_api_key');
+        if (!token) window.location.href = '/trainerhub/login?redirect=/trainerhub/achievements';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetch('/trainerhub/api/achievements.php?action=check', { headers: { 'Authorization': 'Bearer ' + token } });
+            const res = await fetch('/trainerhub/api/achievements.php?action=mine', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            const container = document.getElementById('achievementsList');
+            if (!data.success) { container.innerHTML = '<div class="empty">Fehler</div>'; return; }
+
+            let points = 0, unlocked = 0;
+            container.innerHTML = data.achievements.map(a => {
+                const isUnlocked = !!a.unlocked_at;
+                if (isUnlocked) { points += a.points; unlocked++; }
+                return `
+                    <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon"><i class="fas ${a.icon || 'fa-trophy'}"></i> ${isUnlocked ? '✓' : '🔒'}</div>
+                        <div class="achievement-name">${a.name}</div>
+                        <div class="achievement-desc">${a.description}</div>
+                        <div class="achievement-points">${a.points} Punkte${isUnlocked ? ' • Freigeschaltet ' + new Date(a.unlocked_at * 1000).toLocaleDateString('de-DE') : ''}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('totalPoints').textContent = points;
+            document.getElementById('unlockedCount').textContent = unlocked + '/' + data.achievements.length;
+        });
+    </script>
+
+<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
+        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
+        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
+    </div>
+    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
+
+
+<script>
+    const token = localStorage.getItem('trainerhub_api_key');
+    let chatOpen = false;
+    function toggleChat() {
+        const w = document.getElementById('chatWidget');
+        chatOpen = !chatOpen;
+        w.style.display = chatOpen ? 'flex' : 'none';
+        if (chatOpen) loadChat();
+    }
+    async function loadChat() {
+        try {
+            const res = await fetch('/trainerhub/api/chat.php?action=history');
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
+            container.innerHTML = data.messages.map(m => `
+                <div style="margin-bottom:8px;">
+                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        } catch(e) { console.error(e); }
+    }
+    async function sendChat() {
+        if (!token) { showToast('Login erforderlich', 'warn'); return; }
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        await fetch('/trainerhub/api/chat.php?action=send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadChat();
+    }
+    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
+</script>
+</body>
+</html>

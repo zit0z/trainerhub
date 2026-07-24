@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="gameTitle">Spiel — SweetCheat</title>
+    <meta id="gameDesc" name="description" content="SweetCheat Trainer-Datenbank">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <style>
+        .game-hero { padding:40px 20px; background:linear-gradient(135deg, rgba(0,240,255,0.08), transparent); border-bottom:1px solid var(--border); }
+        .game-content { max-width:1000px; margin:0 auto; padding:40px 20px; }
+        .trainer-row { display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid var(--border); }
+        .trainer-name { font-weight:600; }
+        .trainer-desc { color:var(--text-muted); font-size:13px; }
+        .trainer-meta { display:flex; gap:8px; margin-top:4px; }
+        .tag { font-size:11px; padding:2px 8px; border-radius:999px; background:var(--bg-elevated); color:var(--text-muted); }
+    </style>
+</head>
+<body>
+    <header style="background:var(--bg-card); border-bottom:1px solid var(--border); padding:14px 20px;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/trainerhub/" class="brand"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
+            <a href="games" class="btn btn-secondary btn-sm">← Zurück</a>
+        </div>
+    </header>
+
+    <div class="game-hero">
+        <div style="max-width:1000px; margin:0 auto;">
+            <h1 id="gameName" style="font-family:'Rajdhani',sans-serif; font-size:2.5rem; margin-bottom:8px;"></h1>
+            <div id="gameMeta" style="color:var(--text-muted);">Lade...</div>
+        </div>
+    </div>
+
+    <div class="game-content">
+        <h2 style="font-family:'Rajdhani',sans-serif; margin-bottom:20px;">Verfügbare Trainer</h2>
+        <div id="trainersList"><div class="card shimmer" style="height:60px;"></div></div>
+    </div>
+
+    <footer style="background:var(--bg-card); border-top:1px solid var(--border); padding:30px; text-align:center; color:var(--text-muted); font-size:14px;">
+        <p>© 2026 SweetCheat — Singleplayer-Trainer für PC-Spiele.</p>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        async function loadGame() {
+            const slug = location.pathname.split('/').pop();
+            try {
+                const res = await fetch('api/games.php?slug=' + encodeURIComponent(slug));
+                const data = await res.json();
+                if (!data.success || !data.games) {
+                    document.getElementById('gameName').textContent = 'Spiel nicht gefunden';
+                    return;
+                }
+                const g = Array.isArray(data.games) ? data.games[0] : data.games;
+                document.getElementById('gameTitle').textContent = (g.name || 'Spiel') + ' — SweetCheat';
+                document.getElementById('gameDesc').content = 'Trainer und Cheats für ' + (g.name || 'dieses Spiel') + ' bei SweetCheat.';
+                document.getElementById('gameName').textContent = g.name || 'Unbekannt';
+                document.getElementById('gameMeta').innerHTML = `${escapeHtml(g.genre || 'Genre')} &bull; ${g.release_year || '-'} &bull; ${g.trainer_count || 0} Trainer`;
+                
+                const tRes = await fetch('api/trainers.php?game=' + encodeURIComponent(slug));
+                const tData = await tRes.json();
+                const list = document.getElementById('trainersList');
+                const trainers = tData.trainers || [];
+                list.innerHTML = trainers.length ? trainers.map(t => `
+                    <div class="trainer-row">
+                        <div>
+                            <div class="trainer-name">${escapeHtml(t.name)}</div>
+                            <div class="trainer-desc">${escapeHtml(t.description || '')}</div>
+                            <div class="trainer-meta">
+                                <span class="tag">${escapeHtml(t.cheat_type || 'memory')}</span>
+                                ${t.is_premium ? '<span class="tag" style="background:rgba(255,56,100,0.15); color:#ff3864;">PREMIUM</span>' : ''}
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="alert('Login erforderlich um Cheats zu aktivieren')">Aktivieren</button>
+                    </div>
+                `).join('') : '<div style="color:var(--text-muted); padding:20px 0;">Keine Trainer verfügbar.</div>';
+            } catch(e) { console.error(e); }
+        }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+        loadGame();
+    </script>
+</body>
+</html>

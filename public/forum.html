@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum — SweetCheat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared-modern.css">
+    <script defer src="components/header-menu.js"></script>
+    <script defer src="shared.js"></script>
+    <style>
+        .forum-categories { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 24px; }
+        .forum-category { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: transform 0.15s, border-color 0.15s; cursor: pointer; }
+        .forum-category:hover { transform: translateY(-4px); border-color: var(--accent); }
+        .forum-category .icon { font-size: 2rem; color: var(--accent); margin-bottom: 12px; }
+        .forum-category h3 { margin: 0 0 8px; font-size: 1.2rem; }
+        .forum-category p { margin: 0 0 12px; color: var(--text-muted); font-size: 0.9rem; }
+        .forum-category .stats { color: var(--text-muted); font-size: 0.8rem; }
+        .thread-list { margin-top: 20px; }
+        .thread-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
+        .thread-item:hover { border-color: var(--accent); }
+        .thread-item.pinned { border-left: 4px solid var(--accent); }
+        .thread-item.locked { opacity: 0.7; }
+        .thread-meta { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+        .thread-right { text-align: right; color: var(--text-muted); font-size: 0.8rem; }
+        .post { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .post-author { font-weight: 600; color: var(--accent); }
+        .post-author.admin { color: var(--warning); }
+        .post-content { line-height: 1.6; color: var(--text); }
+        .post-actions { margin-top: 12px; display: flex; gap: 12px; }
+        .post-actions button { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .post-actions button:hover { border-color: var(--accent); color: var(--accent); }
+        .post-actions button.active { background: rgba(0,212,255,0.1); color: var(--accent); border-color: var(--accent); }
+        .reply-box { margin-top: 24px; }
+        .reply-box textarea { width: 100%; min-height: 120px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 14px; color: var(--text); font-family: inherit; }
+        .breadcrumb { color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem; }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px; }
+        .tag.pinned { background: rgba(0,212,255,0.15); color: var(--accent); }
+        .tag.locked { background: rgba(255,71,87,0.15); color: var(--danger); }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
+    <aside class="nav-sidebar">
+        <div style="padding:18px; border-bottom:1px solid var(--border);">
+            <a href="/trainerhub/"><img src="/trainerhub/logo-sweetcheat-header.png" alt="SweetCheat" style="height:40px; max-width:100%;"></a>
+        </div>
+        <div class="nav-main">
+            <a href="dashboard" class="nav-item"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
+            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
+            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
+            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
+            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
+            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
+            <a href="inbox" class="nav-item"><span class="icon"><i class="fas fa-bell"></i></span> Benachrichtigungen</a>
+            <a href="blog" class="nav-item"><span class="icon"><i class="fas fa-newspaper"></i></span> Blog</a>
+            <a href="forum" class="nav-item active logged-in-only"><span class="icon"><i class="fas fa-comments"></i></span> Forum</a>
+            <a href="profile" class="nav-item"><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
+            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
+        </div>
+    </aside>
+
+    <div class="page-content">
+        <div class="topbar">
+            <h1 class="section-title" style="font-size:26px;">Forum</h1>
+            <div style="position:relative; flex:1; max-width:360px;">
+                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+                <div id="headerUserMenu" style="display:flex; gap:10px;">
+                    <a href="login" class="btn btn-secondary btn-sm">Login</a>
+                    <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
+                </div>
+        </div>
+
+        <div style="padding:28px;">
+            <div id="forumView">
+                <div id="categoriesView">
+                    <h2 style="margin-bottom:8px;">Kategorien</h2>
+                    <p style="color:var(--text-muted);">Diskutiere mit der Community über Spiele, Trainer und SweetCheat.</p>
+                    <div class="forum-categories" id="categoriesList">
+                        <div class="empty">Lade Kategorien...</div>
+                    </div>
+                </div>
+
+                <div id="threadsView" style="display:none;">
+                    <div class="breadcrumb">
+                        <a href="#" onclick="showCategories(); return false;">Forum</a> > <span id="categoryName">Kategorie</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h2 id="threadsTitle">Themen</h2>
+                        <button class="btn btn-primary" id="newThreadBtn" onclick="showNewThread()">+ Neues Thema</button>
+                    </div>
+                    <div class="thread-list" id="threadsList"></div>
+                </div>
+
+                <div id="threadView" style="display:none;">
+                    <div class="breadcrumb">
+                        <a href="#" onclick="showCategories(); return false;">Forum</a> >
+                        <a href="#" id="threadCategoryLink" onclick="return false;">Kategorie</a> >
+                        <span id="threadTitle">Thema</span>
+                    </div>
+                    <div id="threadPosts"></div>
+                    <div class="reply-box" id="replyBox">
+                        <h3>Antworten</h3>
+                        <textarea id="replyContent" placeholder="Deine Antwort..."></textarea>
+                        <button class="btn btn-primary" style="margin-top:12px;" onclick="submitReply()">Antworten</button>
+                    </div>
+                </div>
+
+                <div id="newThreadView" style="display:none;">
+                    <div class="breadcrumb">
+                        <a href="#" onclick="showCategories(); return false;">Forum</a> >
+                        <span>Neues Thema</span>
+                    </div>
+                    <h2>Neues Thema erstellen</h2>
+                    <label style="display:block; margin-top:16px; color:var(--text-muted);">Kategorie</label>
+                    <select id="newThreadCategory" style="width:100%; margin-top:6px; padding:10px; background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); border-radius:8px;"></select>
+                    
+                    <label style="display:block; margin-top:16px; color:var(--text-muted);">Titel</label>
+                    <input type="text" id="newThreadTitle" placeholder="Titel deines Themas" style="width:100%; margin-top:6px; padding:10px; background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); border-radius:8px;">
+                    
+                    <label style="display:block; margin-top:16px; color:var(--text-muted);">Inhalt</label>
+                    <textarea id="newThreadContent" placeholder="Beschreibe dein Thema..." style="min-height:150px;"></textarea>
+                    
+                    <div style="margin-top:16px;">
+                        <button class="btn btn-primary" onclick="submitThread()">Thema erstellen</button>
+                        <button class="btn btn-secondary" style="margin-left:10px;" onclick="showCategories()">Abbrechen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '/trainerhub/api/forum.php';
+        let currentCategoryId = null;
+        let currentThreadId = null;
+        let categories = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            requireAuth(() => {
+                showCategories();
+            });
+        });
+
+        function requireAuth(callback) {
+            const token = localStorage.getItem('trainerhub_api_key');
+            if (!token) {
+                window.location.href = '/trainerhub/login?redirect=/trainerhub/forum';
+                return;
+            }
+            fetch('/trainerhub/api/user-settings.php?action=get', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('userName').textContent = data.user.username || data.user.email;
+                    if (data.subscription === 'premium') {
+                        document.getElementById('userSub').textContent = 'PREMIUM';
+                        document.getElementById('userSub').className = 'badge badge-premium';
+                    }
+                    callback();
+                } else {
+                    window.location.href = '/trainerhub/login?redirect=/trainerhub/forum';
+                }
+            })
+            .catch(() => {
+                window.location.href = '/trainerhub/login?redirect=/trainerhub/forum';
+            });
+        }
+
+        function switchView(view) {
+            ['categoriesView', 'threadsView', 'threadView', 'newThreadView'].forEach(v => {
+                document.getElementById(v).style.display = (v === view) ? 'block' : 'none';
+            });
+        }
+
+        async function showCategories() {
+            switchView('categoriesView');
+            const res = await fetch(API + '?action=categories');
+            const data = await res.json();
+            const container = document.getElementById('categoriesList');
+            if (!data.success) {
+                container.innerHTML = '<div class="empty">Fehler: ' + data.error + '</div>';
+                return;
+            }
+            categories = data.categories;
+            container.innerHTML = categories.map(c => `
+                <div class="forum-category" onclick="showThreads(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+                    <div class="icon"><i class="fas ${c.icon || 'fa-comments'}"></i></div>
+                    <h3>${escapeHtml(c.name)}</h3>
+                    <p>${escapeHtml(c.description || '')}</p>
+                    <div class="stats">${c.thread_count || 0} Themen • ${Math.max(0, (c.post_count || 0) - (c.thread_count || 0))} Antworten</div>
+                </div>
+            `).join('');
+
+            const select = document.getElementById('newThreadCategory');
+            select.innerHTML = categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        }
+
+        async function showThreads(categoryId, categoryName) {
+            currentCategoryId = categoryId;
+            switchView('threadsView');
+            document.getElementById('categoryName').textContent = categoryName;
+            document.getElementById('threadsTitle').textContent = categoryName;
+            const res = await fetch(API + '?action=threads&category_id=' + categoryId);
+            const data = await res.json();
+            const container = document.getElementById('threadsList');
+            if (!data.success || !data.threads.length) {
+                container.innerHTML = '<div class="empty">Noch keine Themen. Erstelle das erste!</div>';
+                return;
+            }
+            container.innerHTML = data.threads.map(t => `
+                <div class="thread-item ${t.is_pinned ? 'pinned' : ''} ${t.is_locked ? 'locked' : ''}" onclick="showThread(${t.id})">
+                    <div>
+                        <div style="font-weight:600;">${escapeHtml(t.title)}
+                            ${t.is_pinned ? '<span class="tag pinned">ANGEHEFTET</span>' : ''}
+                            ${t.is_locked ? '<span class="tag locked">GESCHLOSSEN</span>' : ''}
+                        </div>
+                        <div class="thread-meta">Von ${escapeHtml(t.username)} • ${formatDate(t.created_at)} • ${t.view_count || 0} Aufrufe</div>
+                    </div>
+                    <div class="thread-right">
+                        <div>${t.reply_count || 0} Antworten</div>
+                        <div>Letzte Antwort: ${t.last_post_at ? formatDate(t.last_post_at) : '-'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function showThread(threadId) {
+            currentThreadId = threadId;
+            switchView('threadView');
+            const res = await fetch(API + '?action=thread&thread_id=' + threadId);
+            const data = await res.json();
+            if (!data.success) {
+                document.getElementById('threadPosts').innerHTML = '<div class="empty">Fehler: ' + data.error + '</div>';
+                return;
+            }
+            const thread = data.thread;
+            document.getElementById('threadTitle').textContent = thread.title;
+            document.getElementById('threadCategoryLink').textContent = thread.category_name;
+            document.getElementById('threadCategoryLink').onclick = () => showThreads(thread.category_id || currentCategoryId, thread.category_name);
+
+            document.getElementById('threadPosts').innerHTML = data.posts.map((p, idx) => `
+                <div class="post">
+                    <div class="post-header">
+                        <div class="post-author ${p.is_admin ? 'admin' : ''}">${escapeHtml(p.username)} ${p.is_admin ? '<span class="tag pinned">ADMIN</span>' : ''}</div>
+                        <div style="color:var(--text-muted); font-size:0.8rem;">${formatDate(p.created_at)} ${p.updated_at > p.created_at ? '(bearbeitet)' : ''}</div>
+                    </div>
+                    <div class="post-content">${escapeHtml(p.content).replace(/\n/g, '<br>')}</div>
+                    <div class="post-actions">
+                        <button class="${p.user_reaction === 'like' ? 'active' : ''}" onclick="react(${p.id}, 'like')"><i class="fas fa-thumbs-up"></i> ${p.like_count || 0}</button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (thread.is_locked) {
+                document.getElementById('replyBox').style.display = 'none';
+            } else {
+                document.getElementById('replyBox').style.display = 'block';
+                document.getElementById('replyContent').value = '';
+            }
+        }
+
+        function showNewThread() {
+            switchView('newThreadView');
+        }
+
+        async function submitThread() {
+            const token = localStorage.getItem('trainerhub_api_key');
+            const categoryId = parseInt(document.getElementById('newThreadCategory').value);
+            const title = document.getElementById('newThreadTitle').value.trim();
+            const content = document.getElementById('newThreadContent').value.trim();
+            if (!title || !content) {
+                alert('Titel und Inhalt erforderlich');
+                return;
+            }
+            const res = await fetch(API + '?action=create_thread', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category_id: categoryId, title, content })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('newThreadTitle').value = '';
+                document.getElementById('newThreadContent').value = '';
+                showThreads(categoryId, document.getElementById('categoryName').textContent);
+            } else {
+                alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+            }
+        }
+
+        async function submitReply() {
+            const token = localStorage.getItem('trainerhub_api_key');
+            const content = document.getElementById('replyContent').value.trim();
+            if (!content) return;
+            const res = await fetch(API + '?action=create_post', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ thread_id: currentThreadId, content })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showThread(currentThreadId);
+            } else {
+                alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+            }
+        }
+
+        async function react(postId, reaction) {
+            const token = localStorage.getItem('trainerhub_api_key');
+            await fetch(API + '?action=react', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ post_id: postId, reaction })
+            });
+            showThread(currentThreadId);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '-';
+            const d = new Date(ts * 1000);
+            return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+    </script>
+
+<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
+        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
+        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
+    </div>
+    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
+
+
+<script>
+    const token = localStorage.getItem('trainerhub_api_key');
+    let chatOpen = false;
+    function toggleChat() {
+        const w = document.getElementById('chatWidget');
+        chatOpen = !chatOpen;
+        w.style.display = chatOpen ? 'flex' : 'none';
+        if (chatOpen) loadChat();
+    }
+    async function loadChat() {
+        try {
+            const res = await fetch('/trainerhub/api/chat.php?action=history');
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
+            container.innerHTML = data.messages.map(m => `
+                <div style="margin-bottom:8px;">
+                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        } catch(e) { console.error(e); }
+    }
+    async function sendChat() {
+        if (!token) { showToast('Login erforderlich', 'warn'); return; }
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        await fetch('/trainerhub/api/chat.php?action=send', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadChat();
+    }
+    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
+</script>
+</body>
+</html>
