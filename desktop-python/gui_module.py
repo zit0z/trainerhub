@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.9.3'
+APP_VERSION = '0.9.1'
 logger = logging.getLogger('SweetCheat.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
@@ -598,6 +598,7 @@ class SweetCheatApp:
         self.show_toast(f"{len(found)} laufendes Spiel erkannt")
 
     def _show_trainers_for_game(self, slug):
+        self._last_trainer_slug = slug
         self.clear_content()
         self.set_title("Trainer")
         container = tk.Frame(self.content, bg=ModernStyle.BG)
@@ -605,12 +606,14 @@ class SweetCheatApp:
         tk.Label(container, text="Lade Trainer...", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=40)
         def load():
             result = self.api.trainers(slug)
-            self.root.after(0, lambda: self._render_trainers(result.get('trainers', []), slug))
+            self.root.after(0, lambda: self._render_trainers(
+                result.get('trainers', []), slug, result.get('game_metadata', {})))
         threading.Thread(target=load, daemon=True).start()
 
-    def _render_trainers(self, trainers, slug):
+    def _render_trainers(self, trainers, slug, game_metadata=None):
         self.clear_content()
         self.set_title("Verfügbare Trainer")
+        self._last_game_metadata = game_metadata or {}
         if not trainers:
             tk.Label(self.content, text="Keine Trainer verfügbar", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED,
                      font=ModernStyle.FONT_BODY).pack(pady=40)
@@ -645,12 +648,21 @@ class SweetCheatApp:
             if t.get('locked'):
                 secondary_btn(actions, "Premium aktivieren", lambda: self.show_toast("Premium erforderlich", ModernStyle.WARN), "🔒").pack(side='right')
             else:
-                primary_btn(actions, "Aktivieren", lambda tr=t: self._activate_desktop(tr), "⚡").pack(side='right')
+                def make_activate(tr):
+                    return lambda: self._activate_desktop(tr)
+                primary_btn(actions, "Aktivieren", make_activate(t), "⚡").pack(side='right')
             if t.get('command'):
                 ghost_btn(actions, "Befehl kopieren", lambda c=t['command']: self._copy_command(c), "📋").pack(side='left')
 
     def _activate_desktop(self, trainer):
-        ok, msg = self.activation_engine.can_activate(trainer)
+        game_info = self._last_game_metadata or {}
+        # Find current game object from slug if available
+        if not game_info.get('name'):
+            for g in getattr(self, 'games', []):
+                if g.get('slug') == self._last_trainer_slug:
+                    game_info['name'] = g.get('name')
+                    break
+        ok, msg = self.activation_engine.can_activate(trainer, game_info)
         if not ok:
             self.show_toast(msg, ModernStyle.DANGER)
             return
@@ -658,7 +670,7 @@ class SweetCheatApp:
         def cb(success, message):
             color = ModernStyle.SUCCESS if success else ModernStyle.DANGER
             self.root.after(0, lambda: self.show_toast(message, color))
-        self.activation_engine.activate(trainer, callback=cb)
+        self.activation_engine.activate(trainer, game_info=game_info, callback=cb)
 
     def _copy_command(self, cmd):
         self.root.clipboard_clear()

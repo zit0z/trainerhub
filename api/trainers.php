@@ -43,7 +43,7 @@ if ($action === 'list') {
         jsonResponse(['success' => true] + $cached + ['cached' => true]);
     }
     
-    $sql = "SELECT t.*, g.name as game_name, g.process_name, g.slug as game_slug
+    $sql = "SELECT t.*, g.name as game_name, g.process_name, g.slug as game_slug, g.metadata as game_metadata
         FROM trainers t
         JOIN games g ON g.id = t.game_id
         WHERE g.slug = ? AND t.is_active = 1";
