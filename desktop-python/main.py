@@ -1,4 +1,4 @@
-"""SweetCheat Desktop Application Entry Point"""
+"""SweetCheat Engine Application Entry Point"""
 import os
 import sys
 import logging

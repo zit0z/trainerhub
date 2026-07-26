@@ -1,4 +1,4 @@
-"""SweetCheat Desktop Application — Modern Cyan UI v0.6.0"""
+"""SweetCheat Engine Application — Modern Cyan UI v0.6.0"""
 import sys
 import os
 import json
@@ -50,7 +50,7 @@ def save_config(cfg):
 class SweetCheatApp:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"SweetCheat {APP_VERSION}")
+        self.root.title(f"SweetCheat Engine {APP_VERSION}")
         try:
             from PIL import Image, ImageTk
             if os.path.exists(LOGO_PATH):
@@ -114,11 +114,11 @@ class SweetCheatApp:
                 logo_label = tk.Label(logo_frame, image=self.logo_tk, bg=ModernStyle.BG, cursor='hand2')
                 logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
             else:
-                logo_label = tk.Label(logo_frame, text="SweetCheat", font=('Rajdhani', 24, 'bold'),
+                logo_label = tk.Label(logo_frame, text="SweetCheat Engine", font=('Rajdhani', 24, 'bold'),
                                       bg=ModernStyle.BG, fg=ModernStyle.ACCENT, cursor='hand2')
                 logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
         except Exception:
-            logo_label = tk.Label(logo_frame, text="SweetCheat", font=('Rajdhani', 24, 'bold'),
+            logo_label = tk.Label(logo_frame, text="SweetCheat Engine", font=('Rajdhani', 24, 'bold'),
                                   bg=ModernStyle.BG, fg=ModernStyle.ACCENT, cursor='hand2')
             logo_label.bind('<Button-1>', lambda e: self.show_dashboard())
         logo_label.pack(side='left')
@@ -256,10 +256,10 @@ class SweetCheatApp:
         card.pack()
 
         # Logo area
-        logo_text = tk.Label(card, text="SweetCheat", font=('Rajdhani', 32, 'bold'),
+        logo_text = tk.Label(card, text="SweetCheat Engine", font=('Rajdhani', 32, 'bold'),
                              bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT)
         logo_text.pack(pady=(0, 4))
-        tk.Label(card, text="SINGLEPLAYER TRAINER", font=('Rajdhani', 10),
+        tk.Label(card, text="SWEETCHEAT ENGINE", font=('Rajdhani', 10),
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(0, 24))
 
         email_var = tk.StringVar(value=self.config.get('last_email', ''))
