@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 import logging
 
-APP_VERSION = '0.9.2'
+APP_VERSION = '0.9.3'
 logger = logging.getLogger('SweetCheat.GUI')
 CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
@@ -23,7 +23,7 @@ except ImportError:
     logger.error("tkinter fehlt")
     sys.exit(1)
 
-from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch
+from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch, card, primary_btn, secondary_btn, section_title, badge, stat_card, card, primary_btn, secondary_btn, section_title, badge
 from desktop_api import SweetCheatAPI
 from process_scanner import ProcessScanner
 from activation_engine import ActivationEngine
@@ -207,10 +207,16 @@ class SweetCheatApp:
         fg = ModernStyle.BG if active else ModernStyle.TEXT
         btn = tk.Button(self.sidebar, text=text, font=('Segoe UI', 12), bg=bg, fg=fg,
                         relief='flat', anchor='w', padx=20, pady=12,
-                        activebackground=ModernStyle.BORDER_ACTIVE, activeforeground=ModernStyle.TEXT,
-                        command=lambda: (self._set_active_nav(btn), command()))
+                        activebackground=ModernStyle.BORDER_ACTIVE if not active else '#33f3ff',
+                        activeforeground=ModernStyle.BG if active else ModernStyle.TEXT,
+                        command=lambda: (self._set_active_nav(btn), command()), cursor='hand2')
         btn.pack(fill='x', padx=15, pady=(0, 6))
         self.nav_buttons.append(btn)
+
+    def _set_active_nav(self, active_btn):
+        for btn in self.nav_buttons:
+            btn.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, activebackground=ModernStyle.BORDER_ACTIVE)
+        active_btn.config(bg=ModernStyle.ACCENT, fg=ModernStyle.BG, activebackground='#33f3ff')
         if active:
             self.active_nav = btn
 
@@ -242,12 +248,19 @@ class SweetCheatApp:
         self._set_active_nav(self.nav_buttons[0])
 
         wrapper = tk.Frame(self.content, bg=ModernStyle.BG)
-        wrapper.place(relx=0.5, rely=0.5, anchor='center')
+        wrapper.place(relx=0.5, rely=0.45, anchor='center')
 
-        tk.Label(wrapper, text="SweetCheat", font=('Rajdhani', 28, 'bold'),
-                 bg=ModernStyle.BG, fg=ModernStyle.ACCENT).pack(pady=(0, 8))
-        tk.Label(wrapper, text="Melde dich mit deinem Konto an", font=('Segoe UI', 11),
-                 bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=(0, 25))
+        # Modern card container
+        card = tk.Frame(wrapper, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
+                        highlightthickness=1, bd=0, padx=40, pady=36)
+        card.pack()
+
+        # Logo area
+        logo_text = tk.Label(card, text="SweetCheat", font=('Rajdhani', 32, 'bold'),
+                             bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT)
+        logo_text.pack(pady=(0, 4))
+        tk.Label(card, text="SINGLEPLAYER TRAINER", font=('Rajdhani', 10),
+                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(0, 24))
 
         email_var = tk.StringVar(value=self.config.get('last_email', ''))
         pass_var = tk.StringVar()
@@ -273,26 +286,27 @@ class SweetCheatApp:
                     self.root.after(0, lambda: self.show_toast(err, ModernStyle.DANGER))
             threading.Thread(target=run, daemon=True).start()
 
-        tk.Label(wrapper, text="E-Mail", bg=ModernStyle.BG, fg=ModernStyle.TEXT, font=('Segoe UI', 10)).pack(anchor='w')
-        email_entry = tk.Entry(wrapper, textvariable=email_var, font=('Segoe UI', 11), bg=ModernStyle.BG_CARD,
-                             fg=ModernStyle.TEXT, insertbackground=ModernStyle.TEXT, relief='flat',
-                             highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=35)
-        email_entry.pack(pady=(4, 12), ipady=6)
+        tk.Label(card, text="E-Mail", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
+        email_entry = tk.Entry(card, textvariable=email_var, font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
+                             fg=ModernStyle.TEXT, insertbackground=ModernStyle.ACCENT, relief='flat',
+                             highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=32)
+        email_entry.pack(pady=(4, 14), ipady=7)
 
-        tk.Label(wrapper, text="Passwort", bg=ModernStyle.BG, fg=ModernStyle.TEXT, font=('Segoe UI', 10)).pack(anchor='w')
-        pass_entry = tk.Entry(wrapper, textvariable=pass_var, show='•', font=('Segoe UI', 11), bg=ModernStyle.BG_CARD,
-                            fg=ModernStyle.TEXT, insertbackground=ModernStyle.TEXT, relief='flat',
-                            highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=35)
-        pass_entry.pack(pady=(4, 20), ipady=6)
+        tk.Label(card, text="Passwort", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
+        pass_entry = tk.Entry(card, textvariable=pass_var, show='•', font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
+                            fg=ModernStyle.TEXT, insertbackground=ModernStyle.ACCENT, relief='flat',
+                            highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=32)
+        pass_entry.pack(pady=(4, 22), ipady=7)
 
-        tk.Button(wrapper, text="Einloggen", command=do_login, font=('Segoe UI', 12, 'bold'),
-                  bg=ModernStyle.ACCENT, fg=ModernStyle.BG, relief='flat', padx=30, pady=10).pack(fill='x')
+        tk.Button(card, text="Einloggen", command=do_login, font=('Segoe UI', 12, 'bold'),
+                  bg=ModernStyle.ACCENT, fg=ModernStyle.BG, relief='flat', padx=30, pady=11, cursor='hand2').pack(fill='x')
 
-        tk.Label(wrapper, text="oder", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack(pady=12)
+        tk.Label(card, text="oder", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack(pady=14)
 
-        tk.Button(wrapper, text="API-Key manuell eingeben", command=self._show_api_key_input,
-                  font=('Segoe UI', 10), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, relief='flat',
-                  padx=20, pady=8).pack(fill='x')
+        tk.Button(card, text="API-Key manuell eingeben", command=self._show_api_key_input,
+                  font=('Segoe UI', 10), bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT, relief='flat',
+                  highlightbackground=ModernStyle.BORDER, highlightthickness=1,
+                  padx=20, pady=9, cursor='hand2').pack(fill='x')
 
         pass_entry.bind('<Return>', lambda e: do_login())
 
@@ -308,13 +322,7 @@ class SweetCheatApp:
 
 
     def _card(self, parent, width=None, height=None):
-        card = tk.Frame(parent, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
-                        highlightthickness=1, bd=0)
-        if width:
-            card.config(width=width)
-        if height:
-            card.config(height=height)
-        return card
+        return card(parent, width, height)
 
     def _form_input(self, parent, label, attr, password=False):
         tk.Label(parent, text=label, bg=ModernStyle.BG_CARD,
@@ -411,36 +419,43 @@ class SweetCheatApp:
         self.set_title("Dashboard")
         self._set_active_nav(self.nav_buttons[0])
 
-        # Stats
+        # Welcome banner
+        welcome = tk.Frame(self.content, bg=ModernStyle.BG_ELEVATED, highlightbackground=ModernStyle.BORDER,
+                           highlightthickness=1, padx=28, pady=22)
+        welcome.pack(fill='x', pady=(0, 22))
+        uname = self.config.get('last_email', '').split('@')[0] or 'Player'
+        tk.Label(welcome, text=f"Willkommen zurück, {uname}", font=ModernStyle.FONT_TITLE,
+                 bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT).pack(anchor='w')
+        tk.Label(welcome, text="Deine Singleplayer-Trainer-Plattform. Wähle ein Spiel oder checke deine Favoriten.",
+                 font=ModernStyle.FONT_BODY, bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(6, 0))
+
+        # Stats row
         stats_frame = tk.Frame(self.content, bg=ModernStyle.BG)
-        stats_frame.pack(fill='x', pady=(0, 25))
+        stats_frame.pack(fill='x', pady=(0, 22))
         vals = [
-            ("Spiele", str(len(self.games)) if self.games else "…", ModernStyle.ACCENT),
-            ("Trainer", str(len(self.trainers)), ModernStyle.TEXT),
-            ("Favoriten", str(len(self.favorites)), ModernStyle.GOLD),
-            ("Status", "PREMIUM" if self.is_premium() else "FREE", ModernStyle.ACCENT if self.is_premium() else ModernStyle.TEXT_MUTED)
+            ("Spiele", str(len(self.games)) if self.games else "…", ModernStyle.ACCENT, "🎮"),
+            ("Trainer", str(len(self.trainers)), ModernStyle.TEXT, "⚡"),
+            ("Favoriten", str(len(self.favorites)), ModernStyle.ACCENT_SEC, "★"),
+            ("Status", "PREMIUM" if self.is_premium() else "FREE", ModernStyle.ACCENT if self.is_premium() else ModernStyle.TEXT_MUTED, "◆")
         ]
-        for label, val, col in vals:
-            card = self._card(stats_frame, width=200, height=110)
-            card.pack(side='left', padx=(0, 18))
-            card.pack_propagate(False)
-            tk.Label(card, text=val, font=('Rajdhani', 26, 'bold'),
-                     bg=ModernStyle.BG_CARD, fg=col).pack(pady=(25, 0))
-            tk.Label(card, text=label, font=('Segoe UI', 10),
-                     bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack()
+        for label, val, col, icon in vals:
+            c = self._card(stats_frame, padx=18, pady=16)
+            c.pack(side='left', fill='both', expand=True, padx=(0, 14))
+            tk.Label(c, text=f"{icon}  {label}", font=ModernStyle.FONT_SMALL,
+                     bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(anchor='w')
+            tk.Label(c, text=val, font=('Rajdhani', 24, 'bold'),
+                     bg=ModernStyle.BG_CARD, fg=col).pack(anchor='w', pady=(8, 0))
 
         # Recent + quick actions
         row = tk.Frame(self.content, bg=ModernStyle.BG)
         row.pack(fill='both', expand=True)
 
-        left = self._card(row)
-        left.pack(side='left', fill='both', expand=True, padx=(0, 20))
-        linner = tk.Frame(left, bg=ModernStyle.BG_CARD, padx=25, pady=25)
-        linner.pack(fill='both', expand=True)
-        tk.Label(linner, text="Zuletzt verwendet", font=('Rajdhani', 16, 'bold'),
-                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
-        recent_box = tk.Frame(linner, bg=ModernStyle.BG_CARD)
-        recent_box.pack(fill='x', pady=(20, 0))
+        left = self._card(row, padx=22, pady=20)
+        left.pack(side='left', fill='both', expand=True, padx=(0, 18))
+        tk.Label(left, text="Zuletzt verwendet", font=ModernStyle.FONT_SUB,
+                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 16))
+        recent_box = tk.Frame(left, bg=ModernStyle.BG_CARD)
+        recent_box.pack(fill='x')
         if self.recent_games:
             for slug in self.recent_games[:6]:
                 game = next((g for g in self.games if g.get('slug') == slug), None)
@@ -448,18 +463,15 @@ class SweetCheatApp:
                     self._game_chip(recent_box, game)
         else:
             tk.Label(recent_box, text="Noch keine Spiele", bg=ModernStyle.BG_CARD,
-                     fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 11)).pack()
+                     fg=ModernStyle.TEXT_MUTED, font=ModernStyle.FONT_BODY).pack()
 
-        right = self._card(row, width=320)
+        right = self._card(row, width=300, padx=22, pady=20)
         right.pack(side='right', fill='y')
-        rinner = tk.Frame(right, bg=ModernStyle.BG_CARD, padx=25, pady=25)
-        rinner.pack(fill='both', expand=True)
-        tk.Label(rinner, text="Schnellzugriff", font=('Rajdhani', 16, 'bold'),
-                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 20))
-        AnimatedButton(rinner, text="🎮 Spielebibliothek", command=self.show_games_library,
-                       width=260, height=42).pack(pady=(0, 12))
-        AnimatedButton(rinner, text="🔄 Update prüfen", command=self.check_for_update,
-                       width=260, height=42, bg=ModernStyle.BORDER, hover_bg=ModernStyle.BORDER_ACTIVE).pack()
+        tk.Label(right, text="Schnellzugriff", font=ModernStyle.FONT_SUB,
+                 bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 16))
+        secondary_btn(right, "Spielebibliothek", self.show_games_library, "🎮").pack(fill='x', pady=(0, 10))
+        secondary_btn(right, "Favoriten", lambda: self.show_games_library(filter_favorites=True), "★").pack(fill='x', pady=(0, 10))
+        secondary_btn(right, "Update prüfen", self.check_for_update, "🔄").pack(fill='x')
 
     def _game_chip(self, parent, game):
         chip = tk.Frame(parent, bg=ModernStyle.BG_ELEVATED, highlightbackground=ModernStyle.BORDER,
@@ -534,29 +546,25 @@ class SweetCheatApp:
             w.destroy()
         if not games:
             tk.Label(self.games_frame, text="Keine Spiele gefunden", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED,
-                     font=('Segoe UI', 12)).pack(pady=40)
+                     font=ModernStyle.FONT_BODY).pack(pady=40)
             return
         for g in games:
-            card = tk.Frame(self.games_frame, bg=ModernStyle.BG_CARD, padx=15, pady=15,
-                            highlightbackground=ModernStyle.BORDER, highlightthickness=1)
-            card.pack(fill='x', pady=6)
-            title = tk.Label(card, text=g.get('name', 'Unbekannt'), font=('Rajdhani', 15, 'bold'),
+            c = self._card(self.games_frame, padx=20, pady=18)
+            c.pack(fill='x', pady=8)
+            top = tk.Frame(c, bg=ModernStyle.BG_CARD)
+            top.pack(fill='x')
+            title = tk.Label(top, text=g.get('name', 'Unbekannt'), font=('Rajdhani', 16, 'bold'),
                              bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT)
-            title.pack(anchor='w')
-            meta = tk.Label(card, text=f"{g.get('genre','?')} • {g.get('trainer_count',0)} Trainer", font=('Segoe UI', 9),
-                              bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED)
-            meta.pack(anchor='w', pady=(2, 8))
-            actions = tk.Frame(card, bg=ModernStyle.BG_CARD)
+            title.pack(side='left')
+            if g.get('is_favorite'):
+                tk.Label(top, text="★", bg=ModernStyle.BG_CARD, fg='#ffd700', font=('Segoe UI', 14)).pack(side='left', padx=(8, 0))
+            meta = tk.Label(c, text=f"{g.get('genre','?')}  •  {g.get('trainer_count',0)} Trainer  •  {g.get('platform','PC')}",
+                            font=ModernStyle.FONT_SMALL, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED)
+            meta.pack(anchor='w', pady=(8, 14))
+            actions = tk.Frame(c, bg=ModernStyle.BG_CARD)
             actions.pack(fill='x')
-            fav_text = "★" if g.get('is_favorite') else "☆"
-            fav_btn = tk.Button(actions, text=fav_text, font=('Segoe UI', 12), bg=ModernStyle.BG_CARD,
-                                fg='#ffd700' if g.get('is_favorite') else ModernStyle.TEXT_MUTED,
-                                relief='flat', command=lambda gid=g['id'], btn=None: self._toggle_game_fav(gid))
-            fav_btn.pack(side='left')
-            train_btn = tk.Button(actions, text="Trainer anzeigen", font=('Segoe UI', 10), bg=ModernStyle.ACCENT,
-                                  fg=ModernStyle.BG, relief='flat',
-                                  command=lambda slug=g.get('slug'): self._show_trainers_for_game(slug))
-            train_btn.pack(side='right')
+            secondary_btn(actions, "Trainer anzeigen", lambda slug=g.get('slug'): self._show_trainers_for_game(slug), "⚡").pack(side='right')
+            ghost_btn(actions, "Favorit", lambda gid=g['id']: self._toggle_game_fav(gid), "★" if not g.get('is_favorite') else "Entfernen").pack(side='left')
         self.set_status(f"{len(games)} Spiele geladen")
 
     def _toggle_game_fav(self, game_id):
@@ -604,30 +612,42 @@ class SweetCheatApp:
         self.clear_content()
         self.set_title("Verfügbare Trainer")
         if not trainers:
-            tk.Label(self.content, text="Keine Trainer verfügbar", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=40)
+            tk.Label(self.content, text="Keine Trainer verfügbar", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED,
+                     font=ModernStyle.FONT_BODY).pack(pady=40)
             return
+        # Header with back button
+        hdr = tk.Frame(self.content, bg=ModernStyle.BG)
+        hdr.pack(fill='x', pady=(0, 18))
+        tk.Label(hdr, text=f"{len(trainers)} Trainer für {slug}", font=ModernStyle.FONT_TITLE,
+                 bg=ModernStyle.BG, fg=ModernStyle.TEXT).pack(side='left')
+        secondary_btn(hdr, "Zurück zur Bibliothek", self.show_games_library, "←").pack(side='right')
+
         for t in trainers:
-            card = tk.Frame(self.content, bg=ModernStyle.BG_CARD, padx=20, pady=15,
-                            highlightbackground=ModernStyle.BORDER, highlightthickness=1)
-            card.pack(fill='x', pady=6)
-            title = tk.Label(card, text=t.get('name','Unbekannt'), font=('Rajdhani', 15, 'bold'),
+            c = self._card(self.content, padx=22, pady=18)
+            c.pack(fill='x', pady=8)
+            top = tk.Frame(c, bg=ModernStyle.BG_CARD)
+            top.pack(fill='x')
+            title = tk.Label(top, text=t.get('name','Unbekannt'), font=('Rajdhani', 16, 'bold'),
                              bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT)
-            title.pack(anchor='w')
-            desc = tk.Label(card, text=t.get('description','') or 'Keine Beschreibung', wraplength=700,
-                            bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9), justify='left')
-            desc.pack(anchor='w', pady=(4, 10))
-            actions = tk.Frame(card, bg=ModernStyle.BG_CARD)
+            title.pack(side='left')
+            if t.get('locked'):
+                badge(top, "PREMIUM", ModernStyle.ACCENT_SEC).pack(side='right')
+            elif t.get('verified'):
+                badge(top, "VERIFIED", ModernStyle.SUCCESS).pack(side='right')
+            desc = tk.Label(c, text=t.get('description','') or 'Keine Beschreibung verfügbar.', wraplength=760,
+                            bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=ModernStyle.FONT_BODY, justify='left')
+            desc.pack(anchor='w', pady=(8, 14))
+            meta = tk.Label(c, text=f"Typ: {t.get('type','Standard')}  •  Risiko: {t.get('risk','Niedrig')}",
+                            bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_DIM, font=ModernStyle.FONT_SMALL)
+            meta.pack(anchor='w', pady=(0, 14))
+            actions = tk.Frame(c, bg=ModernStyle.BG_CARD)
             actions.pack(fill='x')
-            lock_text = " 🔒 PREMIUM" if t.get('locked') else ""
-            btn_state = 'disabled' if t.get('locked') else 'normal'
-            act_btn = tk.Button(actions, text=f"Aktivieren{lock_text}", bg=ModernStyle.ACCENT, fg=ModernStyle.BG,
-                                relief='flat', state=btn_state,
-                                command=lambda tr=t: self._activate_desktop(tr))
-            act_btn.pack(side='right')
+            if t.get('locked'):
+                secondary_btn(actions, "Premium aktivieren", lambda: self.show_toast("Premium erforderlich", ModernStyle.WARN), "🔒").pack(side='right')
+            else:
+                primary_btn(actions, "Aktivieren", lambda tr=t: self._activate_desktop(tr), "⚡").pack(side='right')
             if t.get('command'):
-                cp_btn = tk.Button(actions, text="Kopieren", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
-                                   relief='flat', command=lambda c=t['command']: self._copy_command(c))
-                cp_btn.pack(side='right', padx=(0, 10))
+                ghost_btn(actions, "Befehl kopieren", lambda c=t['command']: self._copy_command(c), "📋").pack(side='left')
 
     def _activate_desktop(self, trainer):
         ok, msg = self.activation_engine.can_activate(trainer)

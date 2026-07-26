@@ -1,112 +1,110 @@
-"""Modern UI components and styles for SweetCheat desktop app."""
+"""Modern, reusable UI components for SweetCheat."""
 import tkinter as tk
-from tkinter import ttk, font as tkfont
+
+try:
+    from PIL import Image, ImageTk, ImageDraw
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
 
 class ModernStyle:
-    BG = '#0a0b10'
-    BG_CARD = '#12141c'
-    BG_ELEVATED = '#1a1d27'
-    BORDER = '#2a2e3b'
-    TEXT = '#f0f2f7'
-    TEXT_MUTED = '#8b92a8'
-    ACCENT = '#00d4ff'
-    ACCENT_DARK = '#0099cc'
-    ACCENT_2 = '#7b2cbf'
-    SUCCESS = '#00e5a0'
-    WARNING = '#ffb800'
+    BG = '#07080d'
+    BG_CARD = '#10121a'
+    BG_ELEVATED = '#161925'
+    BG_INPUT = '#0c0e15'
+    ACCENT = '#00f0ff'
+    ACCENT_DIM = 'rgba(0,240,255,0.08)'
+    ACCENT_SEC = '#ff3864'
+    TEXT = '#ffffff'
+    TEXT_MUTED = '#8a91a8'
+    TEXT_DIM = '#5b6377'
+    BORDER = '#1d2130'
+    BORDER_ACTIVE = '#2a2f42'
+    SUCCESS = '#00e676'
     DANGER = '#ff3864'
-    FONT = ('Segoe UI', 11)
-    FONT_BOLD = ('Segoe UI', 11, 'bold')
-    FONT_TITLE = ('Segoe UI', 24, 'bold')
+    WARN = '#ffab00'
+    FONT_HEAD = ('Rajdhani', 26, 'bold')
+    FONT_TITLE = ('Rajdhani', 18, 'bold')
+    FONT_SUB = ('Rajdhani', 13, 'bold')
+    FONT_BODY = ('Segoe UI', 10)
+    FONT_BODY_B = ('Segoe UI', 10, 'bold')
     FONT_SMALL = ('Segoe UI', 9)
 
-class ModernButton(tk.Canvas):
-    """Flat modern button with hover effect."""
-    def __init__(self, parent, text, command=None, variant='primary', size='normal', **kwargs):
-        self.variant = variant
-        self.size = size
-        self.command = command
-        self.hover = False
-        w = kwargs.pop('width', 140 if size == 'normal' else 100)
-        h = kwargs.pop('height', 38 if size == 'normal' else 32)
-        super().__init__(parent, width=w, height=h, bg=kwargs.get('bg', ModernStyle.BG),
-                         highlightthickness=0, cursor='hand2', **kwargs)
-        self.text = text
-        self.radius = 8
-        self.bind('<Enter>', lambda e: self._set_hover(True))
-        self.bind('<Leave>', lambda e: self._set_hover(False))
-        self.bind('<Button-1>', lambda e: self._click())
-        self.draw()
-        
-    def _set_hover(self, state):
-        self.hover = state
-        self.draw()
-        
-    def _click(self):
-        if self.command:
-            self.command()
-            
-    def draw(self):
-        self.delete('all')
-        color = {
-            'primary': ModernStyle.ACCENT if not self.hover else '#33ddff',
-            'secondary': ModernStyle.BG_ELEVATED if not self.hover else '#252a38',
-            'danger': '#2a1b22' if not self.hover else '#3d252e',
-        }.get(self.variant, ModernStyle.ACCENT)
-        fg = ModernStyle.BG if self.variant == 'primary' else (ModernStyle.DANGER if self.variant == 'danger' else ModernStyle.TEXT)
-        # Draw rounded rect
-        self.create_rounded_rect(0, 0, self.winfo_reqwidth(), self.winfo_reqheight(), self.radius, fill=color, outline='')
-        self.create_text(self.winfo_reqwidth()//2, self.winfo_reqheight()//2, text=self.text,
-                         fill=fg, font=ModernStyle.FONT_BOLD)
+    @staticmethod
+    def apply(root):
+        root.configure(bg=ModernStyle.BG)
 
-    def create_rounded_rect(self, x1, y1, x2, y2, radius, **kwargs):
-        points = [x1+radius, y1, x2-radius, y1, x2, y1, x2, y1+radius,
-                  x2, y2-radius, x2, y2, x2-radius, y2, x1+radius, y2,
-                  x1, y2, x1, y2-radius, x1, y1+radius, x1, y1]
-        return self.create_polygon(points, smooth=True, **kwargs)
 
-class ModernCard(tk.Frame):
-    """Rounded card frame with border."""
-    def __init__(self, parent, **kwargs):
-        bg = kwargs.pop('bg', ModernStyle.BG_CARD)
-        super().__init__(parent, bg=bg, **kwargs)
-        self.config(highlightbackground=ModernStyle.BORDER, highlightthickness=1, bd=0)
-        self.radius = kwargs.get('radius', 12)
+# ---- Reusable styled widgets ----
 
-class ModernLabel(tk.Label):
-    def __init__(self, parent, text='', variant='body', **kwargs):
-        styles = {
-            'body': {'fg': ModernStyle.TEXT, 'font': ModernStyle.FONT},
-            'muted': {'fg': ModernStyle.TEXT_MUTED, 'font': ModernStyle.FONT},
-            'title': {'fg': ModernStyle.TEXT, 'font': ModernStyle.FONT_TITLE},
-            'accent': {'fg': ModernStyle.ACCENT, 'font': ModernStyle.FONT_BOLD},
-        }
-        style = styles.get(variant, styles['body'])
-        kwargs.update(style)
-        kwargs.setdefault('bg', parent.cget('bg'))
-        super().__init__(parent, text=text, **kwargs)
+def card(parent, width=None, height=None, padx=24, pady=20):
+    f = tk.Frame(parent, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER,
+                 highlightthickness=1, bd=0, padx=padx, pady=pady)
+    if width:
+        f.config(width=width)
+    if height:
+        f.config(height=height)
+    return f
 
-class ModernEntry(tk.Entry):
-    def __init__(self, parent, **kwargs):
-        kwargs.setdefault('bg', ModernStyle.BG_ELEVATED)
-        kwargs.setdefault('fg', ModernStyle.TEXT)
-        kwargs.setdefault('insertbackground', ModernStyle.ACCENT)
-        kwargs.setdefault('relief', 'flat')
-        kwargs.setdefault('font', ModernStyle.FONT)
-        kwargs.setdefault('highlightthickness', 1)
-        kwargs.setdefault('highlightcolor', ModernStyle.ACCENT)
-        kwargs.setdefault('highlightbackground', ModernStyle.BORDER)
-        super().__init__(parent, **kwargs)
 
-class ScrollableFrame(tk.Frame):
-    """Frame with canvas + scrollbar."""
-    def __init__(self, parent, **kwargs):
-        super().__init__(parent, bg=kwargs.get('bg', ModernStyle.BG), **kwargs)
-        self.canvas = tk.Canvas(self, bg=self['bg'], highlightthickness=0)
-        self.scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.canvas.yview)
-        self.scrollable = tk.Frame(self.canvas, bg=self['bg'])
-        self.scrollable.bind('<Configure>', lambda e: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-        self.canvas.create_window((0,0), window=self.scrollable, anchor='nw', tags='frame')
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.pack(side='left', fill='both', expand=True)
-        self.scrollbar.pack(side='right', fill='y')
+def section_title(parent, text, icon=''):
+    txt = f"{icon}  {text}".strip()
+    return tk.Label(parent, text=txt, bg=parent.cget('bg'), fg=ModernStyle.TEXT,
+                    font=ModernStyle.FONT_SUB, anchor='w')
+
+
+def primary_btn(parent, text, command, icon=''):
+    txt = f"{icon}  {text}".strip() if icon else text
+    btn = tk.Button(parent, text=txt, command=command, font=ModernStyle.FONT_BODY_B,
+                    bg=ModernStyle.ACCENT, fg=ModernStyle.BG, relief='flat',
+                    activebackground='#33f3ff', activeforeground=ModernStyle.BG,
+                    padx=20, pady=10, cursor='hand2')
+    return btn
+
+
+def secondary_btn(parent, text, command, icon=''):
+    txt = f"{icon}  {text}".strip() if icon else text
+    btn = tk.Button(parent, text=txt, command=command, font=ModernStyle.FONT_BODY,
+                    bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT, relief='flat',
+                    activebackground=ModernStyle.BORDER_ACTIVE, activeforeground=ModernStyle.ACCENT,
+                    padx=16, pady=9, cursor='hand2',
+                    highlightbackground=ModernStyle.BORDER, highlightthickness=1)
+    return btn
+
+
+def ghost_btn(parent, text, command, icon=''):
+    txt = f"{icon}  {text}".strip() if icon else text
+    btn = tk.Button(parent, text=txt, command=command, font=ModernStyle.FONT_BODY,
+                    bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, relief='flat',
+                    padx=12, pady=7, activebackground=ModernStyle.BORDER_ACTIVE,
+                    activeforeground=ModernStyle.TEXT, cursor='hand2')
+    return btn
+
+
+def input_field(parent, label=None, show=None, width=32):
+    if label:
+        tk.Label(parent, text=label, bg=parent.cget('bg'), fg=ModernStyle.TEXT_MUTED,
+                 font=ModernStyle.FONT_BODY).pack(anchor='w', pady=(0, 5))
+    entry = tk.Entry(parent, width=width, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT,
+                     insertbackground=ModernStyle.ACCENT, relief='flat',
+                     highlightbackground=ModernStyle.BORDER, highlightthickness=1,
+                     font=ModernStyle.FONT_BODY)
+    entry.pack(fill='x', ipady=7)
+    if show:
+        entry.config(show=show)
+    return entry
+
+
+def badge(parent, text, color=ModernStyle.ACCENT):
+    return tk.Label(parent, text=text, bg='#08141a' if color == ModernStyle.ACCENT else '#1a0c12',
+                    fg=color, font=ModernStyle.FONT_SMALL, padx=10, pady=3,
+                    highlightbackground=color, highlightthickness=1)
+
+
+def stat_card(parent, label, value, icon=''):
+    f = card(parent, padx=18, pady=16)
+    tk.Label(f, text=f"{icon}  {label}".strip(), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED,
+             font=ModernStyle.FONT_SMALL).pack(anchor='w')
+    tk.Label(f, text=str(value), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
+             font=('Rajdhani', 22, 'bold')).pack(anchor='w', pady=(6, 0))
+    return f
