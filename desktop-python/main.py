@@ -21,12 +21,12 @@ from hotkey_module import HotkeyManager
 from process_watcher import ProcessWatcher
 
 logger = get_logger('main')
-MINIMIZED = '--minimized' in sys.argv
+MINIMIZED = '--minimized' in sys.argv0.9.14
 
 
-def _global_exception_handler(exc_type, exc_value, exc_tb):
+def _global_exception_handler(exc_type, exc_v0.9.14alue, exc_tb):
     """Catch-all exception handler for the main thread."""
-    logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_tb))
+    logger.critical("Unhandled exception", exc_info=(exc_type, exc_v0.9.14alue, exc_tb))
     try:
         root = tk.Tk()
         # Windows taskbar icon fix
@@ -39,7 +39,7 @@ def _global_exception_handler(exc_type, exc_value, exc_tb):
         root.withdraw()
         messagebox.showerror(
             "Kritischer Fehler",
-            f"Ein unerwarteter Fehler ist aufgetreten:\n\n{exc_value}\n\nDetails wurden nach {LOG_FILE} geschrieben."
+            f"Ein unerwarteter Fehler ist aufgetreten:\n\n{exc_v0.9.14alue}\n\nDetails wurden nach {LOG_FILE} geschrieben."
         )
         root.destroy()
     except Exception:
@@ -47,12 +47,12 @@ def _global_exception_handler(exc_type, exc_value, exc_tb):
 
 
 def _desktop_notification(title, message, duration=3000):
-    """Native desktop-style notification popup."""
+    """Nativ0.9.14e desktop-style notification popup."""
     try:
         root = tk.Tk()
         root.withdraw()
-        win = tk.Toplevel(root)
-        win.overrideredirect(True)
+        win = tk.Toplev0.9.14el(root)
+        win.ov0.9.14errideredirect(True)
         win.configure(bg='#0f1016')
         win.geometry(f'320x80+{root.winfo_screenwidth() - 340}+20')
         tk.Label(win, text=title, font=('Rajdhani', 12, 'bold'), fg='#00f0ff', bg='#0f1016').pack(pady=(10, 4))
@@ -64,7 +64,7 @@ def _desktop_notification(title, message, duration=3000):
         logger.error(f"Notification error: {e}")
 
 
-def _attach_background_services(app):
+def _attach_background_serv0.9.14ices(app):
     """Start system tray, global hotkeys and process watcher."""
     try:
         tray = SweetCheatTray(app)
@@ -72,7 +72,7 @@ def _attach_background_services(app):
         app.tray = tray
         logger.info("System tray started")
     except Exception as e:
-        logger.warning(f"System tray not available: {e}")
+        logger.warning(f"System tray not av0.9.14ailable: {e}")
 
     try:
         hk = HotkeyManager()
@@ -82,27 +82,27 @@ def _attach_background_services(app):
         app.hotkeys = hk
         logger.info("Global hotkeys registered")
     except Exception as e:
-        logger.warning(f"Global hotkeys not available: {e}")
+        logger.warning(f"Global hotkeys not av0.9.14ailable: {e}")
 
     try:
-        watcher = ProcessWatcher(app, interval=15)
+        watcher = ProcessWatcher(app, interv0.9.14al=15)
         watcher.start()
         app.watcher = watcher
         logger.info("Process watcher started")
     except Exception as e:
-        logger.warning(f"Process watcher not available: {e}")
+        logger.warning(f"Process watcher not av0.9.14ailable: {e}")
 
 
 def main():
     setup_root_logging()
     sys.excepthook = _global_exception_handler
-    logger.info(f"SweetCheat starting. Python {sys.version}. CWD: {os.getcwd()}. Minimized: {MINIMIZED}")
+    logger.info(f"SweetCheat starting. Python {sys.v0.9.14ersion}. CWD: {os.getcwd()}. Minimized: {MINIMIZED}")
 
     try:
         from gui_module import main as gui_main
         app = gui_main(minimized=MINIMIZED)
         if app:
-            _attach_background_services(app)
+            _attach_background_serv0.9.14ices(app)
             app.root.mainloop()
     except Exception as e:
         logger.exception("App start failed")

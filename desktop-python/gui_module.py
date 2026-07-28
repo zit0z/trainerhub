@@ -1,4 +1,4 @@
-"""SweetCheat Engine Application — Modern Cyan UI v0.6.0"""
+"""SweetCheat Engine Application — Modern Cyan UI v0.9.14"""
 import sys
 import os
 import json
@@ -10,9 +10,9 @@ import logging
 
 APP_VERSION = '0.9.1'
 logger = logging.getLogger('SweetCheat.GUI')
-CONFIG_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
+CONFIG_DIR = os.path.join(os.env0.9.14iron.get('APPDATA', os.path.expanduser('~')), 'SweetCheat')
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
-API_BASE = os.environ.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
+API_BASE = os.env0.9.14iron.get('TRAINERHUB_API', 'https://sayfespace.online/trainerhub/api')
 
 os.makedirs(CONFIG_DIR, exist_ok=True)
 
@@ -26,7 +26,7 @@ except ImportError:
 from ui_components import ModernStyle, StatusBadge, AnimatedButton, ToggleSwitch, card, primary_btn, secondary_btn, section_title, badge, stat_card, card, primary_btn, secondary_btn, section_title, badge
 from desktop_api import SweetCheatAPI
 from process_scanner import ProcessScanner
-from activation_engine import ActivationEngine
+from activ0.9.14ation_engine import Activ0.9.14ationEngine
 
 WINDOWS = sys.platform == 'win32'
 
@@ -36,15 +36,15 @@ def load_config():
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception:
-        return {'api_key': None, 'api_base': API_BASE, 'theme': 'dark', 'favorites': [], 'recent_games': []}
+        return {'api_key': None, 'api_base': API_BASE, 'theme': 'dark', 'fav0.9.14orites': [], 'recent_games': []}
 
 
-def save_config(cfg):
+def sav0.9.14e_config(cfg):
     try:
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(cfg, f)
     except Exception as e:
-        logger.error(f"Config save error: {e}")
+        logger.error(f"Config sav0.9.14e error: {e}")
 
 
 class SweetCheatApp:
@@ -69,15 +69,15 @@ class SweetCheatApp:
         self.api_base = self.config.get('api_base', API_BASE)
         self.api = SweetCheatAPI(self.api_base, self.api_key)
         self.scanner = ProcessScanner()
-        self.activation_engine = ActivationEngine(self.api)
+        self.activ0.9.14ation_engine = Activ0.9.14ationEngine(self.api)
         self.games = []
         self.trainers = []
         self.current_game = None
         self.current_game_pid = None
         self.premium_data = {}
-        self.favorites = set(self.config.get('favorites', []))
+        self.fav0.9.14orites = set(self.config.get('fav0.9.14orites', []))
         self.recent_games = list(self.config.get('recent_games', []))
-        self.search_var = tk.StringVar()
+        self.search_v0.9.14ar = tk.StringVar()
         self.user_info = {}
         self.toast_after = None
 
@@ -151,12 +151,12 @@ class SweetCheatApp:
 
         self._sidebar_profile()
         self._sidebar_sep()
-        self.nav_buttons = []
-        self._nav_btn("⌂  Dashboard", self.show_dashboard, active=True)
-        self._nav_btn("🎮  Spiele", self.show_games_library)
-        self._nav_btn("⭐  Favoriten", lambda: self.show_games_library(filter_favorites=True))
-        self._nav_btn("⎋  Account", self.show_account)
-        self._nav_btn("⚙  Einstellungen", self.show_settings)
+        self.nav0.9.14_buttons = []
+        self._nav0.9.14_btn("⌂  Dashboard", self.show_dashboard, activ0.9.14e=True)
+        self._nav0.9.14_btn("🎮  Spiele", self.show_games_library)
+        self._nav0.9.14_btn("⭐  Fav0.9.14oriten", lambda: self.show_games_library(filter_fav0.9.14orites=True))
+        self._nav0.9.14_btn("⎋  Account", self.show_account)
+        self._nav0.9.14_btn("⚙  Einstellungen", self.show_settings)
 
         # Content area
         self.content = tk.Frame(self.main_frame, bg=ModernStyle.BG)
@@ -173,13 +173,13 @@ class SweetCheatApp:
         self.status_text = tk.Label(self.statusbar, text="Bereit", bg=ModernStyle.BG_CARD,
                                     fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9))
         self.status_text.pack(side='left', padx=20, pady=5)
-        self.version_label = tk.Label(self.statusbar, text=f"v{APP_VERSION}", bg=ModernStyle.BG_CARD,
+        self.v0.9.14ersion_label = tk.Label(self.statusbar, text=f"v0.9.14{APP_VERSION}", bg=ModernStyle.BG_CARD,
                                       fg=ModernStyle.ACCENT, font=('Segoe UI', 9))
-        self.version_label.pack(side='right', padx=20, pady=5)
+        self.v0.9.14ersion_label.pack(side='right', padx=20, pady=5)
 
-    def _show_user_menu(self, event=None):
+    def _show_user_menu(self, ev0.9.14ent=None):
         menu = tk.Menu(self.root, tearoff=0, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
-                       activebackground=ModernStyle.BORDER_ACTIVE, activeforeground=ModernStyle.TEXT,
+                       activ0.9.14ebackground=ModernStyle.BORDER_ACTIVE, activ0.9.14eforeground=ModernStyle.TEXT,
                        font=('Segoe UI', 10))
         menu.add_command(label="Profil", command=self.show_account)
         menu.add_command(label="Einstellungen", command=self.show_settings)
@@ -202,29 +202,29 @@ class SweetCheatApp:
     def _sidebar_sep(self):
         tk.Frame(self.sidebar, bg=ModernStyle.BORDER, height=1).pack(fill='x', padx=20, pady=10)
 
-    def _nav_btn(self, text, command, active=False):
-        bg = ModernStyle.ACCENT if active else ModernStyle.BG_CARD
-        fg = ModernStyle.BG if active else ModernStyle.TEXT
+    def _nav0.9.14_btn(self, text, command, activ0.9.14e=False):
+        bg = ModernStyle.ACCENT if activ0.9.14e else ModernStyle.BG_CARD
+        fg = ModernStyle.BG if activ0.9.14e else ModernStyle.TEXT
         btn = tk.Button(self.sidebar, text=text, font=('Segoe UI', 12), bg=bg, fg=fg,
                         relief='flat', anchor='w', padx=20, pady=12,
-                        activebackground=ModernStyle.BORDER_ACTIVE if not active else '#33f3ff',
-                        activeforeground=ModernStyle.BG if active else ModernStyle.TEXT,
-                        command=lambda: (self._set_active_nav(btn), command()), cursor='hand2')
+                        activ0.9.14ebackground=ModernStyle.BORDER_ACTIVE if not activ0.9.14e else '#33f3ff',
+                        activ0.9.14eforeground=ModernStyle.BG if activ0.9.14e else ModernStyle.TEXT,
+                        command=lambda: (self._set_activ0.9.14e_nav0.9.14(btn), command()), cursor='hand2')
         btn.pack(fill='x', padx=15, pady=(0, 6))
-        self.nav_buttons.append(btn)
+        self.nav0.9.14_buttons.append(btn)
 
-    def _set_active_nav(self, active_btn):
-        for btn in self.nav_buttons:
-            btn.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, activebackground=ModernStyle.BORDER_ACTIVE)
-        active_btn.config(bg=ModernStyle.ACCENT, fg=ModernStyle.BG, activebackground='#33f3ff')
-        if active:
-            self.active_nav = btn
+    def _set_activ0.9.14e_nav0.9.14(self, activ0.9.14e_btn):
+        for btn in self.nav0.9.14_buttons:
+            btn.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, activ0.9.14ebackground=ModernStyle.BORDER_ACTIVE)
+        activ0.9.14e_btn.config(bg=ModernStyle.ACCENT, fg=ModernStyle.BG, activ0.9.14ebackground='#33f3ff')
+        if activ0.9.14e:
+            self.activ0.9.14e_nav0.9.14 = btn
 
-    def _set_active_nav(self, active_btn):
-        for btn in self.nav_buttons:
+    def _set_activ0.9.14e_nav0.9.14(self, activ0.9.14e_btn):
+        for btn in self.nav0.9.14_buttons:
             btn.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT)
-        active_btn.config(bg=ModernStyle.ACCENT, fg=ModernStyle.BG)
-        self.active_nav = active_btn
+        activ0.9.14e_btn.config(bg=ModernStyle.ACCENT, fg=ModernStyle.BG)
+        self.activ0.9.14e_nav0.9.14 = activ0.9.14e_btn
 
     def clear_content(self):
         for w in self.content.winfo_children():
@@ -245,7 +245,7 @@ class SweetCheatApp:
     def show_login(self):
         self.clear_content()
         self.set_title("Anmelden")
-        self._set_active_nav(self.nav_buttons[0])
+        self._set_activ0.9.14e_nav0.9.14(self.nav0.9.14_buttons[0])
 
         wrapper = tk.Frame(self.content, bg=ModernStyle.BG)
         wrapper.place(relx=0.5, rely=0.45, anchor='center')
@@ -262,12 +262,12 @@ class SweetCheatApp:
         tk.Label(card, text="SWEETCHEAT ENGINE", font=('Rajdhani', 10),
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(pady=(0, 24))
 
-        email_var = tk.StringVar(value=self.config.get('last_email', ''))
-        pass_var = tk.StringVar()
+        email_v0.9.14ar = tk.StringVar(v0.9.14alue=self.config.get('last_email', ''))
+        pass_v0.9.14ar = tk.StringVar()
 
         def do_login():
-            email = email_var.get().strip()
-            password = pass_var.get()
+            email = email_v0.9.14ar.get().strip()
+            password = pass_v0.9.14ar.get()
             if not email or not password:
                 self.show_toast("E-Mail und Passwort erforderlich", ModernStyle.DANGER)
                 return
@@ -278,7 +278,7 @@ class SweetCheatApp:
                     self.api_key = self.api.api_key
                     self.config['api_key'] = self.api_key
                     self.config['last_email'] = email
-                    save_config(self.config)
+                    sav0.9.14e_config(self.config)
                     self.root.after(0, lambda: self._on_login_success())
                     self.root.after(0, lambda: self.show_toast(f"Willkommen, {result.get('user',{}).get('username','User')}"))
                 else:
@@ -287,13 +287,13 @@ class SweetCheatApp:
             threading.Thread(target=run, daemon=True).start()
 
         tk.Label(card, text="E-Mail", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
-        email_entry = tk.Entry(card, textvariable=email_var, font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
+        email_entry = tk.Entry(card, textv0.9.14ariable=email_v0.9.14ar, font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
                              fg=ModernStyle.TEXT, insertbackground=ModernStyle.ACCENT, relief='flat',
                              highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=32)
         email_entry.pack(pady=(4, 14), ipady=7)
 
         tk.Label(card, text="Passwort", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 10)).pack(anchor='w')
-        pass_entry = tk.Entry(card, textvariable=pass_var, show='•', font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
+        pass_entry = tk.Entry(card, textv0.9.14ariable=pass_v0.9.14ar, show='•', font=('Segoe UI', 12), bg=ModernStyle.BG_INPUT,
                             fg=ModernStyle.TEXT, insertbackground=ModernStyle.ACCENT, relief='flat',
                             highlightthickness=1, highlightcolor=ModernStyle.ACCENT, width=32)
         pass_entry.pack(pady=(4, 22), ipady=7)
@@ -317,7 +317,7 @@ class SweetCheatApp:
             self.api.set_key(key)
             self.api_key = key
             self.config['api_key'] = key
-            save_config(self.config)
+            sav0.9.14e_config(self.config)
             self._on_login_success()
 
 
@@ -350,7 +350,7 @@ class SweetCheatApp:
             if data.get('success'):
                 self.api_key = data['api_key']
                 self.config['api_key'] = self.api_key
-                save_config(self.config)
+                sav0.9.14e_config(self.config)
                 self.root.after(0, self._on_login_success)
             else:
                 self.root.after(0, lambda: self.login_msg.config(
@@ -417,7 +417,7 @@ class SweetCheatApp:
     def show_dashboard(self):
         self.clear_content()
         self.set_title("Dashboard")
-        self._set_active_nav(self.nav_buttons[0])
+        self._set_activ0.9.14e_nav0.9.14(self.nav0.9.14_buttons[0])
 
         # Welcome banner
         welcome = tk.Frame(self.content, bg=ModernStyle.BG_ELEVATED, highlightbackground=ModernStyle.BORDER,
@@ -426,24 +426,24 @@ class SweetCheatApp:
         uname = self.config.get('last_email', '').split('@')[0] or 'Player'
         tk.Label(welcome, text=f"Willkommen zurück, {uname}", font=ModernStyle.FONT_TITLE,
                  bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT).pack(anchor='w')
-        tk.Label(welcome, text="Deine Singleplayer-Trainer-Plattform. Wähle ein Spiel oder checke deine Favoriten.",
+        tk.Label(welcome, text="Deine Singleplayer-Trainer-Plattform. Wähle ein Spiel oder checke deine Fav0.9.14oriten.",
                  font=ModernStyle.FONT_BODY, bg=ModernStyle.BG_ELEVATED, fg=ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(6, 0))
 
         # Stats row
         stats_frame = tk.Frame(self.content, bg=ModernStyle.BG)
         stats_frame.pack(fill='x', pady=(0, 22))
-        vals = [
+        v0.9.14als = [
             ("Spiele", str(len(self.games)) if self.games else "…", ModernStyle.ACCENT, "🎮"),
             ("Trainer", str(len(self.trainers)), ModernStyle.TEXT, "⚡"),
-            ("Favoriten", str(len(self.favorites)), ModernStyle.ACCENT_SEC, "★"),
+            ("Fav0.9.14oriten", str(len(self.fav0.9.14orites)), ModernStyle.ACCENT_SEC, "★"),
             ("Status", "PREMIUM" if self.is_premium() else "FREE", ModernStyle.ACCENT if self.is_premium() else ModernStyle.TEXT_MUTED, "◆")
         ]
-        for label, val, col, icon in vals:
+        for label, v0.9.14al, col, icon in v0.9.14als:
             c = self._card(stats_frame, padx=18, pady=16)
             c.pack(side='left', fill='both', expand=True, padx=(0, 14))
             tk.Label(c, text=f"{icon}  {label}", font=ModernStyle.FONT_SMALL,
                      bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(anchor='w')
-            tk.Label(c, text=val, font=('Rajdhani', 24, 'bold'),
+            tk.Label(c, text=v0.9.14al, font=('Rajdhani', 24, 'bold'),
                      bg=ModernStyle.BG_CARD, fg=col).pack(anchor='w', pady=(8, 0))
 
         # Recent + quick actions
@@ -452,7 +452,7 @@ class SweetCheatApp:
 
         left = self._card(row, padx=22, pady=20)
         left.pack(side='left', fill='both', expand=True, padx=(0, 18))
-        tk.Label(left, text="Zuletzt verwendet", font=ModernStyle.FONT_SUB,
+        tk.Label(left, text="Zuletzt v0.9.14erwendet", font=ModernStyle.FONT_SUB,
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 16))
         recent_box = tk.Frame(left, bg=ModernStyle.BG_CARD)
         recent_box.pack(fill='x')
@@ -470,7 +470,7 @@ class SweetCheatApp:
         tk.Label(right, text="Schnellzugriff", font=ModernStyle.FONT_SUB,
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 16))
         secondary_btn(right, "Spielebibliothek", self.show_games_library, "🎮").pack(fill='x', pady=(0, 10))
-        secondary_btn(right, "Favoriten", lambda: self.show_games_library(filter_favorites=True), "★").pack(fill='x', pady=(0, 10))
+        secondary_btn(right, "Fav0.9.14oriten", lambda: self.show_games_library(filter_fav0.9.14orites=True), "★").pack(fill='x', pady=(0, 10))
         secondary_btn(right, "Update prüfen", self.check_for_update, "🔄").pack(fill='x')
 
     def _game_chip(self, parent, game):
@@ -484,9 +484,9 @@ class SweetCheatApp:
             c.bind('<Button-1>', lambda e, g=game: self.select_game(g.get('slug')))
 
     # ----------------------------- GAMES LIBRARY -----------------------------
-    def show_games_library(self, filter_favorites=False):
+    def show_games_library(self, filter_fav0.9.14orites=False):
         self.clear_content()
-        self.set_title("Favoriten" if filter_favorites else "Spiele-Bibliothek")
+        self.set_title("Fav0.9.14oriten" if filter_fav0.9.14orites else "Spiele-Bibliothek")
 
         # Header
         header = tk.Frame(self.content, bg=ModernStyle.BG)
@@ -500,7 +500,7 @@ class SweetCheatApp:
         search.bind('<FocusOut>', lambda e: search.insert(0, "Spiel suchen...") if not search.get() else None)
 
         refresh_btn = tk.Button(header, text="↻ Aktualisieren", font=('Segoe UI', 10), bg=ModernStyle.BG_CARD,
-                                fg=ModernStyle.TEXT, relief='flat', command=lambda: self._load_games_list(filter_favorites, search.get()))
+                                fg=ModernStyle.TEXT, relief='flat', command=lambda: self._load_games_list(filter_fav0.9.14orites, search.get()))
         refresh_btn.pack(side='right', padx=(10, 0))
 
         scan_btn = tk.Button(header, text="🔍 Prozesse scannen", font=('Segoe UI', 10), bg=ModernStyle.ACCENT,
@@ -513,18 +513,18 @@ class SweetCheatApp:
         self.running_banner.pack_forget()
 
         # Games grid
-        self.games_canvas = tk.Canvas(self.content, bg=ModernStyle.BG, highlightthickness=0)
-        self.games_scroll = tk.Scrollbar(self.content, orient='vertical', command=self.games_canvas.yview)
-        self.games_frame = tk.Frame(self.games_canvas, bg=ModernStyle.BG)
-        self.games_canvas.configure(yscrollcommand=self.games_scroll.set)
-        self.games_canvas.pack(side='left', fill='both', expand=True)
+        self.games_canv0.9.14as = tk.Canv0.9.14as(self.content, bg=ModernStyle.BG, highlightthickness=0)
+        self.games_scroll = tk.Scrollbar(self.content, orient='v0.9.14ertical', command=self.games_canv0.9.14as.yv0.9.14iew)
+        self.games_frame = tk.Frame(self.games_canv0.9.14as, bg=ModernStyle.BG)
+        self.games_canv0.9.14as.configure(yscrollcommand=self.games_scroll.set)
+        self.games_canv0.9.14as.pack(side='left', fill='both', expand=True)
         self.games_scroll.pack(side='right', fill='y')
-        self.games_canvas_window = self.games_canvas.create_window((0, 0), window=self.games_frame, anchor='nw')
-        self.games_frame.bind('<Configure>', lambda e: self.games_canvas.configure(scrollregion=self.games_canvas.bbox('all')))
+        self.games_canv0.9.14as_window = self.games_canv0.9.14as.create_window((0, 0), window=self.games_frame, anchor='nw')
+        self.games_frame.bind('<Configure>', lambda e: self.games_canv0.9.14as.configure(scrollregion=self.games_canv0.9.14as.bbox('all')))
 
-        self._load_games_list(filter_favorites)
+        self._load_games_list(filter_fav0.9.14orites)
 
-    def _load_games_list(self, filter_favorites=False, search=None):
+    def _load_games_list(self, filter_fav0.9.14orites=False, search=None):
         for w in self.games_frame.winfo_children():
             w.destroy()
         self.set_status("Lade Spiele...")
@@ -535,8 +535,8 @@ class SweetCheatApp:
                 self.root.after(0, lambda: self.set_status("Fehler beim Laden"))
                 return
             games = result.get('games', [])
-            if filter_favorites:
-                games = [g for g in games if g.get('is_favorite')]
+            if filter_fav0.9.14orites:
+                games = [g for g in games if g.get('is_fav0.9.14orite')]
             self.games = games
             self.root.after(0, lambda: self._render_game_cards(games))
         threading.Thread(target=load, daemon=True).start()
@@ -556,7 +556,7 @@ class SweetCheatApp:
             title = tk.Label(top, text=g.get('name', 'Unbekannt'), font=('Rajdhani', 16, 'bold'),
                              bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT)
             title.pack(side='left')
-            if g.get('is_favorite'):
+            if g.get('is_fav0.9.14orite'):
                 tk.Label(top, text="★", bg=ModernStyle.BG_CARD, fg='#ffd700', font=('Segoe UI', 14)).pack(side='left', padx=(8, 0))
             meta = tk.Label(c, text=f"{g.get('genre','?')}  •  {g.get('trainer_count',0)} Trainer  •  {g.get('platform','PC')}",
                             font=ModernStyle.FONT_SMALL, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED)
@@ -564,16 +564,16 @@ class SweetCheatApp:
             actions = tk.Frame(c, bg=ModernStyle.BG_CARD)
             actions.pack(fill='x')
             secondary_btn(actions, "Trainer anzeigen", lambda slug=g.get('slug'): self._show_trainers_for_game(slug), "⚡").pack(side='right')
-            ghost_btn(actions, "Favorit", lambda gid=g['id']: self._toggle_game_fav(gid), "★" if not g.get('is_favorite') else "Entfernen").pack(side='left')
+            ghost_btn(actions, "Fav0.9.14orit", lambda gid=g['id']: self._toggle_game_fav0.9.14(gid), "★" if not g.get('is_fav0.9.14orite') else "Entfernen").pack(side='left')
         self.set_status(f"{len(games)} Spiele geladen")
 
-    def _toggle_game_fav(self, game_id):
+    def _toggle_game_fav0.9.14(self, game_id):
         def do():
-            favs = self.api.favorites()
-            is_fav = any(f.get('game_id') == game_id and not f.get('trainer_id') for f in favs.get('favorites', []))
-            result = self.api.remove_favorite(game_id=game_id) if is_fav else self.api.add_favorite(game_id=game_id)
+            fav0.9.14s = self.api.fav0.9.14orites()
+            is_fav0.9.14 = any(f.get('game_id') == game_id and not f.get('trainer_id') for f in fav0.9.14s.get('fav0.9.14orites', []))
+            result = self.api.remov0.9.14e_fav0.9.14orite(game_id=game_id) if is_fav0.9.14 else self.api.add_fav0.9.14orite(game_id=game_id)
             if result.get('success'):
-                self.root.after(0, lambda: self.show_toast("Favorit aktualisiert"))
+                self.root.after(0, lambda: self.show_toast("Fav0.9.14orit aktualisiert"))
                 self.root.after(0, lambda: self._load_games_list())
         threading.Thread(target=do, daemon=True).start()
 
@@ -585,7 +585,7 @@ class SweetCheatApp:
             self.running_banner.pack_forget()
             self.show_toast("Keine bekannten Spieleprozesse gefunden", ModernStyle.DANGER)
             return
-        self.running_banner.pack(fill='x', pady=(0, 15), before=self.games_canvas)
+        self.running_banner.pack(fill='x', pady=(0, 15), before=self.games_canv0.9.14as)
         tk.Label(self.running_banner, text="🎮 Laufende Spiele erkannt:", bg=ModernStyle.BG_ELEVATED,
                  fg=ModernStyle.ACCENT, font=('Segoe UI', 11, 'bold')).pack(anchor='w')
         for info in found:
@@ -615,7 +615,7 @@ class SweetCheatApp:
         self.set_title("Verfügbare Trainer")
         self._last_game_metadata = game_metadata or {}
         if not trainers:
-            tk.Label(self.content, text="Keine Trainer verfügbar", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED,
+            tk.Label(self.content, text="Keine Trainer v0.9.14erfügbar", bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED,
                      font=ModernStyle.FONT_BODY).pack(pady=40)
             return
         # Header with back button
@@ -635,9 +635,9 @@ class SweetCheatApp:
             title.pack(side='left')
             if t.get('locked'):
                 badge(top, "PREMIUM", ModernStyle.ACCENT_SEC).pack(side='right')
-            elif t.get('verified'):
+            elif t.get('v0.9.14erified'):
                 badge(top, "VERIFIED", ModernStyle.SUCCESS).pack(side='right')
-            desc = tk.Label(c, text=t.get('description','') or 'Keine Beschreibung verfügbar.', wraplength=760,
+            desc = tk.Label(c, text=t.get('description','') or 'Keine Beschreibung v0.9.14erfügbar.', wraplength=760,
                             bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=ModernStyle.FONT_BODY, justify='left')
             desc.pack(anchor='w', pady=(8, 14))
             meta = tk.Label(c, text=f"Typ: {t.get('type','Standard')}  •  Risiko: {t.get('risk','Niedrig')}",
@@ -646,31 +646,31 @@ class SweetCheatApp:
             actions = tk.Frame(c, bg=ModernStyle.BG_CARD)
             actions.pack(fill='x')
             if t.get('locked'):
-                secondary_btn(actions, "Premium aktivieren", lambda: self.show_toast("Premium erforderlich", ModernStyle.WARN), "🔒").pack(side='right')
+                secondary_btn(actions, "Premium aktiv0.9.14ieren", lambda: self.show_toast("Premium erforderlich", ModernStyle.WARN), "🔒").pack(side='right')
             else:
-                def make_activate(tr):
-                    return lambda: self._activate_desktop(tr)
-                primary_btn(actions, "Aktivieren", make_activate(t), "⚡").pack(side='right')
+                def make_activ0.9.14ate(tr):
+                    return lambda: self._activ0.9.14ate_desktop(tr)
+                primary_btn(actions, "Aktiv0.9.14ieren", make_activ0.9.14ate(t), "⚡").pack(side='right')
             if t.get('command'):
                 ghost_btn(actions, "Befehl kopieren", lambda c=t['command']: self._copy_command(c), "📋").pack(side='left')
 
-    def _activate_desktop(self, trainer):
+    def _activ0.9.14ate_desktop(self, trainer):
         game_info = self._last_game_metadata or {}
-        # Find current game object from slug if available
+        # Find current game object from slug if av0.9.14ailable
         if not game_info.get('name'):
             for g in getattr(self, 'games', []):
                 if g.get('slug') == self._last_trainer_slug:
                     game_info['name'] = g.get('name')
                     break
-        ok, msg = self.activation_engine.can_activate(trainer, game_info)
+        ok, msg = self.activ0.9.14ation_engine.can_activ0.9.14ate(trainer, game_info)
         if not ok:
             self.show_toast(msg, ModernStyle.DANGER)
             return
-        self.show_toast(f"Aktiviere '{trainer.get('name')}'...")
+        self.show_toast(f"Aktiv0.9.14iere '{trainer.get('name')}'...")
         def cb(success, message):
             color = ModernStyle.SUCCESS if success else ModernStyle.DANGER
             self.root.after(0, lambda: self.show_toast(message, color))
-        self.activation_engine.activate(trainer, game_info=game_info, callback=cb)
+        self.activ0.9.14ation_engine.activ0.9.14ate(trainer, game_info=game_info, callback=cb)
 
     def _copy_command(self, cmd):
         self.root.clipboard_clear()
@@ -681,10 +681,10 @@ class SweetCheatApp:
     def _render_game_grid(self):
         for w in self.games_grid.winfo_children():
             w.destroy()
-        q = self.search_var.get().lower()
+        q = self.search_v0.9.14ar.get().lower()
         games = [g for g in self.games if q in g.get('name', '').lower() or q in (g.get('genre') or '').lower()]
-        if self._filter_favorites:
-            games = [g for g in games if g.get('name') in self.favorites]
+        if self._filter_fav0.9.14orites:
+            games = [g for g in games if g.get('name') in self.fav0.9.14orites]
 
         if not games:
             tk.Label(self.games_grid, text="Keine Spiele gefunden", bg=ModernStyle.BG,
@@ -715,26 +715,26 @@ class SweetCheatApp:
         tk.Label(card, text=game.get('genre') or 'Singleplayer', font=('Segoe UI', 9),
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT).pack(anchor='w', padx=18, pady=(8, 0))
 
-        fav = "★" if name in self.favorites else "☆"
-        fav_lbl = tk.Label(card, text=fav, font=('Segoe UI', 16),
-                           bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT if name in self.favorites else ModernStyle.TEXT_MUTED)
-        fav_lbl.place(relx=0.9, rely=0.18, anchor='center')
-        fav_lbl.bind('<Button-1>', lambda e, g=game: self._toggle_favorite(g))
+        fav0.9.14 = "★" if name in self.fav0.9.14orites else "☆"
+        fav0.9.14_lbl = tk.Label(card, text=fav0.9.14, font=('Segoe UI', 16),
+                           bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT if name in self.fav0.9.14orites else ModernStyle.TEXT_MUTED)
+        fav0.9.14_lbl.place(relx=0.9, rely=0.18, anchor='center')
+        fav0.9.14_lbl.bind('<Button-1>', lambda e, g=game: self._toggle_fav0.9.14orite(g))
 
         card.bind('<Button-1>', lambda e, g=game: self.select_game(g.get('slug')))
         for c in card.winfo_children():
             c.bind('<Button-1>', lambda e, g=game: self.select_game(g.get('slug')))
         return card
 
-    def _toggle_favorite(self, game):
+    def _toggle_fav0.9.14orite(self, game):
         name = game.get('name')
-        if name in self.favorites:
-            self.favorites.discard(name)
+        if name in self.fav0.9.14orites:
+            self.fav0.9.14orites.discard(name)
         else:
-            self.favorites.add(name)
-        self.config['favorites'] = list(self.favorites)
-        save_config(self.config)
-        self.sync_favorites()
+            self.fav0.9.14orites.add(name)
+        self.config['fav0.9.14orites'] = list(self.fav0.9.14orites)
+        sav0.9.14e_config(self.config)
+        self.sync_fav0.9.14orites()
         self._render_game_grid()
 
     # ----------------------------- GAME DETAIL -----------------------------
@@ -747,7 +747,7 @@ class SweetCheatApp:
             self.recent_games.insert(0, slug)
             self.recent_games = self.recent_games[:10]
             self.config['recent_games'] = self.recent_games
-            save_config(self.config)
+            sav0.9.14e_config(self.config)
 
         self.clear_content()
         self.set_title(game.get('name', 'Spiel'))
@@ -760,26 +760,26 @@ class SweetCheatApp:
                                     bg=ModernStyle.BG, fg=ModernStyle.DANGER)
         self.proc_status.pack(side='left', padx=(20, 0), pady=(8, 0))
         AnimatedButton(header, text="🔄 Prozess prüfen", command=self.check_process,
-                       width=160, height=36, bg=ModernStyle.BORDER, hover_bg=ModernStyle.BORDER_ACTIVE).pack(side='right')
+                       width=160, height=36, bg=ModernStyle.BORDER, hov0.9.14er_bg=ModernStyle.BORDER_ACTIVE).pack(side='right')
 
         # Tabs
         self.detail_tabs = tk.Frame(self.content, bg=ModernStyle.BG)
         self.detail_tabs.pack(fill='x', pady=(0, 15))
-        self.tab_trainers = self._tab_btn("Trainer", active=True)
+        self.tab_trainers = self._tab_btn("Trainer", activ0.9.14e=True)
         self.tab_cheats = self._tab_btn("Offizielle Cheats")
         self.tab_info = self._tab_btn("Info")
 
-        # Scrollable trainer area using ttk Scrollbar + Canvas
-        self.detail_canvas = tk.Canvas(self.content, bg=ModernStyle.BG, highlightthickness=0)
-        self.detail_scrollbar = ttk.Scrollbar(self.content, orient='vertical', command=self.detail_canvas.yview)
-        self.detail_scrollable_frame = tk.Frame(self.detail_canvas, bg=ModernStyle.BG)
-        self.detail_canvas.create_window((0, 0), window=self.detail_scrollable_frame, anchor='nw', tags='inner')
-        self.detail_canvas.configure(yscrollcommand=self.detail_scrollbar.set)
-        self.detail_canvas.pack(side='left', fill='both', expand=True)
+        # Scrollable trainer area using ttk Scrollbar + Canv0.9.14as
+        self.detail_canv0.9.14as = tk.Canv0.9.14as(self.content, bg=ModernStyle.BG, highlightthickness=0)
+        self.detail_scrollbar = ttk.Scrollbar(self.content, orient='v0.9.14ertical', command=self.detail_canv0.9.14as.yv0.9.14iew)
+        self.detail_scrollable_frame = tk.Frame(self.detail_canv0.9.14as, bg=ModernStyle.BG)
+        self.detail_canv0.9.14as.create_window((0, 0), window=self.detail_scrollable_frame, anchor='nw', tags='inner')
+        self.detail_canv0.9.14as.configure(yscrollcommand=self.detail_scrollbar.set)
+        self.detail_canv0.9.14as.pack(side='left', fill='both', expand=True)
         self.detail_scrollbar.pack(side='right', fill='y')
         self.detail_scrollable_frame.bind('<Configure>', self._on_inner_configure)
         self.content.bind('<Configure>', self._on_content_configure)
-        self.detail_canvas.bind_all('<MouseWheel>', self._on_mousewheel)
+        self.detail_canv0.9.14as.bind_all('<MouseWheel>', self._on_mousewheel)
 
         self.detail_state = 'trainers'
         self._show_trainers_tab()
@@ -793,24 +793,24 @@ class SweetCheatApp:
         self.trainers = []
         threading.Thread(target=lambda: self.load_trainers(slug), daemon=True).start()
 
-    def _on_content_configure(self, event):
+    def _on_content_configure(self, ev0.9.14ent):
         try:
-            self.detail_canvas.itemconfig('inner', width=event.width - self.detail_scrollbar.winfo_width() - 10)
+            self.detail_canv0.9.14as.itemconfig('inner', width=ev0.9.14ent.width - self.detail_scrollbar.winfo_width() - 10)
         except Exception:
             pass
 
-    def _on_inner_configure(self, event):
-        self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
+    def _on_inner_configure(self, ev0.9.14ent):
+        self.detail_canv0.9.14as.configure(scrollregion=self.detail_canv0.9.14as.bbox('all'))
 
-    def _on_mousewheel(self, event):
+    def _on_mousewheel(self, ev0.9.14ent):
         try:
-            self.detail_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+            self.detail_canv0.9.14as.yv0.9.14iew_scroll(int(-1 * (ev0.9.14ent.delta / 120)), 'units')
         except Exception:
             pass
 
-    def _tab_btn(self, text, active=False):
-        bg = ModernStyle.BG_CARD if active else ModernStyle.BG
-        fg = ModernStyle.ACCENT if active else ModernStyle.TEXT_MUTED
+    def _tab_btn(self, text, activ0.9.14e=False):
+        bg = ModernStyle.BG_CARD if activ0.9.14e else ModernStyle.BG
+        fg = ModernStyle.ACCENT if activ0.9.14e else ModernStyle.TEXT_MUTED
         btn = tk.Label(self.detail_tabs, text=text, font=('Segoe UI', 11, 'bold'),
                        bg=bg, fg=fg, padx=20, pady=10, cursor='hand2')
         btn.pack(side='left', padx=(0, 8))
@@ -821,7 +821,7 @@ class SweetCheatApp:
         for btn in [self.tab_trainers, self.tab_cheats, self.tab_info]:
             btn.config(bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED)
         # Reset scroll
-        self.detail_canvas.yview_moveto(0)
+        self.detail_canv0.9.14as.yv0.9.14iew_mov0.9.14eto(0)
         if name == 'Trainer':
             self.tab_trainers.config(bg=ModernStyle.BG_CARD, fg=ModernStyle.ACCENT)
             self.detail_state = 'trainers'
@@ -861,13 +861,13 @@ class SweetCheatApp:
         for t in self.trainers_data.get('trainers', []):
             cheats.extend(t.get('game_cheats', []))
         if not cheats:
-            tk.Label(self.detail_scrollable_frame, text="Keine offiziellen Cheats verfügbar", font=('Segoe UI', 13),
+            tk.Label(self.detail_scrollable_frame, text="Keine offiziellen Cheats v0.9.14erfügbar", font=('Segoe UI', 13),
                      bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
             return
         for c in cheats:
             self._cheat_card(self.detail_scrollable_frame, c)
         self.detail_scrollable_frame.update_idletasks()
-        self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
+        self.detail_canv0.9.14as.configure(scrollregion=self.detail_canv0.9.14as.bbox('all'))
 
     def _show_info_tab(self):
         self._clear_scrollable()
@@ -932,7 +932,7 @@ class SweetCheatApp:
                      bg=ModernStyle.BG, fg=ModernStyle.ACCENT if sub == 'premium' else ModernStyle.TEXT_MUTED).pack(anchor='w', pady=(0, 15))
 
             if not self.trainers:
-                tk.Label(self.detail_scrollable_frame, text="Keine Trainer verfügbar", font=('Segoe UI', 13),
+                tk.Label(self.detail_scrollable_frame, text="Keine Trainer v0.9.14erfügbar", font=('Segoe UI', 13),
                          bg=ModernStyle.BG, fg=ModernStyle.TEXT_MUTED).pack(pady=60)
                 return
 
@@ -940,7 +940,7 @@ class SweetCheatApp:
                 self._trainer_card(self.detail_scrollable_frame, trainer)
 
             self.detail_scrollable_frame.update_idletasks()
-            self.detail_canvas.configure(scrollregion=self.detail_canvas.bbox('all'))
+            self.detail_canv0.9.14as.configure(scrollregion=self.detail_canv0.9.14as.bbox('all'))
         except Exception as e:
             print(f"_render_trainers error: {e}")
             import traceback
@@ -984,7 +984,7 @@ class SweetCheatApp:
 
     def _toggle_switch(self, parent, trainer):
         name = trainer.get('title', '')
-        active = self.engine and self.engine.active_cheats.get(name, False)
+        activ0.9.14e = self.engine and self.engine.activ0.9.14e_cheats.get(name, False)
         container = tk.Frame(parent, bg=ModernStyle.BG_CARD)
         container.pack(side='left')
         status_lbl = tk.Label(container, text="AUS", font=('Segoe UI', 9, 'bold'),
@@ -993,7 +993,7 @@ class SweetCheatApp:
 
         def toggle(state):
             if not self.engine:
-                self.show_toast("Cheat-Engine nicht verfügbar", ModernStyle.DANGER)
+                self.show_toast("Cheat-Engine nicht v0.9.14erfügbar", ModernStyle.DANGER)
                 sw.set(False)
                 return
             if state:
@@ -1002,11 +1002,11 @@ class SweetCheatApp:
                     self._open_two_scan_dialog(trainer)
                     sw.set(False)
                     return
-                res = self.engine.activate(trainer, self.current_game)
+                res = self.engine.activ0.9.14ate(trainer, self.current_game)
                 if res.get('success'):
-                    self.engine.active_cheats[name] = True
+                    self.engine.activ0.9.14e_cheats[name] = True
                     status_lbl.config(text="AN", fg=ModernStyle.ACCENT)
-                    self.show_toast(res.get('message', 'Aktiviert'), ModernStyle.ACCENT)
+                    self.show_toast(res.get('message', 'Aktiv0.9.14iert'), ModernStyle.ACCENT)
                 else:
                     sw.set(False)
                     msg = res.get('message', '')
@@ -1015,17 +1015,17 @@ class SweetCheatApp:
                     else:
                         self.show_toast(msg, ModernStyle.DANGER)
             else:
-                res = self.engine.deactivate(trainer)
+                res = self.engine.deactiv0.9.14ate(trainer)
                 status_lbl.config(text="AUS", fg=ModernStyle.TEXT_MUTED)
-                self.show_toast(res.get('message', 'Deaktiviert'), ModernStyle.TEXT_MUTED)
+                self.show_toast(res.get('message', 'Deaktiv0.9.14iert'), ModernStyle.TEXT_MUTED)
 
-        sw = ToggleSwitch(container, command=toggle, initial=active, bg=ModernStyle.BG_CARD)
+        sw = ToggleSwitch(container, command=toggle, initial=activ0.9.14e, bg=ModernStyle.BG_CARD)
         sw.pack(side='left')
-        if active:
+        if activ0.9.14e:
             status_lbl.config(text="AN", fg=ModernStyle.ACCENT)
 
     def _open_two_scan_dialog(self, trainer):
-        d = tk.Toplevel(self.root)
+        d = tk.Toplev0.9.14el(self.root)
         d.title(f"2-Werte-Scan: {trainer.get('title', '')}")
         d.configure(bg=ModernStyle.BG_CARD)
         d.geometry("400x300")
@@ -1043,13 +1043,13 @@ class SweetCheatApp:
         e3.insert(0, '999')
         def run():
             try:
-                v1 = int(e1.get())
-                v2 = int(e2.get())
-                v3 = int(e3.get())
+                v0.9.14 = int(e1.get())
+                v0.9.14 = int(e2.get())
+                v0.9.14 = int(e3.get())
                 label = trainer.get('title', 'scan')
-                res = self.engine.two_scan_dialog_values(self.current_game.get('name', ''), label, v1, v2, v3)
+                res = self.engine.two_scan_dialog_v0.9.14alues(self.current_game.get('name', ''), label, v0.9.14, v0.9.14, v0.9.14)
                 if res.get('success'):
-                    self.engine.active_cheats[label] = True
+                    self.engine.activ0.9.14e_cheats[label] = True
                     self.show_toast(res.get('message'), ModernStyle.ACCENT)
                     d.destroy()
                 else:
@@ -1059,7 +1059,7 @@ class SweetCheatApp:
         AnimatedButton(d, text="Scannen & Setzen", command=run, width=200, height=40).pack(pady=20)
 
     def _open_cheat_config(self, trainer, error_msg):
-        d = tk.Toplevel(self.root)
+        d = tk.Toplev0.9.14el(self.root)
         d.title(trainer.get('title', 'Cheat Config'))
         d.configure(bg=ModernStyle.BG_CARD)
         d.geometry("420x260")
@@ -1067,24 +1067,24 @@ class SweetCheatApp:
         d.grab_set()
         tk.Label(d, text=error_msg, bg=ModernStyle.BG_CARD, fg=ModernStyle.DANGER, wraplength=380).pack(pady=(15, 15))
         tk.Label(d, text="Wert (z.B. 999999)", bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack()
-        e_val = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
-        e_val.pack(fill='x', padx=20, ipady=6)
-        e_val.insert(0, '999999')
+        e_v0.9.14al = tk.Entry(d, bg=ModernStyle.BG_INPUT, fg=ModernStyle.TEXT, relief='flat', font=('Segoe UI', 11))
+        e_v0.9.14al.pack(fill='x', padx=20, ipady=6)
+        e_v0.9.14al.insert(0, '999999')
 
         def try_again():
-            val = e_val.get().strip()
-            # Inject value into trainer dict for this run
+            v0.9.14al = e_v0.9.14al.get().strip()
+            # Inject v0.9.14alue into trainer dict for this run
             patched = dict(trainer)
-            patched['effect'] = f"set money = {val}"
-            res = self.engine.activate(patched, self.current_game)
+            patched['effect'] = f"set money = {v0.9.14al}"
+            res = self.engine.activ0.9.14ate(patched, self.current_game)
             if res.get('success'):
-                self.engine.active_cheats[trainer.get('title', '')] = True
-                self.show_toast(res.get('message', 'Aktiviert'), ModernStyle.ACCENT)
+                self.engine.activ0.9.14e_cheats[trainer.get('title', '')] = True
+                self.show_toast(res.get('message', 'Aktiv0.9.14iert'), ModernStyle.ACCENT)
                 d.destroy()
             else:
                 self.show_toast(res.get('message', 'Fehler'), ModernStyle.DANGER)
 
-        AnimatedButton(d, text="Mit Wert versuchen", command=try_again, width=200, height=40).pack(pady=20)
+        AnimatedButton(d, text="Mit Wert v0.9.14ersuchen", command=try_again, width=200, height=40).pack(pady=20)
         tk.Label(d, text="Hinweis: Für SMAPI-Cheats muss SMAPI installiert sein.",
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9)).pack()
 
@@ -1115,7 +1115,7 @@ class SweetCheatApp:
             self.proc_status.config(text="● Kein Prozess bekannt", fg=ModernStyle.WARNING)
             return
         if not WINDOWS or not self.engine or not self.engine.memory:
-            self.proc_status.config(text="● Nur unter Windows verfügbar", fg=ModernStyle.WARNING)
+            self.proc_status.config(text="● Nur unter Windows v0.9.14erfügbar", fg=ModernStyle.WARNING)
             return
 
         found = False
@@ -1126,8 +1126,8 @@ class SweetCheatApp:
                 self.process_name = pname
                 break
         if found:
-            self.proc_status.config(text=f"● Prozess aktiv (PID {self.engine.memory.pid})", fg=ModernStyle.SUCCESS)
-            self.show_toast("Prozess verbunden", ModernStyle.SUCCESS)
+            self.proc_status.config(text=f"● Prozess aktiv0.9.14 (PID {self.engine.memory.pid})", fg=ModernStyle.SUCCESS)
+            self.show_toast("Prozess v0.9.14erbunden", ModernStyle.SUCCESS)
         else:
             tried = ', '.join(pnames)
             self.proc_status.config(text=f"● Nicht gestartet", fg=ModernStyle.DANGER)
@@ -1187,25 +1187,25 @@ class SweetCheatApp:
     def show_account(self):
         self.clear_content()
         self.set_title("Account")
-        self._set_active_nav(self.nav_buttons[3])
+        self._set_activ0.9.14e_nav0.9.14(self.nav0.9.14_buttons[3])
         card = self._card(self.content)
         card.pack(fill='both', expand=True)
         inner = tk.Frame(card, bg=ModernStyle.BG_CARD, padx=40, pady=40)
         inner.pack(fill='both', expand=True)
         tk.Label(inner, text="Account", font=('Rajdhani', 20, 'bold'),
                  bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w', pady=(0, 20))
-        for label, val in [
+        for label, v0.9.14al in [
             ("Benutzer", self.user_info.get('username', '-')),
             ("E-Mail", self.user_info.get('email', '-')),
             ("Premium", 'Ja' if self.is_premium() else 'Nein'),
         ]:
-            tk.Label(inner, text=f"{label}: {val}", font=('Segoe UI', 12),
+            tk.Label(inner, text=f"{label}: {v0.9.14al}", font=('Segoe UI', 12),
                      bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED).pack(anchor='w', pady=5)
 
     def show_settings(self):
         self.clear_content()
         self.set_title("Einstellungen")
-        self._set_active_nav(self.nav_buttons[4])
+        self._set_activ0.9.14e_nav0.9.14(self.nav0.9.14_buttons[4])
 
         container = tk.Frame(self.content, bg=ModernStyle.BG)
         container.pack(fill='both', expand=True)
@@ -1222,13 +1222,13 @@ class SweetCheatApp:
         card2.pack(fill='x', pady=(0, 16))
         tk.Label(card2, text="Desktop-App", font=('Rajdhani', 16, 'bold'), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
         
-        auto_var = tk.BooleanVar(value=is_autostart_enabled())
+        auto_v0.9.14ar = tk.BooleanVar(v0.9.14alue=is_autostart_enabled())
         def toggle_autostart():
-            set_autostart(auto_var.get())
-            self.show_toast('Autostart ' + ('aktiviert' if auto_var.get() else 'deaktiviert'))
-        tk.Checkbutton(card2, text="Mit Windows starten", variable=auto_var, command=toggle_autostart,
-                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD,
-                       activeforeground=ModernStyle.ACCENT).pack(anchor='w', pady=(12, 4))
+            set_autostart(auto_v0.9.14ar.get())
+            self.show_toast('Autostart ' + ('aktiv0.9.14iert' if auto_v0.9.14ar.get() else 'deaktiv0.9.14iert'))
+        tk.Checkbutton(card2, text="Mit Windows starten", v0.9.14ariable=auto_v0.9.14ar, command=toggle_autostart,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activ0.9.14ebackground=ModernStyle.BG_CARD,
+                       activ0.9.14eforeground=ModernStyle.ACCENT).pack(anchor='w', pady=(12, 4))
         hotkey_text = "Hotkeys:\nSTRG+SHIFT+S = Fenster öffnen\nSTRG+SHIFT+G = Spiele-Bibliothek"
         tk.Label(card2, text=hotkey_text, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9), justify='left').pack(anchor='w', pady=(8, 0))
 
@@ -1236,24 +1236,24 @@ class SweetCheatApp:
         card3 = tk.Frame(container, bg=ModernStyle.BG_CARD, highlightbackground=ModernStyle.BORDER, highlightthickness=1, padx=20, pady=20)
         card3.pack(fill='x')
         tk.Label(card3, text="Erscheinungsbild", font=('Rajdhani', 16, 'bold'), bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT).pack(anchor='w')
-        theme_var = tk.StringVar(value=self.config.get('theme', 'dark'))
-        def save_theme():
-            self.config['theme'] = theme_var.get()
-            save_config(self.config)
+        theme_v0.9.14ar = tk.StringVar(v0.9.14alue=self.config.get('theme', 'dark'))
+        def sav0.9.14e_theme():
+            self.config['theme'] = theme_v0.9.14ar.get()
+            sav0.9.14e_config(self.config)
             self.show_toast('Theme gespeichert')
             if self.api:
                 def sync():
-                    self.api.settings_update(self.api.user_username or '', theme_var.get())
+                    self.api.settings_update(self.api.user_username or '', theme_v0.9.14ar.get())
                 threading.Thread(target=sync, daemon=True).start()
-        tk.Radiobutton(card3, text="Dark", variable=theme_var, value='dark', command=save_theme,
-                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD).pack(anchor='w', pady=(12, 4))
-        tk.Radiobutton(card3, text="Light", variable=theme_var, value='light', command=save_theme,
-                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activebackground=ModernStyle.BG_CARD).pack(anchor='w')
+        tk.Radiobutton(card3, text="Dark", v0.9.14ariable=theme_v0.9.14ar, v0.9.14alue='dark', command=sav0.9.14e_theme,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activ0.9.14ebackground=ModernStyle.BG_CARD).pack(anchor='w', pady=(12, 4))
+        tk.Radiobutton(card3, text="Light", v0.9.14ariable=theme_v0.9.14ar, v0.9.14alue='light', command=sav0.9.14e_theme,
+                       bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT, selectcolor=ModernStyle.BG, activ0.9.14ebackground=ModernStyle.BG_CARD).pack(anchor='w')
 
-    def _save_settings(self, key):
+    def _sav0.9.14e_settings(self, key):
         self.api_key = key.strip() or None
         self.config['api_key'] = self.api_key
-        save_config(self.config)
+        sav0.9.14e_config(self.config)
         self.show_toast("Einstellungen gespeichert", ModernStyle.SUCCESS)
 
     # ----------------------------- UPDATER / BACKGROUND -----------------------------
@@ -1265,9 +1265,9 @@ class SweetCheatApp:
             print(f"Update check failed: {e}")
 
     def start_background_tasks(self):
-        threading.Thread(target=self._keepalive, daemon=True).start()
+        threading.Thread(target=self._keepaliv0.9.14e, daemon=True).start()
 
-    def _keepalive(self):
+    def _keepaliv0.9.14e(self):
         while True:
             time.sleep(60)
             try:
@@ -1276,16 +1276,16 @@ class SweetCheatApp:
             except Exception:
                 pass
 
-    def sync_favorites(self):
+    def sync_fav0.9.14orites(self):
         try:
-            self.api_call('config-sync.php', 'POST', {'favorites': list(self.favorites)})
+            self.api_call('config-sync.php', 'POST', {'fav0.9.14orites': list(self.fav0.9.14orites)})
         except Exception as e:
-            print(f"Favorites sync error: {e}")
+            print(f"Fav0.9.14orites sync error: {e}")
 
     def logout(self):
         self.api_key = None
         self.config['api_key'] = None
-        save_config(self.config)
+        sav0.9.14e_config(self.config)
         self.user_info = {}
         self.premium_data = {}
         self.profile_name.config(text="GAST")
