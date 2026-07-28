@@ -6,7 +6,7 @@
     <title>SweetCheat Engine — Admin</title>
     <link rel="stylesheet" href="shared-modern.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0 the-best.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --admin-sidebar: #0c0e15; --admin-card: #12141c; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
@@ -35,8 +35,6 @@
         textarea { min-height: 300px; font-family: 'Fira Code', monospace; }
         .hidden { display: none; }
         .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: var(--bg); padding: 14px 22px; border-radius: 12px; font-weight: 700; z-index: 1000; }
-        
-        /* Preview System */
         .editor-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .preview-area { background: var(--bg); border: 2px solid var(--border); border-radius: 16px; overflow: auto; padding: 20px; height: 600px; }
         .preview-label { position: sticky; top: 0; background: var(--border); color: var(--text); font-size: 12px; padding: 4px 12px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
@@ -52,7 +50,7 @@
             <div class="nav-item" data-page="users"><i class="fas fa-users"></i> User</div>
             <div class="nav-item" data-page="games"><i class="fas fa-gamepad"></i> Spiele</div>
             <div class="nav-item" data-page="trainers"><i class="fas fa-bolt"></i> Trainer</div>
-            <div class="nav-item" data-page="files"><i class="fas fa-folder-open"></i> Dateien</div>
+            <div class="nav-item" data-page="files"><i class="fas fa-folder-open"></i> File Manager</div>
             <div class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Einstellungen</div>
             <div class="nav-item" data-page="audit"><i class="fas fa-history"></i> Audit-Log</div>
             <div style="margin-top:auto; padding: 24px;"><a href="/trainerhub/" class="btn btn-secondary" style="display:block; text-align:center; text-decoration:none;">Zur Seite</a></div>
@@ -125,13 +123,15 @@
 
             <section id="files" class="page hidden">
                 <div class="panel">
-                    <h2>Datei hochladen</h2>
-                    <form id="upload-form" enctype="multipart/form-data">
-                        <div class="form-group"><label>Verzeichnis</label><input type="text" name="dir" value="uploads"></div>
-                        <div class="form-group"><label>Datei</label><input type="file" name="file"></div>
-                        <button type="submit" class="btn btn-primary">Hochladen</button>
+                    <h2>File Manager</h2>
+                    <form id="upload-form" enctype="multipart/form-data" style="display:flex; gap:10px; align-items:flex-end; margin-bottom:30px;">
+                        <div class="form-group" style="flex:1">
+                            <label>Datei hochladen</label>
+                            <input type="file" name="file">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="height:42px">Upload</button>
                     </form>
-                    <div id="upload-result" style="margin-top:16px;"></div>
+                    <div id="file-list-view"></div>
                 </div>
             </section>
 
@@ -174,6 +174,7 @@
             if (page === 'trainers') loadTrainers();
             if (page === 'settings') loadSettings();
             if (page === 'audit') loadAudit();
+            if (page === 'files') loadFiles();
         }
 
         async function api(action, method='GET', body=null) {
@@ -255,7 +256,6 @@
             const tr = btn.closest('tr');
             const data = {};
             let pk = null;
-            tr.querySelectorAll('td[contenteditable]').getOrDefault = (el) => el.textContent; 
             tr.querySelectorAll('td[contenteditable]').forEach(td => {
                 const col = td.dataset.col;
                 data[col] = td.textContent;
@@ -329,11 +329,32 @@
             document.getElementById('audit-list').innerHTML = html;
         }
 
+        async function loadFiles() {
+            const d = await api('admin_files&action=list');
+            if (!d.success) return;
+            let html = '<table><thead><tr><th>Name</th><th>Größe</th><th>Datum</th><th>Aktion</th></tr></thead><tbody>';
+            d.files.forEach(f => {
+                html += `<tr><td>${f.name}</td><td>${(f.size/1024).toFixed(1)} KB</td><td>${f.modified}</td><td><button class="btn btn-danger" onclick="deleteFile('${f.name}')">Löschen</button></td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('file-list-view').innerHTML = html;
+        }
+
+        async function deleteFile(name) {
+            if (!confirm('Datei wirklich löschen?')) return;
+            const fd = new FormData();
+            fd.append('file', name);
+            const d = await api('admin_files&action=delete', 'POST', fd);
+            showToast(d.success ? 'Gelöscht' : d.error);
+            loadFiles();
+        }
+
         document.getElementById('upload-form').addEventListener('submit', async e => {
             e.preventDefault();
             const fd = new FormData(e.target);
             const d = await api('upload', 'POST', fd);
-            document.getElementById('upload-result').textContent = d.success ? 'URL: '+d.url : d.error;
+            showToast(d.success ? 'Hochgeladen' : d.error);
+            loadFiles();
         });
 
         function showToast(msg) {
