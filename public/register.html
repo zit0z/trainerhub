@@ -3,194 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrieren — SweetCheat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Registrierung — SweetCheat Engine</title>
     <link rel="stylesheet" href="shared-modern.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .dashboard-card { padding: 22px; }
-        .dashboard-card .value { font-family:'Rajdhani',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); }
-        .dashboard-card .label { color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; }
-        .dashboard-card .icon { font-size:1.6rem; color:var(--accent); opacity:0.8; }
-        .game-list-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); transition:background .15s; }
-        .game-list-item:hover { background:rgba(255,255,255,0.02); }
-        .game-list-item:last-child { border-bottom:none; }
-        .game-icon { width:44px; height:44px; border-radius:10px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.3rem; }
-        .quick-action { display:flex; align-items:center; gap:12px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
-        .quick-action:hover { border-color:var(--accent); box-shadow:0 0 16px rgba(0,240,255,0.1); }
-        .premium-cta { background:linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(255,56,100,0.08) 100%); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+        body { 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: radial-gradient(circle at 50% 50%, #1a1f2e 0%, #0a0c12 100%); 
+            margin: 0;
+        }
+        .register-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            padding: 48px; 
+            width: 100%; 
+            max-width: 420px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .register-card:hover { transform: translateY(-5px); }
+        .brand-logo { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 30px; display: block; text-decoration: none; }
+        .brand-logo span { color: var(--accent); }
+        h1 { font-family: 'Rajdhani', sans-serif; font-size: 28px; margin: 0 0 8px; }
+        p { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; }
+        .field { text-align: left; margin-bottom: 20px; }
+        .field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .error-msg { color: var(--danger); font-size: 13px; margin-bottom: 15px; min-height: 18px; text-align: center; }
+        .footer-links { margin-top: 25px; text-align: center; font-size: 14px; color: var(--text-muted); }
+        .footer-links a { color: var(--accent); text-decoration: none; font-weight: 600; transition: 0.2s; }
+        .footer-links a:hover { text-shadow: 0 0 10px var(--accent); }
     </style>
 </head>
 <body>
-    <aside class="nav-sidebar">
-        <div class="nav-main">
-            <div style="padding:0 8px 24px;">
-                <a href="/trainerhub/" class="brand" style="font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
-            </div>
-            <a href="dashboard" class="nav-item" id="navDashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
-            <a href="games" class="nav-item" id="navGames"><span class="icon"><i class="fas fa-gamepad"></i></span> Meine Spiele</a>
-            <a href="favorites" class="nav-item" id="navFavorites"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
-            <a href="settings" class="nav-item" id="navSettings"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
-            <a href="logout" class="nav-item" id="navLogout"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+    <div class="register-card">
+        <a href="/trainerhub/" class="brand-logo"><i class="fas fa-crosshairs"></i> Sweet<span>Cheat</span></a>
+        <h1>Konto erstellen</h1>
+        <p>Werde Teil der Elite. Hol dir den Vorsprung.</p>
+        
+        <div class="field">
+            <label>E-Mail</label>
+            <input type="email" id="regEmail" placeholder="name@email.de">
         </div>
-        <div style="padding:18px; border-top:1px solid var(--border);">
-            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
-                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
-                <div>
-                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
-                    <div id="userSub" class="badge badge-free">Free</div>
-                </div>
-            </div>
+        <div class="field">
+            <label>Passwort</label>
+            <input type="password" id="regPassword" placeholder="Mindestens 6 Zeichen">
         </div>
-    </aside>
-
-    <div class="page-content">
-        <div class="topbar">
-            <h1 class="section-title" style="font-size:26px;">Konto erstellen</h1>
-            <div style="display:flex; gap:12px; align-items:center;">
-                <span id="versionBadge" class="badge badge-free">v0.9.5</span>
-                <a href="/trainerhub/SweetCheat-Setup.exe?v=0.9.5" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> SweetCheat Engine v0.9.5 herunterladen</a>
-            </div>
-        </div>
-
-        <div style="padding:28px;">
-            
-        <div style="max-width:480px; margin:0 auto;">
-            <div class="card" style="padding:32px;">
-                <div style="text-align:center; margin-bottom:24px;">
-                    <a href="/trainerhub/" class="brand" style="justify-content:center; font-size:1.6rem;"><i class="fas fa-crosshairs"></i>Sweet<span>Cheat</span></a>
-                </div>
-                <h2 style="margin:0 0 8px; font-family:'Rajdhani',sans-serif; text-transform:uppercase; text-align:center;">Registrieren</h2>
-                <p style="color:var(--text-muted); text-align:center; margin-bottom:24px;">Erstelle deinen SweetCheat-Account.</p>
-                
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">E-Mail</label>
-                    <input type="email" id="regEmail" placeholder="deine@email.de">
-                </div>
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">Passwort</label>
-                    <input type="password" id="regPassword" placeholder="Mindestens 6 Zeichen">
-                </div>
-                
-                <div id="regError" style="color:var(--danger); font-size:13px; margin-bottom:12px; min-height:18px;"></div>
-                
-                <button class="btn btn-primary" style="width:100%;" onclick="doRegister()"><i class="fas fa-user-plus"></i> Konto erstellen</button>
-                
-                <div style="margin-top:20px; text-align:center;">
-                    <a href="login" style="color:var(--accent); text-decoration:none; font-size:13px;">Bereits ein Konto? Einloggen</a>
-                </div>
-            </div>
-        </div>
-        <script>
-            async function doRegister() {{
-                const email = document.getElementById('regEmail').value.trim();
-                const password = document.getElementById('regPassword').value;
-                const err = document.getElementById('regError');
-                err.textContent = '';
-                try {{
-                    const res = await fetch('api/auth.php?action=register', {{
-                        method: 'POST',
-                        headers: {{'Content-Type':'application/json'}},
-                        body: JSON.stringify({{email, password}})
-                    }});
-                    const data = await res.json();
-                    if (!data.success) {{ err.textContent = data.error || 'Registrierung fehlgeschlagen'; return; }}
-                    localStorage.setItem('sweetcheat_api_key', data.api_key);
-                    location.href = 'dashboard';
-                }} catch(e) {{ err.textContent = 'Netzwerkfehler'; }}
-            }}
-            document.getElementById('regPassword').addEventListener('keydown', e => {{ if (e.key === 'Enter') doRegister(); }});
-        </script>
-    
+        
+        <div id="error" class la="error-msg"></div>
+        
+        <button class="btn btn-gradient btn-full" onclick="doRegister()" style="width:100%; padding:14px; font-size:16px; cursor:pointer;">
+            <i class="fas fa-user-plus"></i> Jetzt registrieren
+        </button>
+        
+        <div class="footer-links">
+            Bereits ein Konto? <a href="login">Hier einloggen</a>
         </div>
     </div>
 
+    <script src="shared.js"></script>
     <script>
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); clearApiKey(); location.href='login'; });
-        document.getElementById('navDashboard').classList.add('active');
-        async function loadUser() {
-            const key = getApiKey();
-            if (!key) { location.href='login'; return; }
+        async function doRegister() {
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const errEl = document.getElementById('error');
+            errEl.textContent = '';
             try {
-                const res = await fetch('api/billing.php?action=status', {headers:{'Authorization':'Bearer '+key}});
+                const res = await fetch('api/auth.php?action=register', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({email, password})
+                });
                 const data = await res.json();
-                if (!data.success) { location.href='login'; return; }
-                document.getElementById('userName').textContent = data.user?.username || data.email?.split('@')[0] || 'User';
-                const subEl = document.getElementById('userSub');
-                if (data.subscription === 'premium') { subEl.className='badge badge-premium'; subEl.textContent='Premium'; }
-                else { subEl.className='badge badge-free'; subEl.textContent='Free'; }
-            } catch(e) { console.error(e); }
+                if (!data.success) {
+                    errEl.textContent = data.error || 'Registrierung fehlgeschlagen';
+                    return;
+                }
+                localStorage.setItem('trainerhub_api_key', data.api_key);
+                localStorage.setItem('sweetcheat_api_key', data.api_key);
+                location.href = '/trainerhub/dashboard';
+            } catch (e) {
+                errEl.textContent = 'Netzwerkfehler';
+            }
         }
-        loadUser();
+        document.getElementById('regPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
     </script>
-
-<!-- Support Widget -->
-<div id="supportWidget" style="position:fixed; bottom:24px; right:24px; z-index:999;">
-    <button id="supportToggle" onclick="toggleSupport()" style="width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--bg); border:none; font-size:1.4rem; cursor:pointer; box-shadow:0 8px 32px rgba(0,240,255,0.3); transition:transform .2s;"><i class="fas fa-comment-dots"></i></button>
-    <div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:320px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.4);">
-        <h4 style="margin:0 0 12px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Support</h4>
-        <div id="supportForm">
-            <input type="email" id="supportEmail" placeholder="Deine E-Mail" style="margin-bottom:10px; width:100%;">
-            <input type="text" id="supportSubject" placeholder="Betreff" style="margin-bottom:10px; width:100%;">
-            <textarea id="supportMessage" placeholder="Wie können wir dir helfen?" rows="4" style="margin-bottom:10px; width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px;"></textarea>
-            <button class="btn btn-primary" onclick="sendSupport()" style="width:100%;">Absenden</button>
-        </div>
-        <div id="supportSuccess" style="display:none; text-align:center; color:var(--success); padding:20px 0;">
-            <i class="fas fa-check-circle" style="font-size:2rem;"></i>
-            <p>Ticket erstellt. Wir melden uns per E-Mail.</p>
-        </div>
-    </div>
-</div>
-
-<script>
-function toggleSupport() {
-    const panel = document.getElementById('supportPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
-
-async function sendSupport() {
-    const btn = document.querySelector('#supportForm button');
-    const email = document.getElementById('supportEmail').value.trim();
-    const subject = document.getElementById('supportSubject').value.trim();
-    const message = document.getElementById('supportMessage').value.trim();
-    if (!email || !subject || !message) {
-        if (typeof showToast === 'function') showToast('Bitte alle Felder ausfüllen', 'error');
-        else alert('Bitte alle Felder ausfüllen');
-        return;
-    }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        const res = await fetch('api/support.php', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({email, subject, message})
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('supportForm').style.display = 'none';
-            document.getElementById('supportSuccess').style.display = 'block';
-        } else {
-            if (typeof showToast === 'function') showToast(data.error || 'Fehler', 'error');
-            else alert(data.error || 'Fehler');
-            btn.disabled = false;
-            btn.textContent = 'Absenden';
-        }
-    } catch(e) {
-        if (typeof showToast === 'function') showToast('Netzwerkfehler', 'error');
-        else alert('Netzwerkfehler');
-        btn.disabled = false;
-    }
-}
-
-document.addEventListener('click', function(e) {
-    const widget = document.getElementById('supportWidget');
-    if (widget && !widget.contains(e.target)) {
-        const panel = document.getElementById('supportPanel');
-        if (panel) panel.style.display = 'none';
-    }
-});
-
-</script>
 </body>
-</html>    <script src="shared.js"></script>
+</html>

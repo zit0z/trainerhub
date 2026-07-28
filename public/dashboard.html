@@ -3,382 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — SweetCheat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Dashboard — SweetCheat Engine</title>
     <link rel="stylesheet" href="shared-modern.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        body { background: var(--bg); color: var(--text); margin: 0; }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+        .welcome-section { margin-bottom: 40px; }
+        .welcome-section h1 { font-size: 42px; margin: 0; font-family: 'Rajdhani', sans-serif; }
+        .welcome-section p { color: var(--text-muted); font-size: 18px; margin-top: 10px; }
         
-        .dashboard-card { padding: 22px; }
-        .dashboard-card .value { font-family:'Rajdhani',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); }
-        .dashboard-card .label { color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; }
-        .dashboard-card .icon { font-size:1.6rem; color:var(--accent); opacity:0.8; }
-        .quick-action { display:flex; align-items:center; gap:12px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
-        .quick-action:hover { border-color:var(--accent); box-shadow:0 0 16px rgba(0,240,255,0.1); transform:translateY(-2px); }
-        .quick-action i { font-size:1.3rem; color:var(--accent); }
-        .game-list-item { display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--border); transition:background .15s; cursor:pointer; }
-        .game-list-item:hover { background:rgba(255,255,255,0.02); }
-        .game-list-item:last-child { border-bottom:none; }
-        .game-icon { width:44px; height:44px; border-radius:10px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.3rem; }
-        .premium-cta { background:linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(255,56,100,0.08) 100%); border:1px solid var(--border); border-radius:var(--radius); padding:28px; text-align:center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; transition: 0.3s; }
+        .stat-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 240, 255, 0.1); transform: translateY(-5px); }
+        .stat-card .label { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .stat-card .value { font-size: 32px; font-weight: 700; color: var(--accent); font-family: 'Rajdhani', sans-serif; margin: 10px 0; }
+        .stat-card .icon { font-size: 24px; color: var(--accent); opacity: 0.7; }
 
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .content-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; }
+        .panel-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .panel-title i { color: var(--accent); }
+
+        .game-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); transition: 0.2s; cursor: pointer; }
+        .game-item:hover { background: rgba(255,255,255,0.03); border-radius: 12px; }
+        .game-info { display: flex; align-items: center; gap: 15px; }
+        .game-icon { width: 48px; height: 48px; background: var(--bg-elevated); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; border: 1px solid var(--border); }
+        .game-details h4 { margin: 0; font-size: 16px; }
+        .game-details span { font-size: 12px; color: var(--text-muted); }
+
+        .quick-actions { display: flex; flex-direction: column; gap: 15px; }
+        .action-btn { display: flex; align-items: center; gap: 15px; padding: 16px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; color: var(--text); text-decoration: none; transition: 0.3s; cursor: pointer; }
+        .action-btn:hover { border-color: var(--accent); background: rgba(0, 240, 255, 0.05); transform: translateX(5px); }
+        .action-btn i { color: var(--accent); font-size: 20px; }
+
+        .premium-banner { background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(0, 102, 255, 0.1) 100%); border: 1px solid var(--accent); border-radius: 20px; padding: 30px; text-align: center; margin-top: 30px; }
+        .premium-banner h3 { font-family: 'Rajdhani', sans-serif; margin: 0 0 10px; color: var(--accent); }
+        .premium-banner p { color: var(--text-muted); margin-bottom: 20px; }
+
+        .logged-in-only { display: none; }
+        body.logged-in .logged-in-only { display: block; }
     </style>
 </head>
-
 <body>
-    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menü"><i class="fas fa-bars"></i></button>
-    <aside class="nav-sidebar">
-        <div style="padding:18px; border-bottom:1px solid var(--border);">
-            <a href="/trainerhub/"><img src="/trainerhub/logo-sweetcheat-header.png" alt="SweetCheat" style="height:42px; width:auto; max-width:260px; object-fit:contain; display:block;"></a>
-        </div>
-        <div class="nav-main">
+    <div id="header-placeholder"></div>
 
-            <a href="dashboard" class="nav-item active"><span class="icon"><i class="fas fa-th-large"></i></span> Dashboard</a>
-            <a href="games" class="nav-item"><span class="icon"><i class="fas fa-gamepad"></i></span> Spiele</a>
-            <a href="trainers" class="nav-item"><span class="icon"><i class="fas fa-crosshairs"></i></span> Trainer</a>
-            <a href="favorites" class="nav-item"><span class="icon"><i class="fas fa-star"></i></span> Favoriten</a>
-            <a href="challenges" class="nav-item"><span class="icon"><i class="fas fa-trophy"></i></span> Challenges</a>
-            <a href="leaderboard" class="nav-item"><span class="icon"><i class="fas fa-chart-bar"></i></span> Rangliste</a>
-            <a href="inbox" class="nav-item"><span class="icon"><i class="fas fa-bell"></i></span> Benachrichtigungen</a>
-            <a href="blog" class="nav-item"><span class="icon"><i class="fas fa-newspaper"></i></span> Blog</a>            <a href="friends" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-user-friends"></i></span> Freunde</a>
-            <a href="forum" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-comments"></i></span> Forum</a>
-            <a href="achievements" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-medal"></i></span> Erfolge</a>
-            <a href="marketplace" class="nav-item logged-in-only"><span class="icon"><i class="fas fa-store"></i></span> Wunschliste</a>
+    <div class="dashboard-container">
+        <section class="welcome-section">
+            <h1>Willkommen, <span id="user-name" class="text-gradient">User</span>!</h1>
+            <p>Bereit für die totale Dominanz? Deine Engine ist online.</p>
+        </section>
 
-            <a href="profile" class="nav-item"><span class="icon"><i class="fas fa-user"></i></span> Profil</a>
-            <a href="settings" class="nav-item"><span class="icon"><i class="fas fa-cog"></i></span> Einstellungen</a>
-
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-gamepad"></i></div>
+                <div class="label">Aktive Spiele</div>
+                <div class="value" id="stat-games">0</div>
             </div>
-        <div style="padding:18px; border-top:1px solid var(--border);">
-            <div id="userMini" style="display:flex; align-items:center; gap:12px;">
-                <div style="width:38px;height:38px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-user"></i></div>
-                <div>
-                    <div id="userName" style="font-weight:600;font-size:14px;">Gast</div>
-                    <div id="userSub" class="badge badge-free">Free</div>
-                </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-bolt"></i></div>
+                <div class="label">Aktive Trainer</div>
+                <div class="value" id="stat-trainers">0</div>
             </div>
-        </div>
-    </aside>
-
-    <div class="page-content">
-        <div class="topbar">
-            <h1 class="section-title" style="font-size:26px;">Dashboard</h1>
-            <div style="position:relative; flex:1; max-width:360px;">
-                <input type="text" id="globalSearch" placeholder="Spiele/Trainer suchen... (Ctrl+K)" oninput="globalSearch(this)" autocomplete="off" style="width:100%;">
-                <div id="searchDropdown" class="search-dropdown"></div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-trophy"></i></div>
+                <div class="label">Achievements</div>
+                <div class="value" id="stat-achievements">0</div>
             </div>
-            <div id="headerUserMenu" style="display:flex; gap:10px;">
-                    <a href="login" class="btn btn-secondary btn-sm">Login</a>
-                    <a href="register" class="btn btn-primary btn-sm">Registrieren</a>
-                </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-crown"></i></div>
+                <div class="label">Status</div>
+                <div class="value" id="stat-rank">User</div>
             </div>
         </div>
 
-        <div style="padding:28px;">
-            <div class="grid-4" style="margin-bottom:24px;">
-                <div class="card dashboard-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                        <div class="label">Gesamt Trainer</div>
-                        <div class="icon"><i class="fas fa-code"></i></div>
-                    </div>
-                    <div class="value" id="statTrainers">1.965</div>
-                </div>
-                <div class="card dashboard-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                        <div class="label">Spiele</div>
-                        <div class="icon"><i class="fas fa-gamepad"></i></div>
-                    </div>
-                    <div class="value" id="statGames">299</div>
-                </div>
-                <div class="card dashboard-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                        <div class="label">Aktivierungen</div>
-                        <div class="icon"><i class="fas fa-bolt"></i></div>
-                    </div>
-                    <div class="value" id="statActivations">0</div>
-                </div>
-                <div class="card dashboard-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                        <div class="label">Status</div>
-                        <div class="icon"><i class="fas fa-shield-alt"></i></div>
-                    </div>
-                    <div class="value" style="font-size:1.4rem; color:var(--success);">Aktiv</div>
+        <div class="main-grid">
+            <div class="content-panel">
+                <div class="panel-title"><i class="fas fa-fire"></i> Top Trainer</div>
+                <div id="top-trainers-list">
+                    <!-- Loaded via JS -->
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom:24px;">
-                <div class="card" style="padding:24px;">
-                    <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Schnellaktionen</h3>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="quick-action" onclick="location.href='setup'"><i class="fas fa-download"></i><div><div style="font-weight:600;">App installieren</div><div style="font-size:12px; color:var(--text-muted);">Windows .exe</div></div></div>
-                        <div class="quick-action" onclick="location.href='games'"><i class="fas fa-search"></i><div><div style="font-weight:600;">Spiele finden</div><div style="font-size:12px; color:var(--text-muted);">299 Titel</div></div></div>
-                        <div class="quick-action" onclick="location.href='favorites'"><i class="fas fa-star"></i><div><div style="font-weight:600;">Favoriten</div><div style="font-size:12px; color:var(--text-muted);">Merken & Aufrufen</div></div></div>
-                        <div class="quick-action" onclick="startTour([{title:'Willkommen', text:'Dashboard zeigt deine Statistiken und schnelle Links.', icon:'fa-home'},{title:'Suche', text:'Drücke Ctrl+K um Spiele und Trainer zu suchen.', icon:'fa-search'},{title:'Fertig', text:'Viel Spaß mit SweetCheat!', icon:'fa-check'}])"><i class="fas fa-life-ring"></i><div><div style="font-weight:600;">Tour starten</div><div style="font-size:12px; color:var(--text-muted);">Onboarding</div></div></div>
+            <div class="side-panel">
+                <div class="content-panel">
+                    <div class="panel-title"><i class="fas fa-rocket"></i> Quick Actions</div>
+                    <div class="quick-actions">
+                        <a href="/trainerhub/games" class="action-btn"><i class="fas fa-search"></i> Spiele suchen</a>
+                        <a href="/trainerhub/favorites" class="action-btn"><i class="fas fa-star"></i> Favoriten</a>
+                        <a href="/trainerhub/profile" class="action-btn"><i class="fas fa-user-cog"></i> Profil editieren</a>
+                        <a href="/trainerhub/settings" class="action-btn"><i class="fas fa-cog"></i> Einstellungen</a>
                     </div>
                 </div>
 
-                <div class="premium-cta">
-                    <h3 style="margin:0 0 8px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Upgrade auf Premium</h3>
-                    <p style="color:var(--text-muted); margin:0 0 18px; font-size:14px;">Schalte alle Cheats, Memory-Scan und Savegame-Editoren frei.</p>
-                    <button class="btn btn-primary" onclick="location.href='setup'">Premium aktivieren</button>
-                </div>
-            </div>
-
-            <div class="grid-2" style="margin-bottom:24px;">
-                <div class="card" style="padding:24px;">
-                    <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Forum-Highlights</h3>
-                    <div id="forumWidget">
-                        <div class="empty" style="text-align:center; color:var(--text-muted); padding:20px;">Lade Forum...</div>
-                    </div>
-                </div>
-
-                <div class="card" style="padding:24px;">
-                    <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Community</h3>
-                    <div id="communityWidget">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                            <div style="width:40px;height:40px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-users"></i></div>
-                            <div>
-                                <div style="font-weight:600;">Discord-Integration</div>
-                                <div style="font-size:12px; color:var(--text-muted);">Webhook für Community-Events bereit</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                            <div style="width:40px;height:40px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-trophy"></i></div>
-                            <div>
-                                <div style="font-weight:600;">Challenges & Rangliste</div>
-                                <div style="font-size:12px; color:var(--text-muted);">Sammle Punkte und steige auf</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="width:40px;height:40px;border-radius:999px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="fas fa-robot"></i></div>
-                            <div>
-                                <div style="font-weight:600;">AI Image Studio</div>
-                                <div style="font-size:12px; color:var(--text-muted);">Generiere Bilder auf dem VPS</div>
-                            </div>
-                        </div>
-                    </div>
-                    <a href="https://sayfespace.online/ai-gen/" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:12px; display:inline-block;">AI Image Studio öffnen →</a>
-                </div>
-            </div>
-
-            <div class="card" style="padding:24px;">
-                <h3 style="margin:0 0 16px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Beliebte Spiele</h3>
-                <div id="popularGames">
-                    <div class="game-list-item shimmer" style="height:60px; border:none;"></div>
-                    <div class="game-list-item shimmer" style="height:60px; border:none;"></div>
-                    <div class="game-list-item shimmer" style="height:60px; border:none;"></div>
+                <div class="premium-banner">
+                    <h3>Swee<span class="text-gradient">tCheat</span> Premium</h3>
+                    <p>Schalte exklusive AOB-Pattern und Cloud-Saves frei.</p>
+                    <a href="/trainerhub/premium" class="btn btn-gradient" style="text-decoration:none; padding: 12px 24px; border-radius: 10px; display: inline-block;">Upgrade Now</a>
                 </div>
             </div>
         </div>
-
     </div>
+
     <script src="shared.js"></script>
-    <script src="components/header-menu.js"></script>
     <script>
-        document.getElementById('navDashboard').classList.add('active');
-        document.getElementById('navLogout').addEventListener('click', function(e) { e.preventDefault(); clearApiKey(); location.href='login'; });
-        const savedTheme = localStorage.getItem('sweetcheat_theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        document.addEventListener('click', e => {
-            const dd = document.getElementById('searchDropdown');
-            if (dd && !e.target.closest('#globalSearch') && !e.target.closest('#searchDropdown')) dd.classList.remove('open');
-        });
-        
-    </script>
-    <script>
-        async function loadDashboard() {
-            const key = (getApiKey()) || '';
-            if (!key) { location.href='login'; return; }
-            try {
-                const [statusRes, logsRes, gamesRes] = await Promise.all([
-                    fetch('api/billing.php?action=status', {headers: {'Authorization':'Bearer '+key}}),
-                    fetch('api/trainer-logs.php?action=stats', {headers: {'Authorization':'Bearer '+key}}),
-                    fetch('api/games.php?per_page=6', {headers: {'Authorization':'Bearer '+key}})
-                ]);
-                const status = await statusRes.json();
-                const logs = await logsRes.json();
-                const games = await gamesRes.json();
-                if (status.success) {
-                    document.getElementById('userName').textContent = status.user?.username || status.email?.split('@')[0] || 'User';
-                    const subEl = document.getElementById('userSub');
-                    if (status.subscription === 'premium') { subEl.className = 'badge badge-premium'; subEl.textContent = 'Premium'; }
-                    else { subEl.className = 'badge badge-free'; subEl.textContent = 'Free'; }
-                } else { location.href='login'; return; }
-                if (logs.success) document.getElementById('statActivations').textContent = logs.total_activations || 0;
-                if (games.success) {
-                    document.getElementById('statGames').textContent = games.total || 0;
-                    const popular = games.games.slice(0,5);
-                    document.getElementById('popularGames').innerHTML = popular.map(g => `
-                        <div class="game-list-item" onclick="location.href='trainers?game=${g.slug}'">
-                            <div class="game-icon"><i class="fas fa-gamepad"></i></div>
-                            <div style="flex:1;">
-                                <div style="font-weight:600;">${escapeHtml(g.name)}</div>
-                                <div style="font-size:13px; color:var(--text-muted);">${escapeHtml(g.genre || 'Game')} • ${g.trainer_count || 0} Trainer</div>
+        async function injectHeader() {
+            const response = await fetch('/trainerhub/public/components/header-menu.js');
+            const scriptText = await response.text();
+            const script = document.createElement('script');
+            script.textContent = scriptText;
+            document.body.appendChild(script);
+        }
+        injectHeader();
+
+        async function initDashboard() {
+            const token = getApiKey();
+            if (!token) {
+                window.location.href = '/trainerhub/login';
+                return;
+            }
+
+            document.body.classList.add('logged-in');
+            
+            // Fetch user info
+            const userRes = await fetch('/trainerhub/api/user.php', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const userData = await userRes.json();
+            if (userData.success) {
+                document.getElementById('user-name').textContent = userData.user.username;
+                document.getElementById('stat-rank').textContent = userData.user.role === 'admin' ? 'CEO' : 'User';
+            }
+
+            // Fetch stats
+            const statsRes = await fetch('/trainerhub/api/dashboard.php', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const statsData = await statsRes.json();
+            if (statsData.success) {
+                document.getElementById('stat-games').textContent = statsData.stats.games;
+                document.getElementById('stat-trainers').textContent = statsData.stats.trainers;
+                document.getElementById('stat-achievements').textContent = statsData.stats.achievements || '0';
+            }
+
+            // Load Top Trainers
+            const trainerRes = await fetch('/trainerhub/api/trainers.php', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const trainerData = await trainerRes.json();
+            if (trainerData.success) {
+                const list = document.getElementById('top-trainers-list');
+                list.innerHTML = trainerData.trainers.slice(0, 8).map(t => `
+                    <div class="game-item">
+                        <div class="game-info">
+                            <div class="game-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="game-details">
+                                <h4>${t.name}</h4>
+                                <span>${t.game_name} &bull; ${t.method}</span>
                             </div>
-                            <span class="badge badge-success">Verfügbar</span>
                         </div>
-                    `).join('');
-                }
-                fetch('api/trainers.php?action=count', {headers:{'Authorization':'Bearer '+key}}).then(r=>r.json()).then(d=>{
-                    if(d.success) document.getElementById('statTrainers').textContent = (d.count || 0).toLocaleString('de-DE');
-                }).catch(()=>{});
-            } catch(e) { console.error(e); showToast('Dashboard konnte nicht geladen werden', 'error'); }
-        }
-        loadDashboard();
-</script>
-
-<!-- Support Widget -->
-<div id="supportWidget" style="position:fixed; bottom:24px; right:24px; z-index:999;">
-    <button id="supportToggle" onclick="toggleSupport()" style="width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--bg); border:none; font-size:1.4rem; cursor:pointer; box-shadow:0 8px 32px rgba(0,240,255,0.3); transition:transform .2s;"><i class="fas fa-comment-dots"></i></button>
-    <div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:320px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.4);">
-        <h4 style="margin:0 0 12px; font-family:'Rajdhani',sans-serif; text-transform:uppercase;">Support</h4>
-        <div id="supportForm">
-            <input type="email" id="supportEmail" placeholder="Deine E-Mail" style="margin-bottom:10px; width:100%;">
-            <input type="text" id="supportSubject" placeholder="Betreff" style="margin-bottom:10px; width:100%;">
-            <textarea id="supportMessage" placeholder="Wie können wir dir helfen?" rows="4" style="margin-bottom:10px; width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px;"></textarea>
-            <button class="btn btn-primary" onclick="sendSupport()" style="width:100%;">Absenden</button>
-        </div>
-        <div id="supportSuccess" style="display:none; text-align:center; color:var(--success); padding:20px 0;">
-            <i class="fas fa-check-circle" style="font-size:2rem;"></i>
-            <p>Ticket erstellt. Wir melden uns per E-Mail.</p>
-        </div>
-    </div>
-</div>
-
-<script>
-function toggleSupport() {
-    const panel = document.getElementById('supportPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
-
-async function sendSupport() {
-    const btn = document.querySelector('#supportForm button');
-    const email = document.getElementById('supportEmail').value.trim();
-    const subject = document.getElementById('supportSubject').value.trim();
-    const message = document.getElementById('supportMessage').value.trim();
-    if (!email || !subject || !message) {
-        if (typeof showToast === 'function') showToast('Bitte alle Felder ausfüllen', 'error');
-        else alert('Bitte alle Felder ausfüllen');
-        return;
-    }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        const res = await fetch('api/support.php', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({email, subject, message})
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('supportForm').style.display = 'none';
-            document.getElementById('supportSuccess').style.display = 'block';
-        } else {
-            if (typeof showToast === 'function') showToast(data.error || 'Fehler', 'error');
-            else alert(data.error || 'Fehler');
-            btn.disabled = false;
-            btn.textContent = 'Absenden';
-        }
-    } catch(e) {
-        if (typeof showToast === 'function') showToast('Netzwerkfehler', 'error');
-        else alert('Netzwerkfehler');
-        btn.disabled = false;
-    }
-}
-
-document.addEventListener('click', function(e) {
-    const widget = document.getElementById('supportWidget');
-    if (widget && !widget.contains(e.target)) {
-        const panel = document.getElementById('supportPanel');
-        if (panel) panel.style.display = 'none';
-    }
-});
-
-</script>
-
-
-    <script>
-        // Load forum highlights
-        (async () => {
-            try {
-                const res = await fetch('/trainerhub/api/forum.php?action=threads&category_id=1');
-                const data = await res.json();
-                const container = document.getElementById('forumWidget');
-                if (!data.success || !data.threads.length) {
-                    container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted); padding:20px;">Noch keine Themen im Forum.</div>';
-                    return;
-                }
-                container.innerHTML = data.threads.slice(0, 5).map(t => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-                        <div>
-                            <div style="font-weight:600; font-size:0.95rem;">${t.title}</div>
-                            <div style="font-size:0.8rem; color:var(--text-muted);">Von ${t.username} • ${new Date(t.created_at * 1000).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${t.is_premium ? '<span style="color:var(--accent); font-size:12px; font-weight:700;">PREMIUM</span>' : ''}
+                            <a href="/trainerhub/trainer?id=${t.id}" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; text-decoration:none;">Details</a>
                         </div>
-                        <div style="font-size:0.8rem; color:var(--text-muted);">${t.reply_count || 0} 💬</div>
                     </div>
                 `).join('');
-            } catch (e) {
-                console.error('Forum widget load failed', e);
             }
-        })();
+        }
+
+        initDashboard();
     </script>
-
-<div id="chatWidget" class="chat-widget" style="position:fixed; bottom:90px; right:20px; width:340px; max-height:450px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; display:none; flex-direction:column; overflow:hidden; z-index:9998; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <div style="padding:14px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-weight:600; font-family: Rajdhani;"><i class="fas fa-comments" style="color:var(--accent); margin-right:8px;"></i>Community Chat</div>
-        <button onclick="toggleChat()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
-    </div>
-    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:12px; max-height:320px;">
-        <div class="empty" style="text-align:center; color:var(--text-muted);">Lade Chat...</div>
-    </div>
-    <div style="padding:12px; border-top:1px solid var(--border); display:flex; gap:8px;">
-        <input type="text" id="chatInput" placeholder="Nachricht..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text);">
-        <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-</div>
-<button id="chatToggle" class="btn btn-primary" onclick="toggleChat()" style="position:fixed; bottom:20px; right:20px; width:54px; height:54px; border-radius:50%; z-index:9999; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,212,255,0.3);"><i class="fas fa-comments fa-lg"></i></button>
-
-
-<script>
-    const token = getApiKey();
-    let chatOpen = false;
-    function toggleChat() {
-        const w = document.getElementById('chatWidget');
-        chatOpen = !chatOpen;
-        w.style.display = chatOpen ? 'flex' : 'none';
-        if (chatOpen) loadChat();
-    }
-    async function loadChat() {
-        try {
-            const res = await fetch('/trainerhub/api/chat.php?action=history');
-            const data = await res.json();
-            const container = document.getElementById('chatMessages');
-            if (!data.success) { container.innerHTML = '<div class="empty" style="text-align:center; color:var(--text-muted);">Chat nicht verfügbar</div>'; return; }
-            container.innerHTML = data.messages.map(m => `
-                <div style="margin-bottom:8px;">
-                    <span style="color:${m.is_admin ? 'var(--warning)' : 'var(--accent)'}; font-weight:600; font-size:0.85rem;">${m.username}</span>
-                    <span style="color:var(--text-muted); font-size:0.75rem; margin-left:6px;">${new Date(m.created_at * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
-                    <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${m.message}</div>
-                </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        } catch(e) { console.error(e); }
-    }
-    async function sendChat() {
-        if (!token) { showToast('Login erforderlich', 'warn'); return; }
-        const input = document.getElementById('chatInput');
-        const msg = input.value.trim();
-        if (!msg) return;
-        await fetch('/trainerhub/api/chat.php?action=send', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg })
-        });
-        input.value = '';
-        loadChat();
-    }
-    setInterval(() => { if (chatOpen) loadChat(); }, 15000);
-</script>
 </body>
 </html>
