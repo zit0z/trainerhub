@@ -1,9 +1,9 @@
 <?php
-header('Content-Type: own/json');
+header('Content-Type: application/json');
 echo json_encode([
     'success' => true,
-    'version' => '0.9.9',
+    'version' => '0.9.10',
     'brand' => 'SweetCheat Engine',
-    'download_url' => 'https://sayfespace.online/trainerhub/SweetCheat-Setup.exe?v=0.9.9',
-    'installer_url' => 'https://sayfespace.online/trainerhub/SweetCheat-Setup.exe?v=0.9.9'
+    'download_url' => 'https://sayfespace.online/trainerhub/SweetCheat-Setup.exe?v=0.9.10',
+    'installer_url' => 'https://sayfespace.online/trainerhub/SweetCheat-Setup.exe?v=0.9.10'
 ]);
