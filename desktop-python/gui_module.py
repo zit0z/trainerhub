@@ -173,9 +173,9 @@ class SweetCheatApp:
         self.status_text = tk.Label(self.statusbar, text="Bereit", bg=ModernStyle.BG_CARD,
                                     fg=ModernStyle.TEXT_MUTED, font=('Segoe UI', 9))
         self.status_text.pack(side='left', padx=20, pady=5)
-        self.v0.9.14_SLAYERersion_label = tk.Label(self.statusbar, text=f"v0.9.14_SLAYER{APP_VERSION}", bg=ModernStyle.BG_CARD,
+        self.version_label = tk.Label(self.statusbar, text=f"v{APP_VERSION}", bg=ModernStyle.BG_CARD,
                                       fg=ModernStyle.ACCENT, font=('Segoe UI', 9))
-        self.v0.9.14_SLAYERersion_label.pack(side='right', padx=20, pady=5)
+        self.version_label.pack(side='right', padx=20, pady=5)
 
     def _show_user_menu(self, eent=None):
         menu = tk.Menu(self.root, tearoff=0, bg=ModernStyle.BG_CARD, fg=ModernStyle.TEXT,
@@ -1043,13 +1043,13 @@ class SweetCheatApp:
         e3.insert(0, '999')
         def run():
             try:
-                current_v0.9.14_SLAYERalue = int(e1.get())
-                new_v0.9.14_SLAYERalue = int(e2.get())
-                target_v0.9.14_SLAYERalue = int(e3.get())
+                current_value = int(e1.get())
+                new_value = int(e2.get())
+                target_value = int(e3.get())
                 label = trainer.get('title', 'scan')
-                res = self.engine.two_scan_dialog_v0.9.14_SLAYERalues(self.current_game.get('name', ''), label, current_v0.9.14_SLAYERalue, new_v0.9.14_SLAYERalue, target_v0.9.14_SLAYERalue)
+                res = self.engine.two_scan_dialog_values(self.current_game.get('name', ''), label, current_value, new_value, target_value)
                 if res.get('success'):
-                    self.engine.activ0.9.14_SLAYERe_cheats[label] = True
+                    self.engine.active_cheats[label] = True
                     self.show_toast(res.get('message'), ModernStyle.ACCENT)
                     d.destroy()
                 else:
