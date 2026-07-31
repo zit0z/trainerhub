@@ -1,4 +1,4 @@
-"""SweetCheat Engine Application — Modern Cyan UI v0.9.14_SLAYER"""
+"""SweetCheat Engine Application — Modern Cyan UI"""
 import sys
 import os
 import json
@@ -1043,13 +1043,13 @@ class SweetCheatApp:
         e3.insert(0, '999')
         def run():
             try:
-                v0.9.14_SLAYER = int(e1.get())
-                v0.9.14_SLAYER = int(e2.get())
-                v0.9.14_SLAYER = int(e3.get())
+                current_v0.9.14_SLAYERalue = int(e1.get())
+                new_v0.9.14_SLAYERalue = int(e2.get())
+                target_v0.9.14_SLAYERalue = int(e3.get())
                 label = trainer.get('title', 'scan')
-                res = self.engine.two_scan_dialog_alues(self.current_game.get('name', ''), label, v0.9.14_SLAYER, v0.9.14_SLAYER, v0.9.14_SLAYER)
+                res = self.engine.two_scan_dialog_v0.9.14_SLAYERalues(self.current_game.get('name', ''), label, current_v0.9.14_SLAYERalue, new_v0.9.14_SLAYERalue, target_v0.9.14_SLAYERalue)
                 if res.get('success'):
-                    self.engine.actie_cheats[label] = True
+                    self.engine.activ0.9.14_SLAYERe_cheats[label] = True
                     self.show_toast(res.get('message'), ModernStyle.ACCENT)
                     d.destroy()
                 else:
