@@ -13,7 +13,7 @@ from tray_module import SweetCheatTray
 from activation_engine import ActivationEngine
 
 # Application Constants
-VERSION = "0.9.14_SlayerEdition"
+VERSION = "0.9.14_FINAL"
 APP_NAME = "SweetCheat Engine"
 
 def main():
