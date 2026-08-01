@@ -1,4 +1,4 @@
-name: Nuclear Slayer Build v0.9.14
+name: Final Nuclear Build v0.9.14
 on:
   push:
     branches: [ main ]
@@ -20,17 +20,28 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
-    - name: Absolute Clean Build
+    - name: Absolute Clean Build with Random Path
       run: |
+        $randomSuffix = Get-Random
+        $distFolder = "dist_slayer_$randomSuffix"
+        $buildFolder = "build_slayer_$randomSuffix"
+        
+        # Force clean
         if (Test-Path dist) { Remove-Item -Recurse -Force dist }
         if (Test-Path build) { Remove-Item -Recurse -Force build }
-        python -m PyInstaller --noconfirm --onefile --windowed --clean --name "SweetCheat" main.py
-        $exePath = "dist/SweetCheat.exe"
+        
+        # Build with unique paths to kill any possible cache
+        python -m PyInstaller --noconfirm --onefile --windowed --clean --distpath $distFolder --workpath $buildFolder --name "SweetCheat" main.py
+        
+        $exePath = "$distFolder/SweetCheat.exe"
         $content = [System.IO.File]::ReadAllText($exePath)
         if ($content -match "v0.9.14_ULTIMATE_SLAYER_CONFIRMED") {
-          Write-Host "Slayer-Verification SUCCESS"
+          Write-Host "Slayer-Verification SUCCESS: The binary is TRULY new!"
+          # Move to standard location for the packaging step
+          mkdir dist
+          copy $exePath dist/SweetCheat.exe
         } else {
-          Write-Error "Slayer-Verification FAILED"
+          Write-Error "Slayer-Verification FAILED: Ghost binary persists even with random paths!"
           exit 1
         }
     - name: Package
