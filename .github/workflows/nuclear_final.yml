@@ -1,0 +1,47 @@
+name: Final Nuclear Build
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
+    - name: Zero-Cache Build
+      run: |
+        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
+        if (Test-Path build) { Remove-Item -Recurse -Force build }
+        python -m PyInstaller --noconfirm --onefile --windowed --clean --name "SweetCheat_v0914" main.py
+        $exePath = "dist/SweetCheat_v0914.exe"
+        $content = [System.IO.File]::ReadAllText($exePath)
+        if ($content -match "v0.9.14_ULTIMATE_SLAYER_CONFIRMED") {
+          Write-Host "Slayer-Verification SUCCESS"
+        } else {
+          Write-Error "Slayer-Verification FAILED"
+          exit 1
+        }
+    - name: Package
+      run: |
+        mkdir setup_files
+        copy dist/SweetCheat_v0914.exe setup_files/SweetCheat.exe
+        cp assets/* setup_files/
+        choco install innosetup -y
+        & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" SweetCheat.iss
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: SweetCheat-Setup-Final
+        path: SweetCheat-Setup.exe
