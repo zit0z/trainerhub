@@ -1,7 +1,7 @@
 ; SweetCheat Inno Setup Installer Script
-#define MyAppName "SweetCheat"
-#define MyAppVersion "0.8.6"
-#define MyAppPublisher "SweetCheat"
+#define MyAppName "SweetCheat Engine"
+#define MyAppVersion "0.9.14_SLAYER"
+#define MyAppPublisher "SweetCheat Engine"
 #define MyAppURL "https://sayfespace.online/trainerhub/"
 #define MyAppExeName "SweetCheat.exe"
 
@@ -18,7 +18,7 @@ DisableProgramGroupPage=no
 LicenseFile=license.txt
 OutputDir=.
 OutputBaseFilename=SweetCheat-Setup
-;SetupIconFile=icon.ico
+SetupIconFile=assets\logo.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

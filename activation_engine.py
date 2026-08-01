@@ -1,67 +1,44 @@
-"""Desktop trainer activation engine."""
-import os
-import sys
-import json
-import time
-import logging
-import threading
-
-logger = logging.getLogger('SweetCheat.Activation')
-WINDOWS = sys.platform == 'win32'
+from cheat_engine import CheatEngine
 
 class ActivationEngine:
-    def __init__(self, api_client=None):
-        self.api = api_client
-        self.active_trainers = {}
-        self._lock = threading.Lock()
+    def __init__(self):
+        self.engine = CheatEngine()
 
-    def can_activate(self, trainer):
-        """Check if trainer can be activated on this system."""
-        if trainer.get('locked'):
-            return False, 'Premium-Trainer erfordert Abonnement'
-        return True, 'OK'
-
-    def activate(self, trainer, game_info=None, callback=None):
-        """Run trainer activation in background thread."""
-        def _run():
-            try:
-                tid = trainer.get('trainer_id')
-                name = trainer.get('name', 'Unbekannt')
-                logger.info(f"Activating trainer {tid}: {name}")
-
-                # Log attempt
-                if self.api:
-                    try:
-                        self.api.activate_log(tid, success=1, action='desktop_activate')
-                    except Exception as e:
-                        logger.error(f"Activation log failed: {e}")
-
-                # Mark active
-                with self._lock:
-                    self.active_trainers[tid] = {'name': name, 'activated_at': time.time(), 'game': game_info}
-
-                if callback:
-                    callback(True, f"'{name}' aktiviert")
-            except Exception as e:
-                logger.exception(f"Activation error: {e}")
-                if callback:
-                    callback(False, str(e))
-
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        return t
-
-    def deactivate(self, trainer_id):
-        with self._lock:
-            if trainer_id in self.active_trainers:
-                del self.active_trainers[trainer_id]
-                return True
-        return False
-
-    def is_active(self, trainer_id):
-        with self._lock:
-            return trainer_id in self.active_trainers
-
-    def list_active(self):
-        with self._lock:
-            return list(self.active_trainers.values())
+    def activate(self, game_meta, trainer_data):
+        """
+        Main activation logic. 
+        Checks if the trainer is a 'memory' type (AOB scan) or 'savegame' type.
+        """
+        method = trainer_data.get('method', 'memory')
+        
+        if method == 'memory':
+            # Pattern scanning (The WeMod Way)
+            pattern = trainer_data.get('pattern', '00 00 00') 
+            offset = int(trainer_data.get('offset', 0))
+            value = trainer_data.get('value', '0')
+            
+            # 1. Attach to process
+            success, msg = self.engine.attach(game_meta['exe'])
+            if not success: return False, msg
+            
+            # 2. Find pattern and write
+            success, msg = self.engine.find_and_patch(pattern, offset, value)
+            return success, msg if not success else f"Cheat active: {trainer_data['name']}"
+            
+        elif method == 'savegame':
+            # Savegame edit
+            path = game_meta['save_path'] # e.g. %APPDATA%/...
+            # Find the actual save file (usually the most recent one in the folder)
+            # Simple implementation for this demo:
+            import os
+            if not os.path.exists(os.path.expandvars(path)):
+                return False, "Save folder not found"
+            
+            files = [os.path.join(os.path.expandvars(path), f) for f in os.listdir(os.path.expandvars(path))]
+            if not files: return False, "No save files found"
+            latest_save = max(files, key=os.path.getmtime)
+            
+            success, msg = self.engine.edit_savegame(latest_save, trainer_data['field'], trainer_data['value'])
+            return success, msg
+            
+        return False, "Unknown activation method"

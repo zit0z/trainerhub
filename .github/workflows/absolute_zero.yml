@@ -1,0 +1,36 @@
+name: Absolute Zero Build
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
+    - name: Run Build Script
+      run: python build_slayer.py
+    - name: Package
+      run: |
+        mkdir setup_files
+        copy dist/SweetCheat_Slayer_Final.exe setup_files/SweetCheat.exe
+        cp assets/* setup_files/
+        choco install innosetup -y
+        & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" SweetCheat.iss
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: SweetCheat-Setup-Slayer-Final
+        path: SweetCheat-Setup.exe

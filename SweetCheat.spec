@@ -6,7 +6,7 @@ a = Analysis(
     ['main.py'],
     pathex=['/var/www/sweetcheat/desktop-python'],
     binaries=[],
-    datas=[],
+    datas=[('assets/logo.ico', 'assets'), ('assets/logo.png', 'assets'), ('assets/logo-square.png', 'assets'), ],
     hiddenimports=[
         'ui_components', 'gui_module', 'updater', 'cheat_engine',
         'desktop_api', 'process_scanner', 'activation_engine',
@@ -36,7 +36,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='SweetCheat',
+    name="SweetCheat",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -58,5 +58,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='SweetCheat',
+    name="SweetCheat",
 )

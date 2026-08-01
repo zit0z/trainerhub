@@ -1,5 +1,6 @@
-pymem==1.13.1
-pywin32==306
-pywin32-ctypes==0.2.2
-requests==2.31.0
-psutil==5.9.8
+requests>=2.31.0
+Pillow>=10.0.0
+psutil>=5.9.0
+pyautogui>=0.9.54
+pywin32>=306; platform_system=="Windows"
+pymem>=1.13.1; platform_system=="Windows"

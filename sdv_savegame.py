@@ -1,78 +1,78 @@
-"""
-Stardew Valley Savegame Trainer
-Reads/writes player stats in %AppData%\StardewValley\Saves\
-Works for Steam/GOG singleplayer saves.
-"""
+"""Stardew Valley Savegame Editor."""
 import os
 import json
+import shutil
 import glob
-import xml.etree.ElementTree as ET
+import time
+from pathlib import Path
 
-SAVE_DIR = os.path.join(os.environ.get('APPDATA', ''), 'StardewValley', 'Saves')
+SAVE_PATTERN = os.path.expandvars(r'%APPDATA%\StardewValley\Saves\*')
+FARMER_MONEY_FIELDS = ['money', 'totalMoneyEarned']
 
-def list_saves():
-    if not os.path.exists(SAVE_DIR):
-        return []
-    saves = []
-    for folder in os.listdir(SAVE_DIR):
-        path = os.path.join(SAVE_DIR, folder)
-        if os.path.isdir(path):
-            files = glob.glob(os.path.join(path, '*.xml'))
-            if files:
-                saves.append({'name': folder, 'path': files[0]})
-    return saves
+def find_save_folders():
+    """Return list of Stardew Valley save folders."""
+    folders = glob.glob(SAVE_PATTERN)
+    return [f for f in folders if os.path.isdir(f)]
 
-def read_save(path):
-    tree = ET.parse(path)
-    root = tree.getroot()
-    player = root.find('player')
-    if player is None:
-        return None
-    money = player.find('money')
-    total_money_earned = player.find('totalMoneyEarned')
-    health = player.find('health')
-    max_health = player.find('maxHealth')
-    stamina = player.find('stamina')
-    max_stamina = player.find('maxStamina')
-    return {
-        'money': int(money.text) if money is not None else 0,
-        'total_money_earned': int(total_money_earned.text) if total_money_earned is not None else 0,
-        'health': int(health.text) if health is not None else 0,
-        'max_health': int(max_health.text) if max_health is not None else 0,
-        'stamina': int(stamina.text) if stamina is not None else 0,
-        'max_stamina': int(max_stamina.text) if max_stamina is not None else 0,
-    }
+def find_save_file(folder):
+    """Find the main SaveGameInfo.json or *.xml save in folder."""
+    candidates = [
+        os.path.join(folder, 'SaveGameInfo.json'),
+    ]
+    # Stardew uses XML per farmname
+    xml_files = glob.glob(os.path.join(folder, '*.xml'))
+    candidates.extend(xml_files)
+    return [c for c in candidates if os.path.exists(c)]
 
-def write_save(path, values):
-    tree = ET.parse(path)
-    root = tree.getroot()
-    player = root.find('player')
-    if player is None:
-        return False
-    
-    mapping = {
-        'money': 'money',
-        'total_money_earned': 'totalMoneyEarned',
-        'health': 'health',
-        'max_health': 'maxHealth',
-        'stamina': 'stamina',
-        'max_stamina': 'maxStamina',
-    }
-    for key, xml_tag in mapping.items():
-        if key in values:
-            el = player.find(xml_tag)
-            if el is not None:
-                el.text = str(int(values[key]))
-    
-    # Backup
-    backup_path = path + '.backup'
-    if not os.path.exists(backup_path):
-        import shutil
-        shutil.copy2(path, backup_path)
-    
-    tree.write(path, encoding='utf-8', xml_declaration=True)
-    return True
+def backup_save(folder):
+    backup_dir = Path.home() / 'Desktop' / 'SweetCheat_Backups' / 'StardewValley'
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    ts = time.strftime('%Y%m%d_%H%M%S')
+    dest = backup_dir / f"sv_backup_{ts}"
+    shutil.copytree(folder, dest)
+    return str(dest)
 
-if __name__ == '__main__':
-    saves = list_saves()
-    print(json.dumps(saves, indent=2))
+def edit_money_xml(filepath, amount=999999):
+    """Edit money in Stardew XML save."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        import re
+        # Replace <money>XXX</money>
+        new_content = re.sub(r'(<money>)\d+(\u003c/money>)', r'\g<1>%d\g<2>' % amount, content)
+        if new_content == content:
+            return False, 'Kein <money> Feld in Savegame gefunden'
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        return True, f'Geld auf {amount} gesetzt'
+    except Exception as e:
+        return False, str(e)
+
+def edit_savegame_json(filepath, amount=999999):
+    """Edit money in SaveGameInfo.json if present."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        if 'money' in data:
+            data['money'] = amount
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        return True, f'SaveGameInfo Geld auf {amount} gesetzt'
+    except Exception as e:
+        return False, str(e)
+
+def apply_cheat(cheat_type='money', value=999999):
+    folders = find_save_folders()
+    if not folders:
+        return False, 'Keine Stardew Valley Saves gefunden. Starte das Spiel und speichere zuerst.'
+    results = []
+    for folder in folders:
+        backup = backup_save(folder)
+        files = find_save_file(folder)
+        for fp in files:
+            if fp.endswith('.json'):
+                ok, msg = edit_savegame_json(fp, value)
+            else:
+                ok, msg = edit_money_xml(fp, value)
+            results.append(f"{os.path.basename(folder)}: {msg} (Backup: {backup})")
+    return True, '\n'.join(results)
