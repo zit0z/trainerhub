@@ -1,106 +1,47 @@
-name: Build Windows EXE + Inno Setup Installer
-
+name: Nuclear Slayer Build v0.9.14
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 permissions:
   contents: read
   actions: write
-
 jobs:
   build:
     runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install pyinstaller==5.13.2 pymem pywin32 pywin32-ctypes
-
-    - name: Build EXE
+    - name: Absolute Clean Build
       run: |
-        python -m PyInstaller SweetCheat.spec --clean --noconfirm
-        Get-ChildItem dist\SweetCheat\SweetCheat.exe
-        $size = [math]::Round((Get-Item dist\SweetCheat\SweetCheat.exe).Length / 1MB, 2)
-        Write-Host "EXE size: $size MB"
-
-    - name: Trim unused Tcl/Tk files
-      run: |
-        $tcl = "dist\SweetCheat\tcl"
-        $tk = "dist\SweetCheat\tk"
-        if (Test-Path $tcl) {
-          Remove-Item -Path "$tcl\tzdata" -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path "$tcl\encoding" -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
+        if (Test-Path build) { Remove-Item -Recurse -Force build }
+        python -m PyInstaller --noconfirm --onefile --windowed --clean --name "SweetCheat" main.py
+        $exePath = "dist/SweetCheat.exe"
+        $content = [System.IO.File]::ReadAllText($exePath)
+        if ($content -match "v0.9.14_ULTIMATE_SLAYER_CONFIRMED") {
+          Write-Host "Slayer-Verification SUCCESS"
+        } else {
+          Write-Error "Slayer-Verification FAILED"
+          exit 1
         }
-        if (Test-Path $tk) {
-          Remove-Item -Path "$tk\demos" -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path "$tk\images" -Recurse -Force -ErrorAction SilentlyContinue
-        }
-
-    - name: Generate SHA256 manifest
+    - name: Package
       run: |
-        $lines = @()
-        Get-ChildItem -Path dist\SweetCheat -Recurse -File | ForEach-Object {
-          $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
-          $rel = $_.FullName.Substring((Resolve-Path dist\SweetCheat).Path.Length + 1)
-          $lines += "$hash  $rel"
-        }
-        $lines | Out-File -FilePath dist\SweetCheat\SHA256SUMS.txt -Encoding utf8
-        Get-ChildItem dist\SweetCheat\SHA256SUMS.txt
-
-    - name: Self-sign EXE (optional, improves SmartScreen over time)
-      run: |
-        $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=SweetCheat" -KeyUsage DigitalSignature -FriendlyName "SweetCheat Self-Sign" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(5)
-        $pwd = ConvertTo-SecureString -String "SweetCheat2026" -Force -AsPlainText
-        Export-PfxCertificate -Cert $cert -FilePath sweetcheat-sign.pfx -Password $pwd
-        signtool.exe sign /f sweetcheat-sign.pfx /p SweetCheat2026 /t http://timestamp.digicert.com /fd SHA256 /a "dist\SweetCheat\SweetCheat.exe"
-        signtool.exe verify /pa "dist\SweetCheat\SweetCheat.exe" || Write-Host "Self-sign verification optional"
-      continue-on-error: true
-
-    - name: Package as ZIP
-      run: |
-        Compress-Archive -Path dist\SweetCheat\* -DestinationPath SweetCheat-windows.zip
-
-    - name: Install Inno Setup
-      run: |
+        mkdir setup_files
+        copy dist/SweetCheat.exe setup_files/SweetCheat.exe
+        cp assets/* setup_files/
         choco install innosetup -y
-
-    - name: Build Installer
-      run: |
         & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" SweetCheat.iss
-        signtool.exe sign /f sweetcheat-sign.pfx /p SweetCheat2026 /t http://timestamp.digicert.com /fd SHA256 /a SweetCheat-Setup.exe
-        Get-ChildItem SweetCheat-Setup.exe
-        $size = [math]::Round((Get-Item SweetCheat-Setup.exe).Length / 1MB, 2)
-        Write-Host "Setup size: $size MB"
-      continue-on-error: true
-
-    - name: Upload ZIP artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: SweetCheat-windows
-        path: SweetCheat-windows.zip
-        retention-days: 90
-
-    - name: Upload Installer artifact
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: SweetCheat-Setup
         path: SweetCheat-Setup.exe
-        retention-days: 90
-
-    - name: Update server version file
-      if: github.ref == 'refs/heads/main'
-      shell: powershell
-      run: |
-        $ver = Get-Content -Path version.txt -TotalCount 1 -ErrorAction SilentlyContinue
-        if (-not $ver) { $ver = "0.5.3" }
-        Write-Host "Built version: $ver"
